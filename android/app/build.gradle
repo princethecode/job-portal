@@ -1,0 +1,152 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
+    id 'androidx.navigation.safeargs.kotlin'
+    id 'kotlin-parcelize'
+    id 'com.google.gms.google-services'
+    id 'com.google.firebase.crashlytics'
+}
+
+
+android {
+    namespace 'com.example.jobportal'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.example.jobportal"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Add this to ensure resource compatibility
+        resourceConfigurations += ["en"]
+        
+        // KAPT configuration for Java 17 compatibility
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += [
+                        "room.schemaLocation": projectDir.toString() + "/schemas",
+                        "room.incremental": "true",
+                        "room.expandProjection": "true"
+                ]
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "API_BASE_URL", '"https://emps.co.in/api/"'
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "API_BASE_URL", '"https://emps.co.in/api/"'
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    
+    buildFeatures {
+        viewBinding true
+        dataBinding true
+        buildConfig true
+    }
+
+    // Add this to handle resource linking issues
+    aaptOptions {
+        cruncherEnabled = false
+    }
+}
+
+dependencies {
+    // Core Android dependencies
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // Navigation Component
+    implementation "androidx.navigation:navigation-fragment-ktx:${rootProject.ext.nav_version}"
+    implementation "androidx.navigation:navigation-ui-ktx:${rootProject.ext.nav_version}"
+    
+    // Room - using KSP instead of KAPT
+    implementation "androidx.room:room-runtime:${rootProject.ext.room_version}"
+    implementation "androidx.room:room-ktx:${rootProject.ext.room_version}"
+    ksp "androidx.room:room-compiler:${rootProject.ext.room_version}"
+    
+    // Lifecycle
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${rootProject.ext.lifecycle_version}"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:${rootProject.ext.lifecycle_version}"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:${rootProject.ext.lifecycle_version}"
+    
+    // Retrofit
+    implementation "com.squareup.retrofit2:retrofit:${rootProject.ext.retrofit_version}"
+    implementation "com.squareup.retrofit2:converter-gson:${rootProject.ext.retrofit_version}"
+    implementation "com.squareup.okhttp3:okhttp:${rootProject.ext.okhttp_version}"
+    implementation "com.squareup.okhttp3:logging-interceptor:${rootProject.ext.okhttp_version}"
+    
+    // Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${rootProject.ext.coroutines_version}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${rootProject.ext.coroutines_version}"
+    
+    // Firebase
+    implementation platform("com.google.firebase:firebase-bom:${rootProject.ext.firebase_version}")
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.google.firebase:firebase-storage-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    
+    // Glide for image loading - using KSP instead of KAPT
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    ksp 'com.github.bumptech.glide:compiler:4.16.0'
+    
+    // PDF Viewer
+    implementation 'com.github.mhiew:android-pdf-viewer:3.2.0-beta.3'
+    
+    // Lottie for animations
+    implementation 'com.airbnb.android:lottie:6.1.0'
+    
+    // Circle ImageView
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
+    
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    
+    // Room components
+    def room_version = "2.6.1"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    
+    // ViewModel and LiveData
+    def lifecycle_version = "2.7.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
+    
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+    
+    // Hilt for dependency injection
+    def hilt_version = "2.50"
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    annotationProcessor "com.google.dagger:hilt-android-compiler:$hilt_version"
+} 

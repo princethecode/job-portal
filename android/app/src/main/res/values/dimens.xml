@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Margin and padding dimensions -->
+    <dimen name="spacing_xxsmall">2dp</dimen>
+    <dimen name="spacing_xsmall">4dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_xlarge">32dp</dimen>
+    <dimen name="spacing_xxlarge">48dp</dimen>
+    <dimen name="spacing_xxxlarge">64dp</dimen>
+
+    <!-- Text size dimensions -->
+    <dimen name="text_size_micro">12sp</dimen>
+    <dimen name="text_size_small">14sp</dimen>
+    <dimen name="text_size_medium">16sp</dimen>
+    <dimen name="text_size_large">18sp</dimen>
+    <dimen name="text_size_xlarge">20sp</dimen>
+    <dimen name="text_size_xxlarge">24sp</dimen>
+    <dimen name="text_size_headline">28sp</dimen>
+    <dimen name="text_size_display">34sp</dimen>
+
+    <!-- Corner radius dimensions -->
+    <dimen name="corner_radius_small">4dp</dimen>
+    <dimen name="corner_radius_medium">8dp</dimen>
+    <dimen name="corner_radius_large">12dp</dimen>
+    <dimen name="corner_radius_xlarge">16dp</dimen>
+    <dimen name="corner_radius_circle">1000dp</dimen>
+
+    <!-- Elevation dimensions -->
+    <dimen name="elevation_none">0dp</dimen>
+    <dimen name="elevation_xsmall">1dp</dimen>
+    <dimen name="elevation_small">2dp</dimen>
+    <dimen name="elevation_medium">4dp</dimen>
+    <dimen name="elevation_large">8dp</dimen>
+    <dimen name="elevation_xlarge">16dp</dimen>
+
+    <!-- Border dimensions -->
+    <dimen name="border_width_small">0.5dp</dimen>
+    <dimen name="border_width_medium">1dp</dimen>
+    <dimen name="border_width_large">2dp</dimen>
+
+    <!-- Component specific dimensions -->
+    <dimen name="toolbar_height">56dp</dimen>
+    <dimen name="bottom_navigation_height">56dp</dimen>
+    <dimen name="button_height">48dp</dimen>
+    <dimen name="button_min_width">88dp</dimen>
+    <dimen name="fab_size">56dp</dimen>
+    <dimen name="mini_fab_size">40dp</dimen>
+    <dimen name="avatar_size_small">32dp</dimen>
+    <dimen name="avatar_size_medium">40dp</dimen>
+    <dimen name="avatar_size_large">56dp</dimen>
+    <dimen name="avatar_size_xlarge">72dp</dimen>
+    <dimen name="divider_height">1dp</dimen>
+    <dimen name="card_margin">8dp</dimen>
+    <dimen name="card_elevation">2dp</dimen>
+    <dimen name="card_corner_radius">8dp</dimen>
+    <dimen name="progress_bar_size">48dp</dimen>
+    <dimen name="chip_height">32dp</dimen>
+
+    <!-- Input fields dimensions -->
+    <dimen name="input_field_height">56dp</dimen>
+    <dimen name="input_field_padding">16dp</dimen>
+    <dimen name="input_field_icon_size">24dp</dimen>
+    <dimen name="input_field_padding_start_with_icon">56dp</dimen>
+
+    <!-- Icon dimensions -->
+    <dimen name="icon_size_small">16dp</dimen>
+    <dimen name="icon_size_medium">24dp</dimen>
+    <dimen name="icon_size_large">32dp</dimen>
+    <dimen name="icon_size_xlarge">48dp</dimen>
+
+    <!-- List item dimensions -->
+    <dimen name="list_item_height_small">48dp</dimen>
+    <dimen name="list_item_height_medium">64dp</dimen>
+    <dimen name="list_item_height_large">80dp</dimen>
+    <dimen name="list_item_height_xlarge">96dp</dimen>
+    <dimen name="list_item_horizontal_margin">16dp</dimen>
+    <dimen name="list_item_vertical_margin">8dp</dimen>
+
+    <!-- Job card dimensions -->
+    <dimen name="job_card_height">160dp</dimen>
+    <dimen name="job_image_width">80dp</dimen>
+    <dimen name="job_image_height">80dp</dimen>
+
+    <!-- Badge dimensions -->
+    <dimen name="badge_height">24dp</dimen>
+    <dimen name="badge_horizontal_padding">12dp</dimen>
+    <dimen name="badge_text_size">12sp</dimen>
+
+    <!-- Screen specific dimensions -->
+    <dimen name="profile_header_height">200dp</dimen>
+    <dimen name="job_detail_header_height">240dp</dimen>
+    <dimen name="search_bar_height">48dp</dimen>
+    <dimen name="filter_panel_height">56dp</dimen>
+</resources> 

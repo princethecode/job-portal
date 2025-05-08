@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
+class Job extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'title',
+        'description',
+        'company',
+        'location',
+        'job_type',
+        'category',
+        'salary',
+        'posting_date',
+        'expiry_date',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'posting_date' => 'date',
+        'expiry_date' => 'date',
+        'salary' => 'decimal:2',
+        'is_active' => 'boolean',
+    ];
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
+    }
+} 
