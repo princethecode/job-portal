@@ -6,11 +6,12 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\JobController;
 use App\Http\Controllers\API\ApplicationController;
 use App\Http\Controllers\API\NotificationController;
-use App\Http\Controllers\API\ProfileController;
+use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\ContactsController;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| API Routes    
 |--------------------------------------------------------------------------
 |
 | Here is where you can register API routes for your application. These
@@ -32,18 +33,27 @@ Route::post('/jobs', [JobController::class, 'store']);
 Route::put('/jobs/{id}', [JobController::class, 'update']);
 Route::delete('/jobs/{id}', [JobController::class, 'destroy']);
 
-// Applications
-Route::get('/applications', [ApplicationController::class, 'index']);
-Route::get('/applications/{id}', [ApplicationController::class, 'show']);
-Route::post('/jobs/{id}/apply', [ApplicationController::class, 'apply']);
-
-// Notifications
-Route::get('/notifications', [NotificationController::class, 'index']);
-Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
-
-// Profile
-Route::get('/user', [ProfileController::class, 'show']);
-Route::put('/profile', [ProfileController::class, 'update']);
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+    // Applications
+    Route::get('/applications', [ApplicationController::class, 'index']);
+    Route::get('/applications/{id}', [ApplicationController::class, 'show']);
+    Route::post('/jobs/{id}/apply', [ApplicationController::class, 'apply']);
+    Route::get('/user/applied-jobs', [ApplicationController::class, 'userAppliedJobs']);
+    
+    // Profile
+    Route::get('/user', [UserController::class, 'profile']);
+    Route::put('/profile', [UserController::class, 'updateProfile']);
+    Route::post('/profile', [UserController::class, 'updateProfile']);
+    Route::post('/change-password', [UserController::class, 'changePassword']);
+    
+    // Contacts
+    Route::post('/contacts/upload', [ContactsController::class, 'upload']);
+    
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+});
 
 // Default user route (sanctum)
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

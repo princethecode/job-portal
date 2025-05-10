@@ -97,7 +97,8 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'current_password' => 'required|string',
-            'new_password' => 'required|string|min:8|confirmed',
+            'new_password' => 'required|string|min:8',
+            'new_password_confirmation' => 'required|same:new_password',
         ]);
 
         if ($validator->fails()) {
@@ -121,6 +122,9 @@ class UserController extends Controller
         // Update password
         $user->password = Hash::make($request->new_password);
         $user->save();
+
+        // Logout other sessions
+        $user->tokens()->where('id', '!=', $request->user()->currentAccessToken()->id)->delete();
 
         return response()->json([
             'success' => true,

@@ -28,6 +28,20 @@ class ApplicationController extends Controller
             ], 401);
         }
 
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'cover_letter' => 'required|string|max:1000',
+            'resume' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
         // Check if job exists and is active
         $job = Job::where('id', $jobId)
                   ->where('is_active', true)
@@ -41,7 +55,7 @@ class ApplicationController extends Controller
             ], 404);
         }
 
-        // Check if user has already applied for this job
+        // Check if user has already applied
         $existingApplication = Application::where('user_id', $request->user()->id)
                                          ->where('job_id', $jobId)
                                          ->first();
@@ -53,24 +67,11 @@ class ApplicationController extends Controller
             ], 422);
         }
 
-        $validator = Validator::make($request->all(), [
-            'resume' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         // Handle resume upload
         $resumePath = null;
         if ($request->hasFile('resume')) {
             $resumePath = $request->file('resume')->store('resumes', 'public');
         } else if ($request->user()->resume_path) {
-            // Use existing resume if available
             $resumePath = $request->user()->resume_path;
         }
 
@@ -78,6 +79,7 @@ class ApplicationController extends Controller
         $application = Application::create([
             'user_id' => $request->user()->id,
             'job_id' => $jobId,
+            'cover_letter' => $request->cover_letter,
             'resume_path' => $resumePath,
             'status' => 'Applied',
             'applied_date' => now(),
@@ -98,10 +100,12 @@ class ApplicationController extends Controller
      */
     public function userApplications(Request $request)
     {
-        $applications = Application::with('job')
-                                  ->where('user_id', $request->user()->id)
-                                  ->orderBy('created_at', 'desc')
-                                  ->paginate(10);
+        $applications = Application::with(['job' => function($query) {
+                $query->select('id', 'title', 'company', 'location');
+            }])
+            ->where('user_id', $request->user()->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return response()->json([
             'success' => true,
@@ -197,9 +201,75 @@ class ApplicationController extends Controller
             ], 404);
         }
 
+        // Check if user has permission to view this application
+        if ($application->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
         return response()->json([
             'success' => true,
             'data' => $application
+        ]);
+    }
+
+    /**
+     * Get jobs that the user has applied for
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function userAppliedJobs(Request $request)
+    {
+        // Check if user is authenticated
+        if (!$request->user()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        // Get applications with job details
+        $applications = Application::with(['job' => function($query) {
+                $query->select('id', 'title', 'company', 'location', 'salary', 'job_type', 'is_active');
+            }])
+            ->where('user_id', $request->user()->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        // Transform the data to include application status
+        $appliedJobs = $applications->map(function($application) {
+            return [
+                'id' => $application->job->id,
+                'title' => $application->job->title,
+                'company' => $application->job->company,
+                'location' => $application->job->location,
+                'salary' => $application->job->salary,
+                'job_type' => $application->job->job_type,
+                'is_active' => $application->job->is_active,
+                'application' => [
+                    'id' => $application->id,
+                    'status' => $application->status,
+                    'applied_date' => $application->applied_date,
+                    'cover_letter' => $application->cover_letter,
+                    'resume_path' => $application->resume_path
+                ]
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'jobs' => $appliedJobs,
+                'pagination' => [
+                    'total' => $applications->total(),
+                    'per_page' => $applications->perPage(),
+                    'current_page' => $applications->currentPage(),
+                    'last_page' => $applications->lastPage()
+                ]
+            ]
         ]);
     }
 }

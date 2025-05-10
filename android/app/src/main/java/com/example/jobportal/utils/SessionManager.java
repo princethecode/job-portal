@@ -3,11 +3,17 @@ package com.example.jobportal.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.util.Log;
+
+import com.example.jobportal.models.User;
+import com.google.gson.Gson;
 
 /**
  * Comprehensive session manager to handle user authentication, session state, and user data
  */
 public class SessionManager {
+    private static final String TAG = "SessionManager";
+    
     // Shared Preferences
     private final SharedPreferences pref;
     private final Editor editor;
@@ -27,6 +33,7 @@ public class SessionManager {
     private static final String KEY_NAME = "name";
     private static final String KEY_EMAIL = "email";
     private static final String KEY_TOKEN = "token";
+    private static final String KEY_USER_OBJECT = "user_object"; // Key for storing the serialized User object
     
     // Singleton instance
     private static volatile SessionManager instance;
@@ -74,6 +81,66 @@ public class SessionManager {
         editor.putString(KEY_EMAIL, email);
         editor.putString(KEY_TOKEN, token);
         editor.apply();
+    }
+    
+    /**
+     * Save the full User object
+     * @param user User object to save
+     */
+    public void saveUser(User user) {
+        if (user == null) {
+            Log.e(TAG, "Cannot save null user");
+            return;
+        }
+        
+        try {
+            Gson gson = new Gson();
+            String userJson = gson.toJson(user);
+            editor.putString(KEY_USER_OBJECT, userJson);
+            
+            // Also update individual fields for backward compatibility
+            if (user.getId() != null) {
+                try {
+                    editor.putInt(KEY_USER_ID, Integer.parseInt(user.getId()));
+                } catch (NumberFormatException e) {
+                    Log.e(TAG, "Could not parse user ID as integer: " + user.getId());
+                }
+            }
+            editor.putString(KEY_NAME, user.getFullName());
+            editor.putString(KEY_EMAIL, user.getEmail());
+            
+            editor.apply();
+            Log.d(TAG, "User saved to preferences");
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving user object: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Get the saved User object
+     * @return User object or null if not found
+     */
+    public User getUser() {
+        String userJson = pref.getString(KEY_USER_OBJECT, null);
+        if (userJson == null) {
+            // Try to construct a basic User from individual fields
+            if (getUserId() != -1 && getName() != null && getEmail() != null) {
+                User user = new User();
+                user.setId(String.valueOf(getUserId()));
+                user.setFullName(getName());
+                user.setEmail(getEmail());
+                return user;
+            }
+            return null;
+        }
+        
+        try {
+            Gson gson = new Gson();
+            return gson.fromJson(userJson, User.class);
+        } catch (Exception e) {
+            Log.e(TAG, "Error retrieving user object: " + e.getMessage());
+            return null;
+        }
     }
     
     /**
@@ -151,6 +218,7 @@ public class SessionManager {
         editor.remove(KEY_USER_ID);
         editor.remove(KEY_NAME);
         editor.remove(KEY_EMAIL);
+        editor.remove(KEY_USER_OBJECT);
         editor.apply();
     }
     

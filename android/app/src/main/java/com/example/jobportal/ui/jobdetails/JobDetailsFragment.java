@@ -1,5 +1,6 @@
 package com.example.jobportal.ui.jobdetails;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,10 +15,13 @@ import androidx.fragment.app.Fragment;
 import com.example.jobportal.R;
 // Use only the data.model.Job class
 //import com.example.jobportal.data.model.Job;
+import com.example.jobportal.auth.LoginActivity;
 import com.example.jobportal.network.ApiCallback;
 import com.example.jobportal.network.ApiClient;
 import com.example.jobportal.network.ApiResponse;
 import com.example.jobportal.models.Job;
+import com.example.jobportal.models.Application;
+import com.example.jobportal.utils.SessionManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -142,30 +146,53 @@ public class JobDetailsFragment extends Fragment {
     }
     
     private void applyForJob() {
+        // Check if user is logged in
+        SessionManager sessionManager = SessionManager.getInstance(requireContext());
+        if (!sessionManager.isLoggedIn()) {
+            Toast.makeText(requireContext(), 
+                "Please login to apply for jobs", Toast.LENGTH_LONG).show();
+            // Navigate to login screen
+            startActivity(new Intent(requireContext(), LoginActivity.class));
+            return;
+        }
+
         // Show loading state
         applyButton.setEnabled(false);
         applyButton.setText("Applying...");
         
-        // Create API client
-        ApiClient apiClient = new ApiClient(requireContext());
+        // Create API client with context
+        ApiClient apiClient = ApiClient.getInstance(requireContext());
         
         // Make API call to apply for the job
-        apiClient.applyForJob(Integer.parseInt(jobId), new ApiCallback<ApiResponse<Void>>() {
+        apiClient.applyForJob(Integer.parseInt(jobId), new ApiCallback<ApiResponse<Application>>() {
             @Override
-            public void onSuccess(ApiResponse<Void> response) {
-                // Update UI on success
-                applyButton.setText("Applied");
-                Toast.makeText(requireContext(), 
-                        "Application submitted successfully", Toast.LENGTH_SHORT).show();
+            public void onSuccess(ApiResponse<Application> response) {
+                if (isAdded()) {  // Check if fragment is still attached
+                    // Update UI on success
+                    applyButton.setText("Applied");
+                    applyButton.setEnabled(false);
+                    Toast.makeText(requireContext(), 
+                            "Application submitted successfully", Toast.LENGTH_SHORT).show();
+                }
             }
         
             @Override
             public void onError(String errorMessage) {
-                // Re-enable button on error
-                applyButton.setEnabled(true);
-                applyButton.setText("Apply Now");
-                Toast.makeText(requireContext(), 
-                        "Failed to apply: " + errorMessage, Toast.LENGTH_SHORT).show();
+                if (isAdded()) {  // Check if fragment is still attached
+                    // Re-enable button on error
+                    applyButton.setEnabled(true);
+                    applyButton.setText("Apply Now");
+                    
+                    if (errorMessage.contains("not logged in")) {
+                        // Clear session and redirect to login
+                        sessionManager.logout();
+                        startActivity(new Intent(requireContext(), LoginActivity.class));
+                        requireActivity().finish();
+                    } else {
+                        Toast.makeText(requireContext(), 
+                                "Failed to apply: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
     }

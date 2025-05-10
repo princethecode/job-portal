@@ -1,11 +1,14 @@
 package com.example.jobportal.network;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.example.jobportal.BuildConfig;
 import com.example.jobportal.models.User;
 import com.example.jobportal.models.LoginResponse;
+import com.example.jobportal.models.Application;
 import com.example.jobportal.utils.SessionManager;
 import java.io.IOException;
 
@@ -25,6 +28,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class ApiClient {
     private static Retrofit retrofit = null;
@@ -130,27 +135,97 @@ public class ApiClient {
     public void register(String fullName, String email, String mobile, String password, 
                         File resumeFile, final ApiCallback<ApiResponse<User>> callback) {
         
-        Map<String, String> registerData = new HashMap<>();
-        registerData.put("name", fullName);
-        registerData.put("email", email);
-        registerData.put("mobile", mobile);
-        registerData.put("password", password);
-        registerData.put("password_confirmation", password);
-        
         // Create multipart request if resume file is provided
         if (resumeFile != null) {
-            RequestBody requestFile = RequestBody.create(MediaType.parse("application/pdf"), resumeFile);
-            MultipartBody.Part resumePart = MultipartBody.Part.createFormData("resume", resumeFile.getName(), requestFile);
+            // Create multipart form builder
+            MultipartBody.Builder builder = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM);
             
-            RequestBody fullNameBody = RequestBody.create(MediaType.parse("text/plain"), fullName);
-            RequestBody emailBody = RequestBody.create(MediaType.parse("text/plain"), email);
-            RequestBody mobileBody = RequestBody.create(MediaType.parse("text/plain"), mobile);
-            RequestBody passwordBody = RequestBody.create(MediaType.parse("text/plain"), password);
-            RequestBody passwordConfirmationBody = RequestBody.create(MediaType.parse("text/plain"), password);
+            // Add text fields
+            builder.addFormDataPart("name", fullName);
+            builder.addFormDataPart("email", email);
+            builder.addFormDataPart("mobile", mobile);
+            builder.addFormDataPart("password", password);
+            builder.addFormDataPart("password_confirmation", password);
             
-            Call<ApiResponse<User>> call = apiService.uploadResume(resumePart);
-            executeCall(call, callback);
+            // Add resume file with correct field name
+            RequestBody resumeBody = RequestBody.create(MediaType.parse("application/pdf"), resumeFile);
+            builder.addFormDataPart("resume", resumeFile.getName(), resumeBody);
+            
+            RequestBody requestBody = builder.build();
+            
+            // Create a request with the multipart body
+            Request request = new Request.Builder()
+                    .url(BuildConfig.API_BASE_URL + "register")
+                    .header("Accept", "application/json")
+                    .post(requestBody)
+                    .build();
+            
+            Log.d("ApiClient", "Registering with resume file: " + resumeFile.getName());
+            
+            // Execute the request with proper timeouts
+            OkHttpClient httpClient = new OkHttpClient.Builder()
+                .connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .writeTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .build();
+                
+            httpClient.newCall(request).enqueue(new okhttp3.Callback() {
+                @Override
+                public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                    String responseBody = "";
+                    if (response.body() != null) {
+                        responseBody = response.body().string();
+                    }
+                    
+                    Log.d("ApiClient", "Registration response code: " + response.code());
+                    Log.d("ApiClient", "Response body: " + responseBody);
+                    
+                    if (response.isSuccessful()) {
+                        try {
+                            Gson gson = new Gson();
+                            ApiResponse<User> apiResponse = gson.fromJson(responseBody, 
+                                    new TypeToken<ApiResponse<User>>(){}.getType());
+                            
+                            if (apiResponse != null && apiResponse.isSuccess()) {
+                                Handler mainHandler = new Handler(Looper.getMainLooper());
+                                mainHandler.post(() -> callback.onSuccess(apiResponse));
+                            } else {
+                                Handler mainHandler = new Handler(Looper.getMainLooper());
+                                mainHandler.post(() -> callback.onError(apiResponse != null ? 
+                                    apiResponse.getMessage() : "Registration failed"));
+                            }
+                        } catch (Exception e) {
+                            Log.e("ApiClient", "Error parsing response", e);
+                            Handler mainHandler = new Handler(Looper.getMainLooper());
+                            mainHandler.post(() -> callback.onError("Error parsing response: " + e.getMessage()));
+                        }
+                    } else {
+                        Handler mainHandler = new Handler(Looper.getMainLooper());
+                        if (response.code() == 503) {
+                            mainHandler.post(() -> callback.onError("Server temporarily unavailable. Please try again later or upload a smaller file."));
+                        } else {
+                            mainHandler.post(() -> callback.onError("Registration failed: " + response.message()));
+                        }
+                    }
+                }
+                
+                @Override
+                public void onFailure(okhttp3.Call call, IOException e) {
+                    Log.e("ApiClient", "Registration network error", e);
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
+                }
+            });
         } else {
+            // For registration without resume file
+            Map<String, String> registerData = new HashMap<>();
+            registerData.put("name", fullName);
+            registerData.put("email", email);
+            registerData.put("mobile", mobile);
+            registerData.put("password", password);
+            registerData.put("password_confirmation", password);
+            
             Call<ApiResponse<User>> call = apiService.register(registerData);
             executeCall(call, callback);
         }
@@ -165,33 +240,207 @@ public class ApiClient {
     }
 
     public void getUserProfile(final ApiCallback<ApiResponse<User>> callback) {
-        Call<ApiResponse<User>> call = apiService.getUserProfile();
-        executeCall(call, callback);
+        Call<User> call = apiService.getUserProfile();
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                Log.d("ApiClient", "User profile API response code: " + response.code());
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body();
+                    
+                    // Log full user data
+                    Log.d("ApiClient", "User data received: ID=" + user.getId() + 
+                          ", Name=" + user.getFullName() + 
+                          ", Email=" + user.getEmail() + 
+                          ", Mobile=" + user.getPhone());
+                    
+                    // Create ApiResponse with the user data
+                    ApiResponse<User> apiResponse = new ApiResponse<>(true, "Profile retrieved successfully", user);
+                    callback.onSuccess(apiResponse);
+                } else {
+                    Log.e("ApiClient", "Failed to get user profile. Response code: " + response.code());
+                    callback.onError("Failed to retrieve profile. Please try again.");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e("ApiClient", "Failed to get user profile: " + t.getMessage(), t);
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
     }
 
+    /**
+     * Update user profile with optional skills, experience, and resume
+     * @param user User object with updated profile data
+     * @param skills User's skills (can be null)
+     * @param experience User's experience (can be null)
+     * @param resumeFile Resume file to upload (can be null)
+     * @param callback Callback to handle the response
+     */
 
-    public void updateUserProfile(User user, final ApiCallback<ApiResponse<User>> callback) {
-        Map<String, String> profileData = new HashMap<>();
-        profileData.put("name", user.getFullName());
-        profileData.put("email", user.getEmail());
-        profileData.put("mobile", user.getPhone());
+    public void updateUserProfile(User user, String skills, String experience,
+                                 File resumeFile, final ApiCallback<ApiResponse<User>> callback) {
+        // Check if user is logged in
+        if (!sessionManager.isLoggedIn()) {
+            callback.onError("User not logged in");
+            return;
+        }
         
-        Call<ApiResponse<User>> call = apiService.updateUserProfile(profileData);
-        executeCall(call, callback);
+        if (resumeFile != null) {
+            // For multipart requests (with file upload)
+            MultipartBody.Builder builder = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM);
+            
+            // Add text fields
+            builder.addFormDataPart("name", user.getFullName() != null ? user.getFullName() : "");
+            builder.addFormDataPart("email", user.getEmail() != null ? user.getEmail() : "");
+            builder.addFormDataPart("mobile", user.getPhone() != null ? user.getPhone() : "");
+            
+            if (skills != null) {
+                builder.addFormDataPart("skills", skills);
+            }
+            
+            if (experience != null) {
+                builder.addFormDataPart("experience", experience);
+            }
+            
+            // Add resume file
+            RequestBody resumeBody = RequestBody.create(MediaType.parse("application/pdf"), resumeFile);
+            builder.addFormDataPart("resume", resumeFile.getName(), resumeBody);
+            
+            RequestBody requestBody = builder.build();
+            
+            // Create a request with the multipart body
+            Request request = new Request.Builder()
+                    .url(BuildConfig.API_BASE_URL + "profile")
+                    .header("Authorization", "Bearer " + sessionManager.getToken())
+                    .header("Accept", "application/json")
+                    .post(requestBody)
+                    .build();
+            
+            Log.d("ApiClient", "Updating profile with data including resume file: " + resumeFile.getName());
+            
+            // Execute the request manually
+            OkHttpClient httpClient = new OkHttpClient.Builder()
+                .connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .writeTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .build();
+            httpClient.newCall(request).enqueue(new okhttp3.Callback() {
+                @Override
+                public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                    String responseBody = response.body().string();
+                    Log.d("ApiClient", "Profile update response code: " + response.code());
+                    Log.d("ApiClient", "Response body: " + responseBody);
+                    
+                    if (response.isSuccessful()) {
+                        try {
+                            Gson gson = new Gson();
+                            ApiResponse<User> apiResponse = gson.fromJson(responseBody, 
+                                    new TypeToken<ApiResponse<User>>(){}.getType());
+                            
+                            if (apiResponse.isSuccess()) {
+                                Handler mainHandler = new Handler(Looper.getMainLooper());
+                                mainHandler.post(() -> callback.onSuccess(apiResponse));
+                            } else {
+                                Handler mainHandler = new Handler(Looper.getMainLooper());
+                                mainHandler.post(() -> callback.onError(apiResponse.getMessage()));
+                            }
+                        } catch (Exception e) {
+                            Log.e("ApiClient", "Error parsing response", e);
+                            Handler mainHandler = new Handler(Looper.getMainLooper());
+                            mainHandler.post(() -> callback.onError("Error parsing response"));
+                        }
+                    } else {
+                        Handler mainHandler = new Handler(Looper.getMainLooper());
+                        if (response.code() == 503) {
+                            mainHandler.post(() -> callback.onError("Server temporarily unavailable. Please try again later or upload a smaller file."));
+                        } else {
+                            mainHandler.post(() -> callback.onError("Profile update failed: " + response.message()));
+                        }
+                    }
+                }
+                
+                @Override
+                public void onFailure(okhttp3.Call call, IOException e) {
+                    Log.e("ApiClient", "Profile update network error", e);
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
+                }
+            });
+            
+        } else {
+            // For simple JSON requests (no file upload)
+            Map<String, String> profileData = new HashMap<>();
+            profileData.put("name", user.getFullName());
+            profileData.put("email", user.getEmail());
+            profileData.put("mobile", user.getPhone());
+            
+            if (skills != null) {
+                profileData.put("skills", skills);
+            }
+            
+            if (experience != null) {
+                profileData.put("experience", experience);
+            }
+            
+            Log.d("ApiClient", "Updating profile with data: " + profileData);
+            
+            Call<ApiResponse<User>> call = apiService.updateUserProfile(profileData);
+            call.enqueue(new Callback<ApiResponse<User>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                    Log.d("ApiClient", "Profile update response code: " + response.code());
+                    
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse<User> apiResponse = response.body();
+                        Log.d("ApiClient", "Profile update success: " + apiResponse.isSuccess() + ", message: " + apiResponse.getMessage());
+                        
+                        if (apiResponse.isSuccess()) {
+                            callback.onSuccess(apiResponse);
+                        } else {
+                            callback.onError(apiResponse.getMessage());
+                        }
+                    } else {
+                        try {
+                            String errorBody = response.errorBody() != null ? 
+                                response.errorBody().string() : "Unknown error";
+                            Log.e("ApiClient", "Profile update failed with error: " + errorBody);
+                            callback.onError("Profile update failed: " + errorBody);
+                        } catch (IOException e) {
+                            Log.e("ApiClient", "Error reading response body", e);
+                            callback.onError("Request failed: " + response.code());
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                    Log.e("ApiClient", "Profile update network error", t);
+                    callback.onError("Network error: " + t.getMessage());
+                }
+            });
+        }
+    }
+    
+    /**
+     * Simple version of updateUserProfile for backward compatibility
+     */
+    public void updateUserProfile(User user, final ApiCallback<ApiResponse<User>> callback) {
+        updateUserProfile(user, null, null, null, callback);
     }
 
     public void changePassword(String currentPassword, String newPassword, final ApiCallback<ApiResponse<Void>> callback) {
-        // This method is not in the ApiService yet
         Map<String, String> passwordData = new HashMap<>();
         passwordData.put("current_password", currentPassword);
         passwordData.put("new_password", newPassword);
+        passwordData.put("new_password_confirmation", newPassword);
         
-        // Add this to ApiService in the future
-         Call<ApiResponse<Void>> call = apiService.changePassword(passwordData);
-        // executeCall(call, callback);
-        
-        // For now, show an error
-        callback.onError("Password change functionality not implemented yet");
+        Call<ApiResponse<Void>> call = apiService.changePassword(passwordData);
+        executeCall(call, callback);
     }
 
     public void logout(final ApiCallback<ApiResponse<Void>> callback) {
@@ -202,6 +451,42 @@ public class ApiClient {
         clearAuthToken();
         // Fix: Use the correct constructor for ApiResponse<Void>
         callback.onSuccess(new ApiResponse<Void>(true, "Logged out successfully", null));
+    }
+
+    /**
+     * Get jobs that the user has applied for
+     * @param callback Callback to handle the response
+     */
+    public void getUserAppliedJobs(final ApiCallback<ApiResponse<Map<String, Object>>> callback) {
+        // Check if user is logged in
+        if (!sessionManager.isLoggedIn()) {
+            callback.onError("User not logged in");
+            return;
+        }
+
+        Call<ApiResponse<Map<String, Object>>> call = apiService.getUserAppliedJobs();
+        call.enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Map<String, Object>>> call, 
+                               Response<ApiResponse<Map<String, Object>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                } else {
+                    try {
+                        String errorBody = response.errorBody() != null ? 
+                            response.errorBody().string() : "Unknown error";
+                        callback.onError("Failed to load applied jobs: " + errorBody);
+                    } catch (IOException e) {
+                        callback.onError("Failed to load applied jobs: " + response.code());
+                    }
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
     }
 
     // Helper method to execute API calls
@@ -233,33 +518,33 @@ public class ApiClient {
      * @param jobId The ID of the job to apply for
      * @param callback Callback to handle the response
      */
-    public void applyForJob(int jobId, ApiCallback<ApiResponse<Void>> callback) {
+    public void applyForJob(int jobId, ApiCallback<ApiResponse<Application>> callback) {
+        // Check if user is logged in
+        if (!sessionManager.isLoggedIn()) {
+            callback.onError("User not logged in");
+            return;
+        }
+
         // Create default cover letter
         String coverLetter = "I am interested in this position.";
         
         // Convert to RequestBody as required by the API
         RequestBody coverLetterBody = RequestBody.create(MediaType.parse("text/plain"), coverLetter);
         
-        // Check if token exists and log its status
-        if (!sessionManager.hasToken()) {
-            // Force refresh the session manager to ensure we're getting the latest state
-            sessionManager = SessionManager.getInstance(context);
-            Log.d("JobPortal", "User logged in status: " + sessionManager.isLoggedIn());
-            Log.d("JobPortal", "User token: " + sessionManager.getToken());
-            // Double-check after refresh
-            if (!sessionManager.hasToken()) {
-                callback.onError("You must be logged in to apply for jobs");
-                return;
-            }
+        // Get the token
+        String token = sessionManager.getToken();
+        if (token == null || token.isEmpty()) {
+            callback.onError("Authentication token is missing");
+            return;
         }
         
         // Create a new OkHttpClient with the token explicitly added
         OkHttpClient client = new OkHttpClient.Builder()
             .addInterceptor(chain -> {
-                String token = sessionManager.getToken();
                 Request original = chain.request();
                 Request request = original.newBuilder()
                     .header("Authorization", "Bearer " + token)
+                    .header("Accept", "application/json")
                     .method(original.method(), original.body())
                     .build();
                 return chain.proceed(request);
@@ -277,26 +562,19 @@ public class ApiClient {
         ApiService authenticatedApiService = authenticatedRetrofit.create(ApiService.class);
         
         // Call the API with the authenticated service
-        Call<ApiResponse<com.example.jobportal.models.Application>> call = authenticatedApiService.applyForJob(
+        Call<ApiResponse<Application>> call = authenticatedApiService.applyForJob(
             jobId, 
             coverLetterBody,
             null  // Resume file is null for simplicity
         );
         
-        call.enqueue(new Callback<ApiResponse<com.example.jobportal.models.Application>>() {
+        call.enqueue(new Callback<ApiResponse<Application>>() {
             @Override
-            public void onResponse(Call<ApiResponse<com.example.jobportal.models.Application>> call, 
-                                 Response<ApiResponse<com.example.jobportal.models.Application>> response) {
+            public void onResponse(Call<ApiResponse<Application>> call, Response<ApiResponse<Application>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<com.example.jobportal.models.Application> apiResponse = response.body();
+                    ApiResponse<Application> apiResponse = response.body();
                     if (apiResponse.isSuccess()) {
-                        // Convert to the expected void response
-                        ApiResponse<Void> voidResponse = new ApiResponse<>(
-                            apiResponse.isSuccess(),
-                            apiResponse.getMessage(),
-                            null
-                        );
-                        callback.onSuccess(voidResponse);
+                        callback.onSuccess(apiResponse);
                     } else {
                         callback.onError(apiResponse.getMessage());
                     }
@@ -312,7 +590,7 @@ public class ApiClient {
             }
             
             @Override
-            public void onFailure(Call<ApiResponse<com.example.jobportal.models.Application>> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<Application>> call, Throwable t) {
                 callback.onError("Network error: " + t.getMessage());
             }
         });
@@ -333,6 +611,105 @@ public class ApiClient {
 
     public static String getAuthToken() {
         return sessionManager.getToken();
+    }
+
+    /**
+     * Upload contacts to the server
+     * @param contactsFile MultipartBody.Part containing the contacts CSV file
+     * @param callback Callback to handle the response
+     */
+    public void uploadContacts(MultipartBody.Part contactsFile, final ApiCallback<ApiResponse<Map<String, Object>>> callback) {
+        // Check if user is logged in
+        if (!sessionManager.isLoggedIn()) {
+            callback.onError("User not logged in");
+            return;
+        }
+
+        Log.d("ApiClient", "Uploading contacts file: " + contactsFile.headers().toString());
+        
+        // Create a multipart request body
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addPart(contactsFile)
+                .build();
+        
+        // Build request with proper authentication
+        Request request = new Request.Builder()
+                .url(BuildConfig.API_BASE_URL + "contacts/upload")
+                .header("Authorization", "Bearer " + sessionManager.getToken())
+                .header("Accept", "application/json")
+                .post(requestBody)
+                .build();
+        
+        // Execute the request manually with OkHttp
+        OkHttpClient httpClient = new OkHttpClient.Builder()
+                .connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .writeTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .build();
+                
+        httpClient.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                // Read response body
+                String responseBody = "";
+                if (response.body() != null) {
+                    responseBody = response.body().string();
+                }
+                
+                Log.d("ApiClient", "Contacts upload response code: " + response.code());
+                
+                // Check if response is HTML (likely a login page) instead of JSON
+                boolean isHtmlResponse = responseBody.startsWith("<!DOCTYPE html>") || 
+                                         responseBody.startsWith("<html") ||
+                                         response.header("Content-Type", "").contains("text/html");
+                
+                if (isHtmlResponse) {
+                    Log.e("ApiClient", "Received HTML response instead of JSON. Session may have expired.");
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(() -> callback.onError("Session expired. Please login again."));
+                    return;
+                }
+                
+                if (response.isSuccessful()) {
+                    try {
+                        // Try to parse as JSON
+                        Gson gson = new Gson();
+                        ApiResponse<Map<String, Object>> apiResponse = gson.fromJson(responseBody, 
+                                new TypeToken<ApiResponse<Map<String, Object>>>(){}.getType());
+                        
+                        if (apiResponse != null && apiResponse.isSuccess()) {
+                            Handler mainHandler = new Handler(Looper.getMainLooper());
+                            mainHandler.post(() -> callback.onSuccess(apiResponse));
+                        } else {
+                            String message = apiResponse != null ? apiResponse.getMessage() : "Unknown error";
+                            Handler mainHandler = new Handler(Looper.getMainLooper());
+                            mainHandler.post(() -> callback.onError(message));
+                        }
+                    } catch (Exception e) {
+                        Log.e("ApiClient", "Error parsing contacts upload response", e);
+                        Handler mainHandler = new Handler(Looper.getMainLooper());
+                        mainHandler.post(() -> callback.onError("Error parsing server response: " + e.getMessage()));
+                    }
+                } else if (response.code() == 401 || response.code() == 403) {
+                    Log.e("ApiClient", "Authentication error: " + response.code());
+                    // Session expired or unauthorized, try to log out
+                    sessionManager.logout();
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(() -> callback.onError("Session expired. Please login again."));
+                } else {
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(() -> callback.onError("Failed to upload contacts: " + response.message()));
+                }
+            }
+            
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+                Log.e("ApiClient", "Contacts upload network error", e);
+                Handler mainHandler = new Handler(Looper.getMainLooper());
+                mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
+            }
+        });
     }
 }
 

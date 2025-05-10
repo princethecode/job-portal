@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.util.Log;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -121,9 +122,12 @@ public class RegisterActivity extends AppCompatActivity {
             tilEmail.setError(null);
         }
 
-        // Validate mobile (optional)
+        // Validate mobile (required)
         String mobile = etMobile.getText().toString().trim();
-        if (!TextUtils.isEmpty(mobile) && !android.util.Patterns.PHONE.matcher(mobile).matches()) {
+        if (TextUtils.isEmpty(mobile)) {
+            tilMobile.setError("Mobile number is required");
+            isValid = false;
+        } else if (!android.util.Patterns.PHONE.matcher(mobile).matches()) {
             tilMobile.setError("Enter a valid mobile number");
             isValid = false;
         } else {
@@ -176,9 +180,33 @@ public class RegisterActivity extends AppCompatActivity {
                 String filePath = getFilePathFromUri(resumeUri);
                 if (filePath != null) {
                     resumeFile = new java.io.File(filePath);
+                    // Log file information for debugging
+                    Log.d("RegisterActivity", "Resume file selected: " + resumeFile.getName() + 
+                          ", size: " + (resumeFile.length() / 1024) + "KB");
+                    
+                    // Check file size again
+                    if (resumeFile.length() > 2 * 1024 * 1024) { // 2MB
+                        btnRegister.setEnabled(true);
+                        btnRegister.setText("Register");
+                        Toast.makeText(this, "Resume file is too large. Maximum allowed size is 2MB.", 
+                                      Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                } else {
+                    // If filePath is null, the file couldn't be processed properly
+                    btnRegister.setEnabled(true);
+                    btnRegister.setText("Register");
+                    Toast.makeText(this, "Failed to process resume file. Please try another file.", 
+                                  Toast.LENGTH_LONG).show();
+                    return;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.e("RegisterActivity", "Error preparing resume file", e);
+                btnRegister.setEnabled(true);
+                btnRegister.setText("Register");
+                Toast.makeText(this, "Error processing resume: " + e.getMessage(), 
+                              Toast.LENGTH_LONG).show();
+                return;
             }
         }
         
@@ -186,7 +214,6 @@ public class RegisterActivity extends AppCompatActivity {
         ApiClient apiClient = new ApiClient(this);
         
         // Call the API for registration with the correct parameters
-        // Remove the confirmPassword parameter to match the method signature
         apiClient.register(fullName, email, mobile, password, resumeFile, new ApiCallback<ApiResponse<User>>() {
             @Override
             public void onSuccess(ApiResponse<User> response) {
@@ -224,27 +251,42 @@ public class RegisterActivity extends AppCompatActivity {
 
     // Helper method to get file path from URI
     private String getFilePathFromUri(Uri uri) {
-        String filePath = null;
-        if ("content".equals(uri.getScheme())) {
-            String[] projection = { android.provider.MediaStore.Images.Media.DATA };
-            android.database.Cursor cursor = null;
-            try {
-                cursor = getContentResolver().query(uri, projection, null, null, null);
-                int column_index = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA);
-                if (cursor.moveToFirst()) {
-                    filePath = cursor.getString(column_index);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
+        try {
+            // Check file size first - max 2MB as per server validation
+            try (android.os.ParcelFileDescriptor fileDescriptor = getContentResolver().openFileDescriptor(uri, "r")) {
+                if (fileDescriptor != null) {
+                    long fileSize = fileDescriptor.getStatSize();
+                    if (fileSize > 2 * 1024 * 1024) { // 2MB limit
+                        Toast.makeText(this, "File size exceeds 2MB limit. Please select a smaller file.", Toast.LENGTH_LONG).show();
+                        return null;
+                    }
                 }
             }
-        } else if ("file".equals(uri.getScheme())) {
-            filePath = uri.getPath();
+            
+            // Create a temporary file to store the resume
+            java.io.File tempFile = java.io.File.createTempFile("resume_upload", ".pdf", getCacheDir());
+            tempFile.deleteOnExit();
+            
+            try (java.io.InputStream inputStream = getContentResolver().openInputStream(uri);
+                 java.io.OutputStream outputStream = new java.io.FileOutputStream(tempFile)) {
+                
+                if (inputStream == null) {
+                    throw new java.io.IOException("Failed to open input stream");
+                }
+                
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            }
+            
+            return tempFile.getAbsolutePath();
+        } catch (Exception e) {
+            Log.e("RegisterActivity", "Error handling file: " + e.getMessage(), e);
+            Toast.makeText(this, "Error processing resume file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return null;
         }
-        return filePath;
     }
 
     private String getFileNameFromUri(Uri uri) {

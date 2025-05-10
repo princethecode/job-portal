@@ -1,0 +1,66 @@
+[
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/fragment_jobs.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/fragment_jobs.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/fragment_applications.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/fragment_applications.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/activity_forgot_password.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/activity_forgot_password.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/fragment_search.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/fragment_search.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/fragment_home.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/fragment_home.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/fragment_profile.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/fragment_profile.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/activity_main.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/fragment_notifications.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/fragment_notifications.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/item_notification.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/item_notification.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/item_job.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/item_job.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/item_application.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/item_application.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/activity_login.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/activity_login.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/fragment_job_details.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/fragment_job_details.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/activity_register.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/activity_register.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/activity_change_password.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/activity_change_password.xml"
+    },
+    {
+        "merged": "com.example.jobportal.app-mergeDebugResources-68:/layout/activity_profile.xml",
+        "source": "com.example.jobportal.app-main-71:/layout/activity_profile.xml"
+    }
+]

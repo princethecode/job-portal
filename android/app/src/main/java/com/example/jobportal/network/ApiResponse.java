@@ -14,10 +14,10 @@ public class ApiResponse<T> {
 
     @SerializedName("access_token")
     private String accessToken;
-
+    
     @SerializedName("token_type")
     private String tokenType;
-
+    
     public ApiResponse(boolean success, String message, T data) {
         this.success = success;
         this.message = message;

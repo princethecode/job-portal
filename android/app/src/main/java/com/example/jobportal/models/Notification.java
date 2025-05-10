@@ -3,14 +3,14 @@ package com.example.jobportal.models;
 public class Notification {
     private String id;
     private String title;
-    private String message;
+    private String description;
     private String date;
     private boolean isRead;
 
-    public Notification(String id, String title, String message, String date, boolean isRead) {
+    public Notification(String id, String title, String description, String date, boolean isRead) {
         this.id = id;
         this.title = title;
-        this.message = message;
+        this.description = description;
         this.date = date;
         this.isRead = isRead;
     }
@@ -23,8 +23,13 @@ public class Notification {
         return title;
     }
 
+    public String getDescription() {
+        return description;
+    }
+    
+    // For backward compatibility
     public String getMessage() {
-        return message;
+        return description;
     }
 
     public String getDate() {

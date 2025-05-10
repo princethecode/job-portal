@@ -21,6 +21,8 @@ import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
+import okhttp3.MultipartBody;
+import okhttp3.ResponseBody;
 
 public interface ApiService {
     
@@ -35,7 +37,7 @@ public interface ApiService {
     Call<ApiResponse<Void>> forgotPassword(@Body Map<String, String> emailData);
     
     @GET("user")
-    Call<ApiResponse<User>> getUserProfile();
+    Call<User> getUserProfile();
     
     @PUT("profile")
     Call<ApiResponse<User>> updateUserProfile(@Body Map<String, String> profileData);
@@ -45,7 +47,14 @@ public interface ApiService {
     Call<ApiResponse<User>> uploadResume(
             @Part MultipartBody.Part resume
     );
-    
+
+    // Contact Upload Endpoint
+    @Multipart
+    @POST("contacts/upload")
+    Call<ApiResponse<Map<String, Object>>> uploadContacts(
+            @Part MultipartBody.Part contacts
+    );
+
     // Job endpoints
     // Add this if it doesn't exist or update if it does
     @GET("jobs")
@@ -69,12 +78,18 @@ public interface ApiService {
 
     @GET("applications")
     Call<ApiResponse<List<Application>>> getUserApplications();
+    
+    @GET("user/applied-jobs")
+    Call<ApiResponse<Map<String, Object>>> getUserAppliedJobs();
 
     @GET("applications/{id}")
     Call<ApiResponse<Application>> getApplicationDetails(@Path("id") int applicationId);
 
     @GET("notifications")
     Call<ApiResponse<List<Notification>>> getNotifications();
+    
+    @POST("notifications/{id}/read")
+    Call<ApiResponse<Void>> markNotificationAsRead(@Path("id") String notificationId);
     
     @POST("logout")
     Call<ApiResponse<Void>> logout();

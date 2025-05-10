@@ -8,10 +8,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.jobportal.R;
 import com.example.jobportal.models.Application;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.ApplicationViewHolder> {
-    private List<Application> applications;
+    private List<Application> applications = new ArrayList<>();
     private OnApplicationClickListener listener;
 
     public interface OnApplicationClickListener {
@@ -37,6 +38,19 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
         holder.companyTextView.setText(application.getCompany());
         holder.statusTextView.setText(application.getStatus());
         holder.dateTextView.setText(application.getApplicationDate());
+        
+        // Set status background based on status
+        if (application.isAccepted()) {
+            holder.statusTextView.setBackgroundResource(R.drawable.status_accepted_background);
+        } else if (application.isRejected()) {
+            holder.statusTextView.setBackgroundResource(R.drawable.status_rejected_background);
+        } else if (application.isShortlisted()) {
+            holder.statusTextView.setBackgroundResource(R.drawable.status_shortlisted_background);
+        } else if (application.isReviewing()) {
+            holder.statusTextView.setBackgroundResource(R.drawable.status_reviewing_background);
+        } else {
+            holder.statusTextView.setBackgroundResource(R.drawable.status_pending_background);
+        }
         
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {

@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,5 +57,16 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
         Route::get('/{id}', [UserController::class, 'show'])->name('admin.users.show');
         Route::put('/{id}/status', [UserController::class, 'updateStatus'])->name('admin.users.update-status');
         Route::delete('/{id}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+    });
+    
+    // Notifications Management
+    Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('admin.notifications.index');
+        Route::get('/create', [NotificationController::class, 'create'])->name('admin.notifications.create');
+        Route::post('/', [NotificationController::class, 'store'])->name('admin.notifications.store');
+        Route::get('/{id}', [NotificationController::class, 'show'])->name('admin.notifications.show');
+        Route::get('/{id}/edit', [NotificationController::class, 'edit'])->name('admin.notifications.edit');
+        Route::put('/{id}', [NotificationController::class, 'update'])->name('admin.notifications.update');
+        Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('admin.notifications.destroy');
     });
 });

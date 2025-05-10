@@ -89,6 +89,11 @@
                             <i class="fas fa-users me-2"></i> Users
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}" href="{{ route('admin.notifications.index') }}">
+                            <i class="fas fa-bell me-2"></i> Notifications
+                        </a>
+                    </li>
                 </ul>
             </div>
             
