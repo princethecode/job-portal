@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="3dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,35 +14,112 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Job Title -->
         <TextView
             android:id="@+id/job_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:textColor="@color/text_primary"
+            tools:text="GRP LAMINATOR" />
 
-        <TextView
-            android:id="@+id/job_company"
+        <!-- Company with icon -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="16sp" />
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical">
+            
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_company"
+                app:tint="@color/text_secondary" />
+                
+            <TextView
+                android:id="@+id/job_company"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textSize="15sp"
+                android:textColor="@color/text_secondary"
+                tools:text="SUN ENGINEERS" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/job_location"
+        <!-- Location with icon -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp" />
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical">
+            
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_location"
+                app:tint="@color/text_secondary" />
+                
+            <TextView
+                android:id="@+id/job_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                tools:text="GUJARAT" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/job_salary"
+        <!-- Salary with icon -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="14sp"
-            android:textColor="@android:color/holo_green_dark" />
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical">
+            
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_salary"
+                app:tint="@color/text_secondary" />
+                
+            <TextView
+                android:id="@+id/job_salary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                tools:text="25000.00" />
+        </LinearLayout>
+
+        <!-- Posting Date with icon -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical">
+            
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_calendar"
+                app:tint="@color/text_hint" />
+                
+            <TextView
+                android:id="@+id/job_posting_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textSize="12sp"
+                android:textStyle="italic"
+                android:textColor="@color/text_hint"
+                tools:text="Posted on: May 05, 2025" />
+        </LinearLayout>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

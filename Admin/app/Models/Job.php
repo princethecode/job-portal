@@ -21,6 +21,7 @@ class Job extends Model
         'posting_date',
         'expiry_date',
         'is_active',
+        'image'
     ];
 
     protected $casts = [
@@ -29,6 +30,19 @@ class Job extends Model
         'salary' => 'decimal:2',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Boot method to implement cascade delete
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Delete related applications when a job is deleted
+        static::deleting(function (Job $job) {
+            $job->applications()->delete();
+        });
+    }
 
     public function applications(): HasMany
     {

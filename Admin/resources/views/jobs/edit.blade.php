@@ -26,7 +26,9 @@
                 </div>
             @endif
 
-            <form action="{{ route('admin.jobs.update', $job['id']) }}" method="POST">
+            <form action="{{ route('admin.jobs.update', $job['id']) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
                 @csrf
                 @method('PUT')
                 <div class="row">
@@ -88,6 +90,16 @@
                 <div class="mb-3">
                     <label for="description" class="form-label">Job Description</label>
                     <textarea class="form-control" id="description" name="description" rows="6" required>{{ old('description', $job['description']) }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="image" class="form-label">Job Image</label>
+                    @if(!empty($job['image']))
+                        <div class="mb-2">
+                            <img src="{{ asset('storage/' . $job['image']) }}" alt="Current Job Image" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #ccc;">
+                        </div>
+                    @endif
+                    <input type="file" class="form-control-file" id="image" name="image" accept="image/*">
+                    <small class="form-text text-muted">Upload a new image to replace the current one.</small>
                 </div>
                 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">

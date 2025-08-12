@@ -4,33 +4,116 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginTop="?attr/actionBarSize"
     android:background="@color/white">
 
-    <TextView
-        android:id="@+id/applications_title"
-        android:layout_width="wrap_content"
+    <!-- Enhanced Title Section with Icon -->
+    <LinearLayout
+        android:id="@+id/applications_header"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="My Applications"
-        android:textColor="#333333"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
+        <ImageView
+            android:id="@+id/applications_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="Applications Icon"
+            android:src="@drawable/ic_applied_jobs" />
+
+        <TextView
+            android:id="@+id/applications_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="My Applications"
+            android:textColor="#333333"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Filter Chips Section -->
+    <HorizontalScrollView
+        android:id="@+id/filter_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/applications_header">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/status_filter_chip_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            app:singleSelection="true"
+            app:selectionRequired="false">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_all"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="All" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_pending"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pending" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_reviewing"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Reviewing" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_shortlisted"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Shortlisted" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_accepted"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accepted" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_rejected"
+                style="@style/Widget.MaterialComponents.Chip.Choice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rejected" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <!-- Application List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/applications_recycler_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         android:clipToPadding="false"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:paddingBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/applications_title"
+        app:layout_constraintTop_toBottomOf="@id/filter_scroll_view"
         tools:listitem="@layout/item_application" />
 
+    <!-- Loading Progress -->
     <ProgressBar
         android:id="@+id/progress_bar"
         android:layout_width="wrap_content"
@@ -41,6 +124,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Enhanced Empty State -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/empty_view"
         android:layout_width="0dp"
@@ -49,14 +133,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/applications_title">
+        app:layout_constraintTop_toBottomOf="@id/filter_scroll_view">
 
         <ImageView
             android:id="@+id/empty_image"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:contentDescription="No applications found"
-            android:src="@android:drawable/ic_dialog_info"
+            android:src="@drawable/ic_applied_jobs"
+            android:alpha="0.6"
             app:layout_constraintBottom_toTopOf="@id/empty_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -71,10 +156,41 @@
             android:text="You haven't applied to any jobs yet"
             android:textAlignment="center"
             android:textSize="18sp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:textColor="#666666"
+            app:layout_constraintBottom_toTopOf="@id/empty_subtext"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/empty_image" />
+
+        <TextView
+            android:id="@+id/empty_subtext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:text="Browse available jobs and submit your applications to see them here"
+            android:textAlignment="center"
+            android:textSize="14sp"
+            android:textColor="#888888"
+            app:layout_constraintBottom_toTopOf="@id/browse_jobs_button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/empty_text" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/browse_jobs_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Browse Jobs"
+            android:textAllCaps="false"
+            app:cornerRadius="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/empty_subtext"
+            app:layout_constraintVertical_bias="0.0" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

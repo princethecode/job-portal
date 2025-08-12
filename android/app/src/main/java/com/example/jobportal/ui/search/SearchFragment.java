@@ -4,26 +4,25 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
+import androidx.appcompat.widget.SearchView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.jobportal.R;
-// Add the correct import for ApiResponse
 import com.example.jobportal.models.JobsListResponse;
-import com.example.jobportal.network.ApiResponse;
 import com.example.jobportal.network.ApiClient;
 import com.example.jobportal.models.Job;
 import com.example.jobportal.ui.jobs.JobAdapter;
+import com.example.jobportal.ui.jobdetails.JobDetailsFragment;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment implements JobAdapter.OnJobClickListener {
     private RecyclerView recyclerView;
     private JobAdapter jobAdapter;
     private SearchView searchView;
@@ -51,12 +50,14 @@ public class SearchFragment extends Fragment {
         
         // Setup SearchView
         setupSearchView();
+        
+        // Set focus to search view and show keyboard
+        searchView.setIconified(false);
+        searchView.requestFocus();
     }
     
     private void setupRecyclerView() {
-        jobAdapter = new JobAdapter(job -> {
-            // TODO: Navigate to job details
-        });
+        jobAdapter = new JobAdapter(this);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(jobAdapter);
     }
@@ -65,14 +66,18 @@ public class SearchFragment extends Fragment {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                searchJobs(query);
+                if (query.length() >= 2) {
+                    searchJobs(query);
+                }
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (newText.length() > 2) {
+                if (newText.length() >= 2) {
                     searchJobs(newText);
+                } else if (newText.isEmpty()) {
+                    showEmptyView();
                 }
                 return true;
             }
@@ -84,7 +89,6 @@ public class SearchFragment extends Fragment {
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.GONE);
         
-        // Updated to use JobsListResponse
         ApiClient.getApiService().getJobs().enqueue(new Callback<JobsListResponse>() {
             @Override
             public void onResponse(@NonNull Call<JobsListResponse> call, 
@@ -114,9 +118,7 @@ public class SearchFragment extends Fragment {
         });
     }
     
-    // Update the Job type in this method
-    private List<com.example.jobportal.models.Job> filterJobsByQuery(List<com.example.jobportal.models.Job> jobs, String query) {
-        // Simple client-side filtering (in a real app, this should be done server-side)
+    private List<Job> filterJobsByQuery(List<Job> jobs, String query) {
         List<Job> filteredJobs = new ArrayList<>();
         String lowercaseQuery = query.toLowerCase();
         
@@ -124,7 +126,8 @@ public class SearchFragment extends Fragment {
             if (job.getTitle().toLowerCase().contains(lowercaseQuery) || 
                 job.getCompany().toLowerCase().contains(lowercaseQuery) ||
                 job.getLocation().toLowerCase().contains(lowercaseQuery) ||
-                job.getDescription().toLowerCase().contains(lowercaseQuery)) {
+                job.getDescription().toLowerCase().contains(lowercaseQuery) ||
+                job.getCategory().toLowerCase().contains(lowercaseQuery)) {
                 filteredJobs.add(job);
             }
         }
@@ -132,8 +135,7 @@ public class SearchFragment extends Fragment {
         return filteredJobs;
     }
     
-    // Update the Job type in this method
-    private void displayJobs(List<com.example.jobportal.models.Job> jobs) {
+    private void displayJobs(List<Job> jobs) {
         if (jobs.isEmpty()) {
             showEmptyView();
         } else {
@@ -146,5 +148,14 @@ public class SearchFragment extends Fragment {
     private void showEmptyView() {
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onJobClick(Job job) {
+        // Navigate to job details fragment
+        requireActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, JobDetailsFragment.newInstance(job.getId()))
+                .addToBackStack(null)
+                .commit();
     }
 }

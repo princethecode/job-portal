@@ -34,6 +34,7 @@ public class SessionManager {
     private static final String KEY_EMAIL = "email";
     private static final String KEY_TOKEN = "token";
     private static final String KEY_USER_OBJECT = "user_object"; // Key for storing the serialized User object
+    private static final String KEY_FCM_TOKEN = "fcm_token"; // Key for storing FCM token
     
     // Singleton instance
     private static volatile SessionManager instance;
@@ -75,12 +76,14 @@ public class SessionManager {
      * Create a new login session with user data
      */
     public void createLoginSession(int userId, String name, String email, String token) {
+        Log.d(TAG, "Creating login session - User ID: " + userId + ", Name: " + name);
         editor.putBoolean(IS_LOGIN, true);
         editor.putInt(KEY_USER_ID, userId);
         editor.putString(KEY_NAME, name);
         editor.putString(KEY_EMAIL, email);
         editor.putString(KEY_TOKEN, token);
         editor.apply();
+        Log.d(TAG, "Login session created successfully");
     }
     
     /**
@@ -207,8 +210,13 @@ public class SessionManager {
      * Clear authentication token
      */
     public void clearToken() {
+        Log.d(TAG, "Clearing authentication token - Previous token: " + 
+                    (getToken() != null ? "exists" : "null") + 
+                    ", User ID: " + getUserId() + 
+                    ", Stack trace: " + Log.getStackTraceString(new Exception()));
         editor.remove(KEY_TOKEN);
         editor.apply();
+        Log.d(TAG, "Authentication token cleared");
     }
     
     /**
@@ -223,17 +231,70 @@ public class SessionManager {
     }
     
     /**
+     * Save FCM token
+     */
+    public void saveFcmToken(String fcmToken) {
+        if (fcmToken != null && !fcmToken.isEmpty()) {
+            Log.d(TAG, "Saving FCM token");
+            editor.putString(KEY_FCM_TOKEN, fcmToken);
+            editor.apply();
+        }
+    }
+
+    /**
+     * Get FCM token
+     */
+    public String getFcmToken() {
+        return pref.getString(KEY_FCM_TOKEN, null);
+    }
+
+    /**
+     * Check if FCM token exists
+     */
+    public boolean hasFcmToken() {
+        return getFcmToken() != null;
+    }
+
+    /**
+     * Clear FCM token
+     */
+    public void clearFcmToken() {
+        Log.d(TAG, "Clearing FCM token");
+        editor.remove(KEY_FCM_TOKEN);
+        editor.apply();
+    }
+    
+    /**
      * Logout user and clear all session data
      */
     public void logout() {
+        Log.d(TAG, "Logging out user - Previous state: " + 
+                    "isLoggedIn=" + isLoggedIn() + 
+                    ", hasToken=" + hasToken() + 
+                    ", userId=" + getUserId() + 
+                    ", hasFcmToken=" + hasFcmToken() +
+                    ", Stack trace: " + Log.getStackTraceString(new Exception()));
         editor.clear();
         editor.apply();
+        Log.d(TAG, "Session data cleared");
     }
     
     /**
      * Check if session is valid (has both token and user data)
      */
     public boolean isSessionValid() {
-        return isLoggedIn() && hasToken() && getUserId() != -1;
+        boolean isLoggedIn = isLoggedIn();
+        boolean hasToken = hasToken();
+        int userId = getUserId();
+        String token = getToken();
+        
+        Log.d(TAG, "Checking session validity - " +
+                    "isLoggedIn: " + isLoggedIn + 
+                    ", hasToken: " + hasToken + 
+                    ", userId: " + userId + 
+                    ", token length: " + (token != null ? token.length() : 0) +
+                    ", Stack trace: " + Log.getStackTraceString(new Exception()));
+                    
+        return isLoggedIn && hasToken && userId != -1;
     }
 }

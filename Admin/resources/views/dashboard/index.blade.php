@@ -18,6 +18,16 @@
             {{ $error }}
         </div>
     @else
+        <!-- Debug Output -->
+        <div class="d-none">
+            <pre>
+Applications By Status: {{ json_encode($applicationsByStatus) }}
+Jobs By Type: {{ json_encode($jobsByType) }}
+Application Trend: {{ json_encode($applicationTrend) }}
+Top Categories: {{ json_encode($topCategories) }}
+            </pre>
+        </div>
+        
         <!-- Statistics Cards -->
         <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-4">
@@ -202,8 +212,8 @@
                                 <tbody>
                                     @forelse($stats['recent_applications'] as $application)
                                         <tr>
-                                            <td>{{ $application->user->name }}</td>
-                                            <td>{{ $application->job->title }}</td>
+                                            <td>{{ $application->user ? $application->user->name : 'Deleted User' }}</td>
+                                            <td>{{ $application->job ? $application->job->title : 'Deleted Job' }}</td>
                                             <td>
                                                 @switch($application->status)
                                                     @case('Applied')
@@ -241,116 +251,175 @@
 @endsection
 
 @push('scripts')
+<!-- Ensure Chart.js is loaded -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
 <script>
+// Add console debugging
+console.log('Dashboard script loaded');
+console.log('Application Status Data:', {!! json_encode($applicationsByStatus) !!});
+console.log('Jobs by Type Data:', {!! json_encode($jobsByType) !!});
+console.log('Application Trend Data:', {!! json_encode($applicationTrend) !!});
+console.log('Top Categories Data:', {!! json_encode($topCategories) !!});
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Application Trend Chart
-    const trendCtx = document.getElementById('applicationTrendChart').getContext('2d');
-    new Chart(trendCtx, {
-        type: 'line',
-        data: {
-            labels: {!! json_encode(collect($applicationTrend)->pluck('date')) !!},
-            datasets: [{
-                label: 'Applications',
-                data: {!! json_encode(collect($applicationTrend)->pluck('count')) !!},
-                borderColor: '#4e73df',
-                backgroundColor: 'rgba(78, 115, 223, 0.05)',
-                tension: 0.3,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
+    try {
+        console.log('DOM loaded, initializing charts');
+        
+        // Check if canvas elements exist
+        console.log('Trend chart canvas exists:', !!document.getElementById('applicationTrendChart'));
+        console.log('Status chart canvas exists:', !!document.getElementById('applicationStatusChart'));
+        console.log('Job type chart canvas exists:', !!document.getElementById('jobTypeChart'));
+        console.log('Category chart canvas exists:', !!document.getElementById('categoryChart'));
+        
+        // Application Trend Chart
+        const trendCtx = document.getElementById('applicationTrendChart');
+        if (trendCtx) {
+            const trendChart = new Chart(trendCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: {!! json_encode(collect($applicationTrend)->pluck('date')) !!},
+                    datasets: [{
+                        label: 'Applications',
+                        data: {!! json_encode(collect($applicationTrend)->pluck('count')) !!},
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
                     }
                 }
-            }
+            });
+            console.log('Trend chart initialized');
         }
-    });
 
-    // Application Status Chart
-    const statusCtx = document.getElementById('applicationStatusChart').getContext('2d');
-    new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-            labels: {!! json_encode(array_keys($applicationsByStatus)) !!},
-            datasets: [{
-                data: {!! json_encode(array_values($applicationsByStatus)) !!},
-                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-
-    // Jobs by Type Chart
-    const typeCtx = document.getElementById('jobTypeChart').getContext('2d');
-    new Chart(typeCtx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode(array_keys($jobsByType)) !!},
-            datasets: [{
-                label: 'Jobs',
-                data: {!! json_encode(array_values($jobsByType)) !!},
-                backgroundColor: '#36b9cc',
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
+        // Application Status Chart
+        const statusCtx = document.getElementById('applicationStatusChart');
+        if (statusCtx) {
+            const statusChart = new Chart(statusCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: {!! json_encode(array_keys($applicationsByStatus)) !!},
+                    datasets: [{
+                        data: {!! json_encode(array_values($applicationsByStatus)) !!},
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
                     }
                 }
-            }
+            });
+            console.log('Status chart initialized');
         }
-    });
 
-    // Top Categories Chart
-    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-    new Chart(categoryCtx, {
-        type: 'pie',
-        data: {
-            labels: {!! json_encode(array_keys($topCategories)) !!},
-            datasets: [{
-                data: {!! json_encode(array_values($topCategories)) !!},
-                backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
+        // Jobs by Type Chart
+        const typeCtx = document.getElementById('jobTypeChart');
+        if (typeCtx) {
+            const typeChart = new Chart(typeCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode(array_keys($jobsByType)) !!},
+                    datasets: [{
+                        label: 'Jobs',
+                        data: {!! json_encode(array_values($jobsByType)) !!},
+                        backgroundColor: '#36b9cc',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
                 }
-            }
+            });
+            console.log('Type chart initialized');
         }
-    });
+
+        // Top Categories Chart
+        const categoryCtx = document.getElementById('categoryChart');
+        if (categoryCtx) {
+            const categoryChart = new Chart(categoryCtx.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: {!! json_encode(array_keys($topCategories)) !!},
+                    datasets: [{
+                        data: {!! json_encode(array_values($topCategories)) !!},
+                        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            console.log('Category chart initialized');
+        }
+    } catch (error) {
+        console.error('Error initializing charts:', error);
+    }
 });
 </script>
 @endpush

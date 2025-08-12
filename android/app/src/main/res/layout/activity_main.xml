@@ -4,11 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
-        android:id="@+id/fragment_container"
+    <include
+        layout="@layout/toolbar_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/bottom_navigation"/>
+        android:layout_marginBottom="56dp"
+        android:fillViewport="true">
+
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

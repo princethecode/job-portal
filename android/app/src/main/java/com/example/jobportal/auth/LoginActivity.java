@@ -14,6 +14,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.jobportal.BuildConfig;
 import com.example.jobportal.MainActivity;
 import com.example.jobportal.R;
 import com.example.jobportal.models.LoginResponse;
@@ -22,18 +23,36 @@ import com.example.jobportal.databinding.ActivityLoginBinding;
 import com.example.jobportal.network.ApiResponse;
 import com.example.jobportal.models.User;
 import com.example.jobportal.network.ApiCallback;
+import com.example.jobportal.network.ApiService;
 import com.example.jobportal.utils.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.messaging.FirebaseMessaging;
+import java.util.HashMap;
+import java.util.Map;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+import java.io.IOException;
+import okhttp3.ResponseBody;
 
 public class LoginActivity extends AppCompatActivity {
     
-    private TextInputLayout tilEmail, tilPassword;
-    private TextInputEditText etEmail, etPassword;
+    private static final String TAG = "LoginActivity";
+    private TextInputLayout tilMobile, tilPassword;
+    private TextInputEditText etMobile, etPassword;
     private Button btnLogin;
     private TextView tvForgotPassword, tvRegister;
     private View progressBar;
     private ActivityLoginBinding binding;
+    private boolean isCheckingSession = false;
     
     // User data to be passed after successful login
     private User authenticatedUser;
@@ -43,6 +62,13 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Prevent activity recreation on configuration changes
+        if (savedInstanceState != null) {
+            Log.d(TAG, "Activity recreated with saved state");
+            return;
+        }
+        
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -51,10 +77,18 @@ public class LoginActivity extends AppCompatActivity {
         sessionManager = SessionManager.getInstance(getApplicationContext());
         
         // Check if user is already logged in
-        if (sessionManager.isSessionValid()) {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-            return;
+        if (!isCheckingSession) {
+            isCheckingSession = true;
+            if (sessionManager.isSessionValid()) {
+                Log.d(TAG, "Valid session found, redirecting to MainActivity");
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            } else {
+                Log.d(TAG, "No valid session found, showing login screen");
+            }
+            isCheckingSession = false;
         }
 
         // Initialize views
@@ -64,10 +98,41 @@ public class LoginActivity extends AppCompatActivity {
         setupClickListeners();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume called - isCheckingSession: " + isCheckingSession);
+        
+        // Only check session if we haven't already
+        if (!isCheckingSession) {
+            isCheckingSession = true;
+            if (sessionManager.isSessionValid()) {
+                Log.d(TAG, "Valid session found in onResume, redirecting to MainActivity");
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
+            isCheckingSession = false;
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.d(TAG, "Saving activity state");
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.d(TAG, "Restoring activity state");
+    }
+
     private void initViews() {
-        tilEmail = binding.emailLayout;
+        tilMobile = binding.emailLayout;
         tilPassword = binding.passwordLayout;
-        etEmail = binding.emailInput;
+        etMobile = binding.emailInput;
         etPassword = binding.passwordInput;
         btnLogin = binding.loginButton;
         tvForgotPassword = binding.forgotPassword;
@@ -96,16 +161,16 @@ public class LoginActivity extends AppCompatActivity {
     private boolean validateInputs() {
         boolean isValid = true;
 
-        // Validate email
-        String email = etEmail.getText().toString().trim();
-        if (TextUtils.isEmpty(email)) {
-            tilEmail.setError("Email is required");
+        // Validate mobile
+        String mobile = etMobile.getText().toString().trim();
+        if (TextUtils.isEmpty(mobile)) {
+            tilMobile.setError("Mobile number is required");
             isValid = false;
-        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            tilEmail.setError("Enter a valid email address");
+        } else if (!android.util.Patterns.PHONE.matcher(mobile).matches()) {
+            tilMobile.setError("Enter a valid mobile number");
             isValid = false;
         } else {
-            tilEmail.setError(null);
+            tilMobile.setError(null);
         }
 
         // Validate password
@@ -124,7 +189,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void attemptLogin() {
-        String email = etEmail.getText().toString().trim();
+        String mobile = etMobile.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
     
         // Show loading state
@@ -138,48 +203,12 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
         
-        // Call the API for login
-        apiClient.login(email, password, new ApiCallback<ApiResponse<LoginResponse>>() {
+        // Call the API for login with mobile
+        apiClient.loginWithMobile(mobile, password, new ApiCallback<ApiResponse<LoginResponse>>() {
             @Override
             public void onSuccess(ApiResponse<LoginResponse> response) {
                 showProgress(false);
-                if (response.isSuccess() && response.getData() != null) {
-                    LoginResponse loginResponse = response.getData();
-                    User user = loginResponse.getUser();
-                    String token = loginResponse.getAccessToken();
-                    
-                    Log.d("JobPortal", "Login response: " + response.toString());
-                    Log.d("JobPortal", "User data: " + user.toString());
-                    Log.d("JobPortal", "Token: " + token);
-                    
-                    if (user != null && token != null && !token.isEmpty()) {
-                        // Save user session with token
-                        sessionManager.createLoginSession(
-                            Integer.parseInt(user.getId()),
-                            user.getFullName(),
-                            user.getEmail(),
-                            token
-                        );
-                        
-                        Log.d("JobPortal", "Login successful - Token: " + token);
-                        Log.d("JobPortal", "User ID: " + user.getId());
-                        
-                        // Navigate to main activity
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        String errorMsg = "Login failed: ";
-                        if (user == null) errorMsg += "User data is null. ";
-                        if (token == null || token.isEmpty()) errorMsg += "Token is missing. ";
-                        Toast.makeText(LoginActivity.this, errorMsg, Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    String errorMsg = response.getMessage() != null ? 
-                        response.getMessage() : "Login failed: Invalid response data";
-                    Toast.makeText(LoginActivity.this, errorMsg, Toast.LENGTH_LONG).show();
-                }
+                handleLoginResponse(response);
             }
     
             @Override
@@ -237,5 +266,126 @@ public class LoginActivity extends AppCompatActivity {
         }
         btnLogin.setEnabled(!show);
         btnLogin.setText(show ? "Logging in..." : "Login");
+    }
+
+    private void handleLoginResponse(ApiResponse<LoginResponse> response) {
+        if (response.isSuccess() && response.getData() != null) {
+            LoginResponse loginResponse = response.getData();
+            User user = loginResponse.getUser();
+            String token = loginResponse.getAccessToken();
+            
+            Log.d("JobPortal", "Login response: " + response.toString());
+            Log.d("JobPortal", "User data: " + user.toString());
+            Log.d("JobPortal", "Token: " + token);
+            
+            if (user != null && token != null && !token.isEmpty()) {
+                handleSuccessfulLogin(user, token);
+            } else {
+                String errorMsg = "Login failed: ";
+                if (user == null) errorMsg += "User data is null. ";
+                if (token == null || token.isEmpty()) errorMsg += "Token is missing. ";
+                Toast.makeText(LoginActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+            }
+        } else {
+            String errorMsg = response.getMessage() != null ? 
+                response.getMessage() : "Login failed: Invalid response data";
+            Toast.makeText(LoginActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void handleSuccessfulLogin(User user, String token) {
+        // Save user session with token
+        sessionManager.createLoginSession(
+            Integer.parseInt(user.getId()),
+            user.getFullName(),
+            user.getEmail(),
+            token
+        );
+        
+        Log.d("JobPortal", "Login successful - Token: " + token);
+        Log.d("JobPortal", "User ID: " + user.getId());
+        
+        // Register FCM token if available
+        registerFcmTokenIfAvailable();
+        
+        // Navigate to main activity
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void registerFcmTokenIfAvailable() {
+        String fcmToken = sessionManager.getFcmToken();
+        if (fcmToken != null && !fcmToken.isEmpty()) {
+            Log.d(TAG, "Registering FCM token after login");
+            ApiService apiService = ApiClient.getApiService();
+            if (apiService != null) {
+                Map<String, String> tokenData = new HashMap<>();
+                tokenData.put("fcm_token", fcmToken);
+                
+                // Create a custom OkHttpClient with additional logging
+                OkHttpClient httpClient = new OkHttpClient.Builder()
+                    .addInterceptor(chain -> {
+                        Request original = chain.request();
+                        Request request = original.newBuilder()
+                            .header("Authorization", "Bearer " + sessionManager.getToken())
+                            .header("Accept", "application/json")
+                            .method(original.method(), original.body())
+                            .build();
+                        return chain.proceed(request);
+                    })
+                    .build();
+
+                // Create a custom Retrofit instance
+                Retrofit customRetrofit = new Retrofit.Builder()
+                    .baseUrl(BuildConfig.API_BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .client(httpClient)
+                    .build();
+
+                // Create API service with custom Retrofit
+                ApiService customApiService = customRetrofit.create(ApiService.class);
+                
+                customApiService.registerFcmToken(tokenData).enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            try {
+                                String responseBody = response.body() != null ? response.body().string() : "";
+                                Log.d(TAG, "FCM token registration response: " + responseBody);
+                                
+                                // Try to parse as JSON first
+                                try {
+                                    Gson gson = new Gson();
+                                    ApiResponse<Void> apiResponse = gson.fromJson(responseBody, 
+                                        new TypeToken<ApiResponse<Void>>(){}.getType());
+                                    if (apiResponse != null && apiResponse.isSuccess()) {
+                                        Log.d(TAG, "FCM token registered successfully after login");
+                                    } else {
+                                        Log.e(TAG, "Failed to register FCM token: " + 
+                                            (apiResponse != null ? apiResponse.getMessage() : "Unknown error"));
+                                    }
+                                } catch (JsonSyntaxException e) {
+                                    // If JSON parsing fails, treat as a simple success message
+                                    Log.d(TAG, "FCM token registered successfully (string response)");
+                                }
+                            } catch (IOException e) {
+                                Log.e(TAG, "Error reading response body", e);
+                            }
+                        } else {
+                            Log.e(TAG, "Failed to register FCM token after login: " + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.e(TAG, "Error registering FCM token after login", t);
+                    }
+                });
+            }
+        } else {
+            Log.d(TAG, "No FCM token available to register after login");
+        }
     }
 }

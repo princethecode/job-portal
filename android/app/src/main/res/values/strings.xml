@@ -206,4 +206,7 @@
     <string name="jobs_title">Find Jobs</string>
     <string name="jobs_subtitle">Discover opportunities that match your skills</string>
     <string name="available_jobs">Available Jobs</string>
+    <string name="email_or_mobile">Email Address</string>
+    <string name="work_experience">Work Experience</string>
+    <string name="job_image">Job Image</string>
 </resources>

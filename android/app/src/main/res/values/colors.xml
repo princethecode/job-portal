@@ -160,4 +160,7 @@
 
     <color name="purple_500">#673AB7</color>
 
+    <color name="green_success">#4CAF50</color>
+    <color name="red_error">#F44336</color>
+
 </resources>

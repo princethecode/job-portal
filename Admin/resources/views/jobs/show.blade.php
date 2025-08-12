@@ -46,6 +46,11 @@
                         </div>
                     </div>
                     
+                    @if(!empty($job['image']))
+                        <div class="mb-4 text-center">
+                            <img src="{{ asset('/' . $job['image']) }}" alt="Job Image" style="max-width: 350px; max-height: 220px; border-radius: 10px; border: 1px solid #ccc; box-shadow: 0 2px 8px rgba(0,0,0,0.07);">
+                        </div>
+                    @endif
                     <div class="mb-3">
                         <h5>Job Description</h5>
                         <div class="p-3 bg-light rounded">

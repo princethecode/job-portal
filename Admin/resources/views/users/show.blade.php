@@ -119,6 +119,49 @@
         </div>
         
         <div class="col-md-8">
+            <!-- Employment Details Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Employment Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted mb-1">Current Company</h6>
+                            <p class="font-weight-bold mb-3">{{ $user['current_company'] ?? 'Not specified' }}</p>
+                            
+                            <h6 class="text-muted mb-1">Department</h6>
+                            <p class="font-weight-bold mb-3">{{ $user['department'] ?? 'Not specified' }}</p>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <h6 class="text-muted mb-1">Current Salary</h6>
+                            <p class="font-weight-bold mb-3">
+                                @if(isset($user['current_salary']))
+                                    ₹{{ number_format($user['current_salary'], 2) }}
+                                @else
+                                    Not specified
+                                @endif
+                            </p>
+                            
+                            <h6 class="text-muted mb-1">Expected Salary</h6>
+                            <p class="font-weight-bold mb-3">
+                                @if(isset($user['expected_salary']))
+                                    ₹{{ number_format($user['expected_salary'], 2) }}
+                                @else
+                                    Not specified
+                                @endif
+                            </p>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <h6 class="text-muted mb-1">Joining Period</h6>
+                            <p class="font-weight-bold">{{ $user['joining_period'] ?? 'Not specified' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Skills & Experience Card -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">

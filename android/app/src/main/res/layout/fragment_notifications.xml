@@ -1,49 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <TextView
-        android:id="@+id/text_notifications"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="Notifications"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_refresh_layout"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/white">
+    
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_notifications">
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/notifications_recycler_view"
+        <!-- Enhanced Header with Icon -->
+        <LinearLayout
+            android:id="@+id/notifications_header"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="Notifications"
+                android:src="@drawable/ic_notifications"
+                android:tint="#000000" />
+
+            <TextView
+                android:id="@+id/text_notifications"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:text="Notifications"
+                android:textSize="22sp"
+                android:textColor="#333333"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/clear_all_button"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Clear All"
+                android:textAllCaps="false"
+                android:textColor="#3F51B5"
+                app:rippleColor="#1A3F51B5" />
+        </LinearLayout>
+
+        <View
+            android:id="@+id/divider"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="8dp"
-            android:clipToPadding="false"
-            tools:listitem="@layout/item_notification" />
+            android:layout_height="1dp"
+            android:background="#EEEEEE"
+            app:layout_constraintTop_toBottomOf="@id/notifications_header" />
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        <!-- SwipeRefreshLayout for Notifications List -->
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider">
 
-    <!-- Empty state view -->
-    <TextView
-        android:id="@+id/empty_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="No notifications yet"
-        android:textSize="16sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_notifications" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/notifications_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="16dp"
+                android:clipToPadding="false"
+                tools:listitem="@layout/item_notification" />
 
-</androidx.constraintlayout.widget.ConstraintLayout> 
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!-- Loading Indicator -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider" />
+
+        <!-- Enhanced Empty State View -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/empty_state_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider">
+
+            <ImageView
+                android:id="@+id/empty_icon"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/ic_notifications"
+                android:alpha="0.5"
+                android:contentDescription="No notifications"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.4" />
+
+            <TextView
+                android:id="@+id/empty_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="No notifications yet"
+                android:textColor="#666666"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/empty_icon" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView> 

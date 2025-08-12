@@ -64,6 +64,15 @@ public class Job {
     @SerializedName("updated_at")
     private String updatedAt;
     
+    @ColumnInfo(name = "company_logo")
+    @SerializedName("company_logo")
+    private String companyLogo;
+
+    @ColumnInfo(name = "image")
+    @SerializedName("image")
+    private String image;
+
+    
     // Default constructor required by Room
     public Job() {
     }    
@@ -133,6 +142,22 @@ public class Job {
     
     public void setCompany(String company) {
         this.company = company;
+    }
+    
+    public String getCompanyLogo() {
+        return companyLogo != null ? companyLogo : "";
+    }
+    
+    public void setCompanyLogo(String companyLogo) {
+        this.companyLogo = companyLogo;
+    }
+
+    public String getImage() {
+        return image != null ? image : "";
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
     
     public String getLocation() {
@@ -206,8 +231,8 @@ public class Job {
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
     }
+    
 
-    @Override
     public String toString() {
         return "Job{" +
                 "id='" + id + '\'' +

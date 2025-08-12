@@ -14,6 +14,21 @@ android {
     namespace 'com.example.jobportal'
     compileSdk 34
 
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+        release {
+            storeFile file('/Users/pareshgupta/jobportal-release-key.jks')
+            storePassword 'y12s28s06'  // Replace with your actual password
+            keyAlias 'jobportal'
+            keyPassword 'y12s28s06'  // Replace with your actual password
+        }
+    }
+
     defaultConfig {
         applicationId "com.example.jobportal"
         minSdk 26
@@ -40,11 +55,13 @@ android {
 
     buildTypes {
         debug {
+            signingConfig signingConfigs.debug
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "String", "API_BASE_URL", '"https://emps.co.in/api/"'
         }
         release {
+            signingConfig signingConfigs.release
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -87,6 +104,7 @@ dependencies {
     // Room - using KSP instead of KAPT
     implementation "androidx.room:room-runtime:${rootProject.ext.room_version}"
     implementation "androidx.room:room-ktx:${rootProject.ext.room_version}"
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     ksp "androidx.room:room-compiler:${rootProject.ext.room_version}"
     
     // Lifecycle
@@ -152,4 +170,6 @@ dependencies {
     def hilt_version = "2.50"
     implementation "com.google.dagger:hilt-android:$hilt_version"
     annotationProcessor "com.google.dagger:hilt-android-compiler:$hilt_version"
-} 
+}
+
+apply plugin: 'com.google.gms.google-services' 

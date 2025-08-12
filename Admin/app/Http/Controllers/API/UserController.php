@@ -67,6 +67,19 @@ class UserController extends Controller
         if ($request->has('experience')) {
             $user->experience = $request->experience;
         }
+        
+        // Update new profile fields
+        if ($request->has('location')) {
+            $user->location = $request->location;
+        }
+        
+        if ($request->has('job_title')) {
+            $user->job_title = $request->job_title;
+        }
+        
+        if ($request->has('about_me')) {
+            $user->about_me = $request->about_me;
+        }
 
         // Handle resume upload
         if ($request->hasFile('resume')) {
@@ -97,7 +110,7 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'current_password' => 'required|string',
-            'new_password' => 'required|string|min:8',
+            'new_password' => 'required|string|min:8|confirmed',
             'new_password_confirmation' => 'required|same:new_password',
         ]);
 
@@ -130,6 +143,96 @@ class UserController extends Controller
             'success' => true,
             'message' => 'Password changed successfully'
         ]);
+    }
+
+    /**
+     * Update user contact information
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateContact(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'contact' => 'required|string',
+            'last_contact_sync' => 'required|string|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = $request->user();
+            
+            // Update contact fields
+            $user->contact = $request->contact;
+            $user->last_contact_sync = $request->last_contact_sync;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Contact information updated successfully',
+                'data' => $user
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error updating contact information: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update contact information'
+            ], 500);
+        }
+    }
+    
+    /**
+     * Upload profile photo
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadProfilePhoto(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = $request->user();
+            
+            // Delete old profile photo if exists
+            if ($user->profile_photo) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            
+            // Store the new profile photo
+            $path = $request->file('photo')->store('profile_photos', 'public');
+            $user->profile_photo = $path;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile photo uploaded successfully',
+                'data' => $user
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error uploading profile photo: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload profile photo'
+            ], 500);
+        }
     }
 
     /**

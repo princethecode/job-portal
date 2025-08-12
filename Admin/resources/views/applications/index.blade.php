@@ -6,6 +6,12 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Applications Management</h2>
+        <a href="{{ route('admin.applications.export', request()->query()) }}" class="btn btn-success">
+            <i class="fas fa-file-excel me-1"></i> Export to Excel
+            @if(request()->hasAny(['job_id', 'status']))
+                <small class="ms-1">(Filtered)</small>
+            @endif
+        </a>
     </div>
     
     <!-- Filters -->
@@ -35,6 +41,8 @@
                             <option value="Under Review" {{ isset($filters['status']) && $filters['status'] == 'Under Review' ? 'selected' : '' }}>Under Review</option>
                             <option value="Shortlisted" {{ isset($filters['status']) && $filters['status'] == 'Shortlisted' ? 'selected' : '' }}>Shortlisted</option>
                             <option value="Rejected" {{ isset($filters['status']) && $filters['status'] == 'Rejected' ? 'selected' : '' }}>Rejected</option>
+                            <option value="Accepted" {{ isset($filters['status']) && $filters['status'] == 'Accepted' ? 'selected' : '' }}>Accepted</option>
+
                         </select>
                     </div>
                 </div>
@@ -67,9 +75,17 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Applicant</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Current Company</th>
+                                <th>Current Salary</th>
+                                <th>Expected Salary</th>
+                                <th>Joining Period</th>
+                                <th>Department</th>
                                 <th>Job</th>
                                 <th>Applied Date</th>
                                 <th>Status</th>
+                                <th>Resume</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -77,8 +93,15 @@
                             @forelse($applications as $application)
                                 <tr>
                                     <td>{{ $application->id }}</td>
-                                    <td>{{ $application->user->name }}</td>
-                                    <td>{{ $application->job->title }}</td>
+                                    <td>{{ $application->user ? $application->user->name : 'Deleted User' }}</td>
+                                    <td>{{ $application->user ? $application->user->email : 'N/A' }}</td>
+                                    <td>{{ $application->user ? $application->user->mobile : 'N/A' }}</td>
+                                    <td>{{ $application->user ? $application->user->current_company : 'N/A' }}</td>
+                                    <td>{{ $application->user ? $application->user->current_salary : 'N/A' }}</td>
+                                    <td>{{ $application->user ? $application->user->expected_salary : 'N/A' }}</td>
+                                    <td>{{ $application->user ? $application->user->joining_period : 'N/A' }}</td>
+                                    <td>{{ $application->user ? $application->user->department : 'N/A' }}</td>
+                                    <td>{{ $application->job ? $application->job->title : 'Deleted Job' }}</td>
                                     <td>{{ $application->created_at->format('M d, Y') }}</td>
                                     <td>
                                         @switch($application->status)
@@ -97,6 +120,26 @@
                                             @default
                                                 <span class="badge bg-secondary">{{ $application->status }}</span>
                                         @endswitch
+                                    </td>
+                                    <td>
+                                        @if($application->resume_path)
+                                            <div class="btn-group">
+                                                <a href="{{ route('admin.resume.view', basename($application->resume_path)) }}" 
+                                                   class="btn btn-sm btn-info" 
+                                                   title="View Resume"
+                                                   target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ route('admin.resume.view', basename($application->resume_path)) }}" 
+                                                   class="btn btn-sm btn-success" 
+                                                   title="Download Resume"
+                                                   download>
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            </div>
+                                        @else
+                                            <span class="text-muted">No Resume</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="btn-group">
@@ -133,6 +176,7 @@
                                                                     <option value="Under Review" {{ $application->status == 'Under Review' ? 'selected' : '' }}>Under Review</option>
                                                                     <option value="Shortlisted" {{ $application->status == 'Shortlisted' ? 'selected' : '' }}>Shortlisted</option>
                                                                     <option value="Rejected" {{ $application->status == 'Rejected' ? 'selected' : '' }}>Rejected</option>
+                                                                    <option value="Accepted" {{ $application->status == 'Accepted' ? 'selected' : '' }}>Accepted</option>
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -157,7 +201,7 @@
                 
                 <!-- Pagination -->
                 <div class="d-flex justify-content-center mt-4">
-                    {{ $applications->links() }}
+                    {{ $applications->links('pagination::bootstrap-4') }}
                 </div>
             </div>
         </div>

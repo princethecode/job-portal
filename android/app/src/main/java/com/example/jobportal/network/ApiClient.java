@@ -29,6 +29,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 public class ApiClient {
@@ -38,6 +39,12 @@ public class ApiClient {
     private static SessionManager sessionManager;
     private static Context context;
     private static ApiClient instance;
+
+    public static void init(Context context) {
+        ApiClient.context = context.getApplicationContext();
+        sessionManager = SessionManager.getInstance(ApiClient.context);
+        apiService = getClient(ApiClient.context).create(ApiService.class);
+    }
 
     public static synchronized ApiClient getInstance(Context context) {
         if (instance == null) {
@@ -71,19 +78,49 @@ public class ApiClient {
             if (sessionManager.hasToken()) {
                 httpClient.addInterceptor(chain -> {
                     Request original = chain.request();
+                    String token = sessionManager.getToken();
+                    Log.d("ApiClient", "Making API request: " + original.url() + 
+                                "\nMethod: " + original.method() +
+                                "\nToken exists: " + (token != null && !token.isEmpty()) +
+                                "\nToken length: " + (token != null ? token.length() : 0));
+                    
                     Request.Builder requestBuilder = original.newBuilder()
-                            .header("Authorization", "Bearer " + sessionManager.getToken())
+                            .header("Authorization", "Bearer " + token)
                             .header("Accept", "application/json")
                             .method(original.method(), original.body());
 
                     Request request = requestBuilder.build();
-                    return chain.proceed(request);
+                    okhttp3.Response response = chain.proceed(request);
+                    
+                    // Log detailed response information
+                    Log.d("ApiClient", "API Response for " + original.url() + 
+                                "\nStatus: " + response.code() +
+                                "\nMessage: " + response.message() +
+                                "\nHeaders: " + response.headers().toString());
+                    
+                    // Check for auth errors
+                    if (response.code() == 401 || response.code() == 403) {
+                        Log.e("ApiClient", "Authentication error detected:" +
+                                    "\nURL: " + original.url() +
+                                    "\nStatus: " + response.code() +
+                                    "\nMessage: " + response.message() +
+                                    "\nToken was: " + (token != null ? "present" : "null") +
+                                    "\nStack trace: " + Log.getStackTraceString(new Exception()));
+                        sessionManager.clearToken();
+                    }
+                    
+                    return response;
                 });
             }
 
+            // Create a Gson instance with lenient parsing enabled
+            Gson gson = new GsonBuilder()
+                    .setLenient()
+                    .create();
+
             retrofit = new Retrofit.Builder()
                     .baseUrl(BuildConfig.API_BASE_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
+                    .addConverterFactory(GsonConverterFactory.create(gson))
                     .client(httpClient.build())
                     .build();
         }
@@ -102,10 +139,12 @@ public class ApiClient {
     }
 
     public static void saveAuthToken(String token) {
+        Log.d("ApiClient", "Saving new auth token");
         sessionManager.updateToken(token);
     }
 
     public static void clearAuthToken() {
+        Log.d("ApiClient", "Clearing auth token");
         sessionManager.clearToken();
     }
 
@@ -127,6 +166,40 @@ public class ApiClient {
 
             @Override
             public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
+                Log.e("ApiClient", "Network error", t);
+                Log.e("ApiClient", Log.getStackTraceString(t));
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+    }
+    
+    /**
+     * Login with mobile number and password
+     * 
+     * @param mobile Mobile number
+     * @param password Password
+     * @param callback Callback to handle response
+     */
+    public void loginWithMobile(String mobile, String password, ApiCallback<ApiResponse<LoginResponse>> callback) {
+        Map<String, String> loginData = new HashMap<>();
+        loginData.put("mobile", mobile);
+        loginData.put("password", password);
+
+        Call<ApiResponse<LoginResponse>> call = apiService.login(loginData);
+        call.enqueue(new Callback<ApiResponse<LoginResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<LoginResponse>> call, Response<ApiResponse<LoginResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError("Login failed: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
+                Log.e("ApiClient", "Network error", t);
+                Log.e("ApiClient", Log.getStackTraceString(t));
                 callback.onError("Network error: " + t.getMessage());
             }
         });
@@ -197,6 +270,7 @@ public class ApiClient {
                             }
                         } catch (Exception e) {
                             Log.e("ApiClient", "Error parsing response", e);
+                            Log.e("ApiClient", Log.getStackTraceString(e));
                             Handler mainHandler = new Handler(Looper.getMainLooper());
                             mainHandler.post(() -> callback.onError("Error parsing response: " + e.getMessage()));
                         }
@@ -213,6 +287,7 @@ public class ApiClient {
                 @Override
                 public void onFailure(okhttp3.Call call, IOException e) {
                     Log.e("ApiClient", "Registration network error", e);
+                    Log.e("ApiClient", Log.getStackTraceString(e));
                     Handler mainHandler = new Handler(Looper.getMainLooper());
                     mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
                 }
@@ -231,12 +306,33 @@ public class ApiClient {
         }
     }
 
+    public void forgotPassword(Map<String, String> emailData, final ApiCallback<ApiResponse<Object>> callback) {
+        Call<ApiResponse<Object>> call = apiService.forgotPassword(emailData);
+        executeCall(call, callback);
+    }
+
+    // Keep the old method for backward compatibility
     public void forgotPassword(String email, final ApiCallback<ApiResponse<Void>> callback) {
         Map<String, String> emailData = new HashMap<>();
         emailData.put("email", email);
         
-        Call<ApiResponse<Void>> call = apiService.forgotPassword(emailData);
-        executeCall(call, callback);
+        forgotPassword(emailData, new ApiCallback<ApiResponse<Object>>() {
+            @Override
+            public void onSuccess(ApiResponse<Object> response) {
+                // Convert to Void response for old method
+                ApiResponse<Void> voidResponse = new ApiResponse<>(
+                    response.isSuccess(),
+                    response.getMessage(),
+                    null
+                );
+                callback.onSuccess(voidResponse);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                callback.onError(errorMessage);
+            }
+        });
     }
 
     public void getUserProfile(final ApiCallback<ApiResponse<User>> callback) {
@@ -267,7 +363,9 @@ public class ApiClient {
             @Override
             public void onFailure(Call<User> call, Throwable t) {
                 Log.e("ApiClient", "Failed to get user profile: " + t.getMessage(), t);
-                callback.onError("Network error: " + t.getMessage());
+                Log.e("ApiClient", Log.getStackTraceString(t));
+                Log.e("ApiClient", "Network error", t);
+            callback.onError("Network error: " + t.getMessage());
             }
         });
     }
@@ -305,6 +403,19 @@ public class ApiClient {
             
             if (experience != null) {
                 builder.addFormDataPart("experience", experience);
+            }
+            
+            // Add new profile fields
+            if (user.getLocation() != null && !user.getLocation().isEmpty()) {
+                builder.addFormDataPart("location", user.getLocation());
+            }
+            
+            if (user.getJobTitle() != null && !user.getJobTitle().isEmpty()) {
+                builder.addFormDataPart("job_title", user.getJobTitle());
+            }
+            
+            if (user.getAboutMe() != null && !user.getAboutMe().isEmpty()) {
+                builder.addFormDataPart("about_me", user.getAboutMe());
             }
             
             // Add resume file
@@ -351,6 +462,7 @@ public class ApiClient {
                             }
                         } catch (Exception e) {
                             Log.e("ApiClient", "Error parsing response", e);
+                            Log.e("ApiClient", Log.getStackTraceString(e));
                             Handler mainHandler = new Handler(Looper.getMainLooper());
                             mainHandler.post(() -> callback.onError("Error parsing response"));
                         }
@@ -367,6 +479,7 @@ public class ApiClient {
                 @Override
                 public void onFailure(okhttp3.Call call, IOException e) {
                     Log.e("ApiClient", "Profile update network error", e);
+                    Log.e("ApiClient", Log.getStackTraceString(e));
                     Handler mainHandler = new Handler(Looper.getMainLooper());
                     mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
                 }
@@ -385,6 +498,19 @@ public class ApiClient {
             
             if (experience != null) {
                 profileData.put("experience", experience);
+            }
+            
+            // Add new profile fields
+            if (user.getLocation() != null && !user.getLocation().isEmpty()) {
+                profileData.put("location", user.getLocation());
+            }
+            
+            if (user.getJobTitle() != null && !user.getJobTitle().isEmpty()) {
+                profileData.put("job_title", user.getJobTitle());
+            }
+            
+            if (user.getAboutMe() != null && !user.getAboutMe().isEmpty()) {
+                profileData.put("about_me", user.getAboutMe());
             }
             
             Log.d("ApiClient", "Updating profile with data: " + profileData);
@@ -412,6 +538,7 @@ public class ApiClient {
                             callback.onError("Profile update failed: " + errorBody);
                         } catch (IOException e) {
                             Log.e("ApiClient", "Error reading response body", e);
+                            Log.e("ApiClient", Log.getStackTraceString(e));
                             callback.onError("Request failed: " + response.code());
                         }
                     }
@@ -420,7 +547,9 @@ public class ApiClient {
                 @Override
                 public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
                     Log.e("ApiClient", "Profile update network error", t);
-                    callback.onError("Network error: " + t.getMessage());
+                    Log.e("ApiClient", Log.getStackTraceString(t));
+                    Log.e("ApiClient", "Network error", t);
+            callback.onError("Network error: " + t.getMessage());
                 }
             });
         }
@@ -431,6 +560,68 @@ public class ApiClient {
      */
     public void updateUserProfile(User user, final ApiCallback<ApiResponse<User>> callback) {
         updateUserProfile(user, null, null, null, callback);
+    }
+    
+    /**
+     * Upload profile photo
+     * 
+     * @param photoFile The photo file to upload
+     * @param callback Callback to handle the response
+     */
+    public void uploadProfilePhoto(File photoFile, final ApiCallback<ApiResponse<User>> callback) {
+        if (photoFile == null) {
+            callback.onError("No photo file provided");
+            return;
+        }
+        
+        // Check if user is logged in
+        if (!sessionManager.isLoggedIn()) {
+            callback.onError("User not logged in");
+            return;
+        }
+        
+        // Create request body for the photo file
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), photoFile);
+        
+        // MultipartBody.Part is used to send also the actual file name
+        MultipartBody.Part photoPart = MultipartBody.Part.createFormData(
+                "photo", photoFile.getName(), requestFile);
+        
+        // Create the API call
+        Call<ApiResponse<User>> call = apiService.uploadProfilePhoto(photoPart);
+        
+        // Execute the request
+        call.enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<User> apiResponse = response.body();
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Update the user in session manager
+                        sessionManager.saveUser(apiResponse.getData());
+                        callback.onSuccess(apiResponse);
+                    } else {
+                        callback.onError(apiResponse.getMessage());
+                    }
+                } else {
+                    try {
+                        String errorMessage = response.errorBody() != null ? 
+                            response.errorBody().string() : "Unknown error";
+                        callback.onError("Failed to upload photo: " + errorMessage);
+                    } catch (IOException e) {
+                        Log.e("ApiClient", Log.getStackTraceString(e));
+                        callback.onError("Failed to upload photo: " + e.getMessage());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                Log.e("ApiClient", "Network error", t);
+                Log.e("ApiClient", Log.getStackTraceString(t));
+            callback.onError("Network error: " + t.getMessage());
+            }
+        });
     }
 
     public void changePassword(String currentPassword, String newPassword, final ApiCallback<ApiResponse<Void>> callback) {
@@ -464,19 +655,57 @@ public class ApiClient {
             return;
         }
 
-        Call<ApiResponse<Map<String, Object>>> call = apiService.getUserAppliedJobs();
+        // Create a custom OkHttp client with additional logging for debugging
+        OkHttpClient httpClient = new OkHttpClient.Builder()
+            .connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+            .addInterceptor(chain -> {
+                Request original = chain.request();
+                Request request = original.newBuilder()
+                        .header("Authorization", "Bearer " + sessionManager.getToken())
+                        .header("Accept", "application/json")
+                        .method(original.method(), original.body())
+                        .build();
+                return chain.proceed(request);
+            })
+            .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+            .build();
+
+        // Create a custom Gson instance that is lenient with JSON parsing
+        Gson gson = new GsonBuilder()
+            .setLenient()
+            .create();
+
+        // Create a custom Retrofit instance with the lenient Gson
+        Retrofit customRetrofit = new Retrofit.Builder()
+            .baseUrl(BuildConfig.API_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .client(httpClient)
+            .build();
+
+        // Create API service with custom Retrofit
+        ApiService customApiService = customRetrofit.create(ApiService.class);
+
+        // Call API with custom service
+        Call<ApiResponse<Map<String, Object>>> call = customApiService.getUserAppliedJobs();
         call.enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
             @Override
             public void onResponse(Call<ApiResponse<Map<String, Object>>> call, 
-                               Response<ApiResponse<Map<String, Object>>> response) {
+                              Response<ApiResponse<Map<String, Object>>> response) {
+                Log.d("ApiClient", "Applied jobs response code: " + response.code());
+                
                 if (response.isSuccessful() && response.body() != null) {
                     callback.onSuccess(response.body());
                 } else {
                     try {
                         String errorBody = response.errorBody() != null ? 
                             response.errorBody().string() : "Unknown error";
+                        Log.e("ApiClient", "Failed to load applied jobs: " + errorBody);
                         callback.onError("Failed to load applied jobs: " + errorBody);
                     } catch (IOException e) {
+                        Log.e("ApiClient", "Error reading error body", e);
+                        Log.e("ApiClient", Log.getStackTraceString(e));
                         callback.onError("Failed to load applied jobs: " + response.code());
                     }
                 }
@@ -484,7 +713,10 @@ public class ApiClient {
             
             @Override
             public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
-                callback.onError("Network error: " + t.getMessage());
+                Log.e("ApiClient", "getUserAppliedJobs error", t);
+                Log.e("ApiClient", Log.getStackTraceString(t));
+                Log.e("ApiClient", "Network error", t);
+            callback.onError("Network error: " + t.getMessage());
             }
         });
     }
@@ -508,7 +740,9 @@ public class ApiClient {
 
             @Override
             public void onFailure(Call<ApiResponse<T>> call, Throwable t) {
-                callback.onError("Network error: " + t.getMessage());
+                Log.e("ApiClient", "Network error", t);
+                Log.e("ApiClient", Log.getStackTraceString(t));
+            callback.onError("Network error: " + t.getMessage());
             }
         });
     }
@@ -584,6 +818,7 @@ public class ApiClient {
                             response.errorBody().string() : "Unknown error";
                         callback.onError("Application failed: " + errorBody);
                     } catch (IOException e) {
+                        Log.e("ApiClient", Log.getStackTraceString(e));
                         callback.onError("Application failed: " + response.code());
                     }
                 }
@@ -591,7 +826,89 @@ public class ApiClient {
             
             @Override
             public void onFailure(Call<ApiResponse<Application>> call, Throwable t) {
-                callback.onError("Network error: " + t.getMessage());
+                Log.e("ApiClient", "Network error", t);
+                Log.e("ApiClient", Log.getStackTraceString(t));
+            callback.onError("Network error: " + t.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Apply for a job with employment details
+     * @param jobId The ID of the job to apply for
+     * @param employmentDetails Map containing the employment details
+     * @param callback Callback to handle the response
+     */
+    public void applyForJobWithDetails(int jobId, Map<String, String> employmentDetails, ApiCallback<ApiResponse<Application>> callback) {
+        // Check if user is logged in
+        if (!sessionManager.isLoggedIn()) {
+            callback.onError("User not logged in");
+            return;
+        }
+
+        // Get the token
+        String token = sessionManager.getToken();
+        if (token == null || token.isEmpty()) {
+            callback.onError("Authentication token is missing");
+            return;
+        }
+        
+        // Create a new OkHttpClient with the token explicitly added
+        OkHttpClient client = new OkHttpClient.Builder()
+            .addInterceptor(chain -> {
+                Request original = chain.request();
+                Request request = original.newBuilder()
+                    .header("Authorization", "Bearer " + token)
+                    .header("Accept", "application/json")
+                    .method(original.method(), original.body())
+                    .build();
+                return chain.proceed(request);
+            })
+            .build();
+        
+        // Create a new Retrofit instance with the authenticated client
+        Retrofit authenticatedRetrofit = new Retrofit.Builder()
+            .baseUrl(BuildConfig.API_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
+            .build();
+        
+        // Create a new API service with the authenticated client
+        ApiService authenticatedApiService = authenticatedRetrofit.create(ApiService.class);
+        
+        // Call the API with the authenticated service
+        Call<ApiResponse<Application>> call = authenticatedApiService.applyForJobWithDetails(
+            jobId, 
+            employmentDetails
+        );
+        
+        call.enqueue(new Callback<ApiResponse<Application>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Application>> call, Response<ApiResponse<Application>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<Application> apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        callback.onSuccess(apiResponse);
+                    } else {
+                        callback.onError(apiResponse.getMessage());
+                    }
+                } else {
+                    try {
+                        String errorBody = response.errorBody() != null ? 
+                            response.errorBody().string() : "Unknown error";
+                        callback.onError("Application failed: " + errorBody);
+                    } catch (IOException e) {
+                        Log.e("ApiClient", Log.getStackTraceString(e));
+                        callback.onError("Application failed: " + response.code());
+                    }
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<Application>> call, Throwable t) {
+                Log.e("ApiClient", "Network error", t);
+                Log.e("ApiClient", Log.getStackTraceString(t));
+            callback.onError("Network error: " + t.getMessage());
             }
         });
     }
@@ -710,6 +1027,16 @@ public class ApiClient {
                 mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
             }
         });
+    }
+
+    /**
+     * Reset password with token
+     * @param resetData Map containing email, token, password, and password_confirmation
+     * @param callback Callback to handle the response
+     */
+    public void resetPassword(Map<String, String> resetData, final ApiCallback<ApiResponse<Void>> callback) {
+        Call<ApiResponse<Void>> call = apiService.resetPassword(resetData);
+        executeCall(call, callback);
     }
 }
 

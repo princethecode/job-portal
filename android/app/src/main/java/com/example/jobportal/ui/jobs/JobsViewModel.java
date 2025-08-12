@@ -44,6 +44,13 @@ public class JobsViewModel extends AndroidViewModel {
     public LiveData<List<Job>> searchJobs(String query) {
         return repository.searchJobs(query);
     }
+    
+    public LiveData<List<Job>> getJobsByCategory(String category) {
+        isLoading.setValue(true);
+        LiveData<List<Job>> jobs = repository.getJobsByCategory(category);
+        isLoading.setValue(false);
+        return jobs;
+    }
 
     public LiveData<Boolean> getIsLoading() {
         return isLoading;

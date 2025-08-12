@@ -7,8 +7,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -21,7 +26,12 @@ import com.example.jobportal.network.ApiClient;
 import com.example.jobportal.network.ApiResponse;
 import com.example.jobportal.models.Job;
 import com.example.jobportal.models.Application;
+import com.example.jobportal.models.User;
+import com.example.jobportal.ui.profile.ProfileFragment;
+import com.example.jobportal.ui.application.JobApplicationNewFragment;
 import com.example.jobportal.utils.SessionManager;
+import com.example.jobportal.utils.JobConverter;
+import com.example.jobportal.models.FeaturedJob;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -29,8 +39,10 @@ import retrofit2.Response;
 
 public class JobDetailsFragment extends Fragment {
     private static final String ARG_JOB_ID = "job_id";
+    private static final String ARG_IS_FEATURED = "is_featured";
     
     private String jobId;
+    private boolean isFeaturedJob = false;
     private TextView titleTextView;
     private TextView companyTextView;
     private TextView locationTextView;
@@ -40,12 +52,21 @@ public class JobDetailsFragment extends Fragment {
     private TextView descriptionTextView;
     private Button applyButton;
     private View progressBar;
+    private ImageView jobImageView;
+    private ImageView companyLogoView;
     private View contentLayout;
+
+    private static final String BASE_URL = "https://emps.co.in/";
     
     public static JobDetailsFragment newInstance(String jobId) {
+        return newInstance(jobId, false);
+    }
+    
+    public static JobDetailsFragment newInstance(String jobId, boolean isFeaturedJob) {
         JobDetailsFragment fragment = new JobDetailsFragment();
         Bundle args = new Bundle();
         args.putString(ARG_JOB_ID, jobId);
+        args.putBoolean(ARG_IS_FEATURED, isFeaturedJob);
         fragment.setArguments(args);
         return fragment;
     }
@@ -55,7 +76,16 @@ public class JobDetailsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             jobId = getArguments().getString(ARG_JOB_ID);
+            isFeaturedJob = getArguments().getBoolean(ARG_IS_FEATURED, false);
+            
+            // Check if there are additional indicators that this is a featured job
+            if (getArguments().getString("job_title") != null && 
+                getArguments().getString("company_name") != null) {
+                isFeaturedJob = true;
+            }
         }
+        
+        Log.d("JobDetailsFragment", "Job ID: " + jobId + ", Is Featured: " + isFeaturedJob);
     }
 
     @Nullable
@@ -71,6 +101,8 @@ public class JobDetailsFragment extends Fragment {
         // Initialize views
         titleTextView = view.findViewById(R.id.job_title);
         companyTextView = view.findViewById(R.id.company_name);
+        companyLogoView = view.findViewById(R.id.company_logo);
+        jobImageView = view.findViewById(R.id.job_image);
         locationTextView = view.findViewById(R.id.location);
         salaryTextView = view.findViewById(R.id.salary);
         typeTextView = view.findViewById(R.id.job_type);
@@ -93,8 +125,73 @@ public class JobDetailsFragment extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.GONE);
         
-        Log.d("JobDetailsFragment", "Loading job details for ID: " + jobId);
+        Log.d("JobDetailsFragment", "Loading job details for ID: " + jobId + ", Is Featured: " + isFeaturedJob);
         
+        // If the isFeaturedJob flag is set, prioritize loading as a featured job
+        if (isFeaturedJob) {
+            // Try to load as featured job first
+            loadFeaturedJobDetails();
+        } else {
+            // Check if additional data was passed in arguments that indicates this is a featured job
+            Bundle args = getArguments();
+            String jobTitle = args != null ? args.getString("job_title") : null;
+            String companyName = args != null ? args.getString("company_name") : null;
+            
+            // If we have job title and company name in args, this may be a featured job
+            if (jobTitle != null && companyName != null) {
+                // Try to load as featured job first
+                loadFeaturedJobDetails();
+            } else {
+                // Load as regular job
+                loadRegularJobDetails();
+            }
+        }
+    }
+    
+    /**
+     * Load job details for a featured job
+     */
+    private void loadFeaturedJobDetails() {
+        ApiClient.getApiService().getFeaturedJobDetails(Integer.parseInt(jobId)).enqueue(new Callback<ApiResponse<FeaturedJob>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<FeaturedJob>> call, @NonNull Response<ApiResponse<FeaturedJob>> response) {
+                progressBar.setVisibility(View.GONE);
+                
+                Log.d("JobDetailsFragment", "Featured job response received: " + response.code());
+                
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    FeaturedJob featuredJob = response.body().getData();
+                    if (featuredJob != null) {
+                        Log.d("JobDetailsFragment", "Featured job details received: " + featuredJob.getJobTitle());
+                        
+                        // Convert featured job to regular job format and display
+                        Job job = JobConverter.convertFeaturedJobToJob(featuredJob);
+                        displayJobDetails(job);
+                    } else {
+                        Log.e("JobDetailsFragment", "Featured job data is null");
+                        // Fall back to regular job loading
+                        loadRegularJobDetails();
+                    }
+                } else {
+                    Log.e("JobDetailsFragment", "Error response for featured job: " + response.code());
+                    // Fall back to regular job loading
+                    loadRegularJobDetails();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<FeaturedJob>> call, @NonNull Throwable t) {
+                Log.e("JobDetailsFragment", "Network error for featured job: " + t.getMessage(), t);
+                // Fall back to regular job loading
+                loadRegularJobDetails();
+            }
+        });
+    }
+    
+    /**
+     * Load job details for a regular job
+     */
+    private void loadRegularJobDetails() {
         ApiClient.getApiService().getJobDetails(Integer.parseInt(jobId)).enqueue(new Callback<ApiResponse<Job>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Job>> call, @NonNull Response<ApiResponse<Job>> response) {
@@ -133,16 +230,105 @@ public class JobDetailsFragment extends Fragment {
         titleTextView.setText(job.getTitle());
         companyTextView.setText(job.getCompany());
         locationTextView.setText(job.getLocation());
-        salaryTextView.setText(job.getSalary());
-        typeTextView.setText(job.getJobType());
-        dateTextView.setText("Posted: " + job.getPostingDate());
-        descriptionTextView.setText(job.getDescription());
         
+        // Format salary with currency symbol
+        String formattedSalary = formatSalaryWithCurrency(job.getSalary());
+        salaryTextView.setText(formattedSalary);
+        
+        // Load company logo if available
+        if (companyLogoView != null && job.getCompanyLogo() != null && !job.getCompanyLogo().isEmpty()) {
+            String logoUrl = job.getCompanyLogo();
+            // Ensure URL is absolute
+            if (!logoUrl.startsWith("http")) {
+                // If it's a relative URL, append to base URL
+                String baseUrl = "https://emps.co.in/";
+                if (logoUrl.startsWith("/")) {
+                    logoUrl = baseUrl + logoUrl.substring(1);
+                } else {
+                    logoUrl = baseUrl + logoUrl;
+                }
+            }
+            
+            Log.d("JobDetailsFragment", "Loading company logo from: " + logoUrl);
+            
+            Glide.with(requireContext())
+                .load(logoUrl)
+                .placeholder(R.drawable.ic_company)
+                .error(R.drawable.ic_company)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(companyLogoView);
+        } else if (companyLogoView != null) {
+            // Set default company icon
+            companyLogoView.setImageResource(R.drawable.ic_company);
+        }
+
+        // Load job image if available
+        if (jobImageView != null && job.getImage() != null && !job.getImage().isEmpty()) {
+            jobImageView.setVisibility(View.VISIBLE);
+            String imageUrl = job.getImage();
+            if (!imageUrl.startsWith("http")) {
+                String baseUrl = "https://emps.co.in/";
+                if (imageUrl.startsWith("/")) {
+                    imageUrl = baseUrl + imageUrl.substring(1);
+                } else {
+                    imageUrl = baseUrl + imageUrl;
+                }
+            }
+            Log.d("JobDetailsFragment", "Loading job image from: " + imageUrl);
+            Glide.with(requireContext())
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_jobs)
+                .error(R.drawable.ic_jobs)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(jobImageView);
+        } else if (jobImageView != null) {
+            jobImageView.setVisibility(View.GONE);
+        }
+
+        // Always show job description
+        if (descriptionTextView != null) {
+            descriptionTextView.setVisibility(View.VISIBLE);
+            descriptionTextView.setText(job.getDescription());
+        }
         // Enable apply button only if job is active
         applyButton.setEnabled(job.isActive());
         if (!job.isActive()) {
             applyButton.setText("Job Closed");
         }
+    }
+    
+    /**
+     * Format salary with currency symbol
+     */
+    private String formatSalaryWithCurrency(String salaryText) {
+        if (salaryText == null || salaryText.isEmpty()) {
+            return "$0";
+        }
+        
+        // Remove any existing currency symbols or formatting
+        String cleanSalary = salaryText.replaceAll("[^\\d.,]|^[.,]", "").trim();
+        
+        // If empty after cleaning, return default
+        if (cleanSalary.isEmpty()) {
+            return "$0";
+        }
+        
+        // Handle different formats - K notation, ranges, etc.
+        if (cleanSalary.contains("-")) {
+            // Handle salary ranges
+            String[] parts = cleanSalary.split("-");
+            if (parts.length == 2) {
+                String start = parts[0].trim();
+                String end = parts[1].trim();
+                return "$" + start + " - $" + end;
+            }
+        } else if (cleanSalary.toLowerCase().contains("k")) {
+            // Handle K notation (thousands)
+            return "$" + cleanSalary;
+        }
+        
+        // Default formatting with dollar sign
+        return "$" + cleanSalary;
     }
     
     private void applyForJob() {
@@ -158,28 +344,69 @@ public class JobDetailsFragment extends Fragment {
 
         // Show loading state
         applyButton.setEnabled(false);
-        applyButton.setText("Applying...");
+        applyButton.setText("Checking...");
+        
+        // Log that we're applying for a job
+        Log.d("JobDetailsFragment", "Applying for job ID: " + jobId + ", Is Featured: " + isFeaturedJob);
         
         // Create API client with context
         ApiClient apiClient = ApiClient.getInstance(requireContext());
         
-        // Make API call to apply for the job
-        apiClient.applyForJob(Integer.parseInt(jobId), new ApiCallback<ApiResponse<Application>>() {
+        // First, check if the user has a resume by fetching the profile
+        apiClient.getUserProfile(new ApiCallback<ApiResponse<User>>() {
             @Override
-            public void onSuccess(ApiResponse<Application> response) {
+            public void onSuccess(ApiResponse<User> response) {
                 if (isAdded()) {  // Check if fragment is still attached
-                    // Update UI on success
-                    applyButton.setText("Applied");
-                    applyButton.setEnabled(false);
-                    Toast.makeText(requireContext(), 
-                            "Application submitted successfully", Toast.LENGTH_SHORT).show();
+                    User user = response.getData();
+                    
+                    if (user != null) {
+                        String resumeUrl = user.getResume();
+                        
+                        if (resumeUrl != null && !resumeUrl.isEmpty()) {
+                            // User has a resume, navigate to the JobApplicationFragment
+                            applyButton.setEnabled(true);
+                            applyButton.setText("Apply Now");
+                            
+                            // Get job details to pass to the application form
+                            String jobTitle = titleTextView.getText().toString();
+                            String company = companyTextView.getText().toString();
+                            
+                            // Navigate to application form fragment, passing the featured job flag
+                            JobApplicationNewFragment applicationFragment = 
+                                JobApplicationNewFragment.newInstance(jobId, jobTitle, company, isFeaturedJob);
+                            requireActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, applicationFragment)
+                                .addToBackStack(null)
+                                .commit();
+                        } else {
+                            // User doesn't have a resume, prompt to upload
+                            applyButton.setEnabled(true);
+                            applyButton.setText("Apply Now");
+                            
+                            Toast.makeText(requireContext(), 
+                                "Please upload your resume in profile before applying", Toast.LENGTH_LONG).show();
+                            // Navigate to application form fragment anyway, as resume upload is now part of the flow
+                            JobApplicationNewFragment applicationFragment = 
+                                JobApplicationNewFragment.newInstance(jobId, titleTextView.getText().toString(), 
+                                                                    companyTextView.getText().toString(), isFeaturedJob);
+                            requireActivity().getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment_container, applicationFragment)
+                                .addToBackStack(null)
+                                .commit();
+                        }
+                    } else {
+                        // Error getting user data
+                        applyButton.setEnabled(true);
+                        applyButton.setText("Apply Now");
+                        Toast.makeText(requireContext(), 
+                            "Error fetching profile data. Please try again.", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
-        
+            
             @Override
             public void onError(String errorMessage) {
                 if (isAdded()) {  // Check if fragment is still attached
-                    // Re-enable button on error
                     applyButton.setEnabled(true);
                     applyButton.setText("Apply Now");
                     
@@ -190,7 +417,7 @@ public class JobDetailsFragment extends Fragment {
                         requireActivity().finish();
                     } else {
                         Toast.makeText(requireContext(), 
-                                "Failed to apply: " + errorMessage, Toast.LENGTH_SHORT).show();
+                            "Error: " + errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 }
             }

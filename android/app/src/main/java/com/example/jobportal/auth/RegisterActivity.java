@@ -128,7 +128,7 @@ public class RegisterActivity extends AppCompatActivity {
             tilMobile.setError("Mobile number is required");
             isValid = false;
         } else if (!android.util.Patterns.PHONE.matcher(mobile).matches()) {
-            tilMobile.setError("Enter a valid mobile number");
+            tilMobile.setError("Enter a 10 digit valid mobile number");
             isValid = false;
         } else {
             tilMobile.setError(null);
@@ -139,8 +139,8 @@ public class RegisterActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(password)) {
             tilPassword.setError("Password is required");
             isValid = false;
-        } else if (password.length() < 6) {
-            tilPassword.setError("Password must be at least 6 characters");
+        } else if (password.length() < 8) {
+            tilPassword.setError("Password must be at least 8 characters");
             isValid = false;
         } else {
             tilPassword.setError(null);

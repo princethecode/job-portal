@@ -58,8 +58,11 @@ public class ApplicationsViewModel extends AndroidViewModel {
             @Override
             public void onSuccess(ApiResponse<Map<String, Object>> response) {
                 loading.postValue(false);
-                if (response.isSuccess() && response.getData() != null) {
-                    try {
+                
+                try {
+                    if (response.isSuccess() && response.getData() != null) {
+                        Log.d(TAG, "Response data: " + new Gson().toJson(response.getData()));
+                        
                         // Process the nested structure of response
                         Map<String, Object> data = response.getData();
                         if (data.containsKey("jobs")) {
@@ -67,62 +70,147 @@ public class ApplicationsViewModel extends AndroidViewModel {
                             List<com.example.jobportal.models.Application> applicationList = new ArrayList<>();
                             
                             if (jobsObj instanceof List) {
-                                List<Map<String, Object>> jobs = (List<Map<String, Object>>) jobsObj;
-                                
-                                for (Map<String, Object> jobMap : jobs) {
-                                    if (jobMap.containsKey("application")) {
-                                        // Extract job data
-                                        String jobId = String.valueOf(jobMap.get("id"));
-                                        String title = (String) jobMap.get("title");
-                                        String company = (String) jobMap.get("company");
-                                        String location = (String) jobMap.get("location");
-                                        
-                                        // Extract application data
-                                        Map<String, Object> appData = (Map<String, Object>) jobMap.get("application");
-                                        String appId = String.valueOf(appData.get("id"));
-                                        String status = (String) appData.get("status");
-                                        String appliedDate = (String) appData.get("applied_date");
-                                        
-                                        // Create application object
-                                        com.example.jobportal.models.Application application = 
-                                            new com.example.jobportal.models.Application();
-                                        application.setId(appId);
-                                        application.setJobTitle(title);
-                                        application.setCompany(company);
-                                        application.setStatus(status);
-                                        application.setApplicationDate(appliedDate);
-                                        
-                                        // Create job object and associate with application
-                                        Job job = new Job();
-                                        job.setId(jobId);
-                                        job.setTitle(title);
-                                        job.setCompany(company);
-                                        job.setLocation(location);
-                                        application.setJob(job);
-                                        
-                                        applicationList.add(application);
-                                    }
-                                }
-                                
-                                applications.postValue(applicationList);
+                                Log.d(TAG, "Jobs is a List with " + ((List<?>) jobsObj).size() + " items");
+                                processJobsList((List<?>) jobsObj, applicationList);
+                            } else if (jobsObj instanceof Map) {
+                                Log.d(TAG, "Jobs is a Map, trying to handle as array-like object");
+                                processJobsMap((Map<?, ?>) jobsObj, applicationList);
+                            } else {
+                                Log.e(TAG, "Jobs is an unknown type: " + (jobsObj != null ? jobsObj.getClass().getName() : "null"));
+                                error.postValue("Cannot parse jobs data format");
+                                return;
+                            }
+                            
+                            applications.postValue(applicationList);
+                            if (applicationList.isEmpty()) {
+                                error.postValue("No applications found");
                             }
                         } else {
+                            Log.e(TAG, "No 'jobs' key in response data: " + new Gson().toJson(data));
                             error.postValue("No applications data found");
                         }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error parsing application data", e);
-                        error.postValue("Error parsing data: " + e.getMessage());
+                    } else {
+                        String message = response.getMessage() != null ? response.getMessage() : "Failed to load applications";
+                        Log.e(TAG, "API error: " + message);
+                        error.postValue(message);
                     }
-                } else {
-                    error.postValue("Failed to load applications");
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing application data", e);
+                    error.postValue("Error parsing data: " + e.getMessage());
                 }
             }
 
             @Override
             public void onError(String errorMessage) {
+                Log.e(TAG, "onError: " + errorMessage);
                 loading.postValue(false);
                 error.postValue(errorMessage);
             }
         });
+    }
+    
+    private void processJobsList(List<?> jobs, List<com.example.jobportal.models.Application> applicationList) {
+        for (Object jobObj : jobs) {
+            if (!(jobObj instanceof Map)) {
+                Log.e(TAG, "Job item is not a Map: " + jobObj.getClass().getName());
+                continue;
+            }
+            
+            Map<?, ?> jobMap = (Map<?, ?>) jobObj;
+            if (jobMap.containsKey("application")) {
+                try {
+                    // Extract job data
+                    String jobId = String.valueOf(jobMap.get("id"));
+                    String title = String.valueOf(jobMap.get("title"));
+                    String company = String.valueOf(jobMap.get("company"));
+                    String location = String.valueOf(jobMap.get("location"));
+                    
+                    // Extract application data
+                    Object appObj = jobMap.get("application");
+                    if (!(appObj instanceof Map)) {
+                        Log.e(TAG, "Application is not a Map: " + appObj.getClass().getName());
+                        continue;
+                    }
+                    
+                    Map<?, ?> appData = (Map<?, ?>) appObj;
+                    String appId = String.valueOf(appData.get("id"));
+                    String status = String.valueOf(appData.get("status"));
+                    String appliedDate = String.valueOf(appData.get("applied_date"));
+                    
+                    // Create application object
+                    com.example.jobportal.models.Application application = 
+                        new com.example.jobportal.models.Application();
+                    application.setId(appId);
+                    application.setJobTitle(title);
+                    application.setCompany(company);
+                    application.setStatus(status);
+                    application.setApplicationDate(appliedDate);
+                    
+                    // Create job object and associate with application
+                    Job job = new Job();
+                    job.setId(jobId);
+                    job.setTitle(title);
+                    job.setCompany(company);
+                    job.setLocation(location);
+                    application.setJob(job);
+                    
+                    applicationList.add(application);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error processing job data", e);
+                }
+            }
+        }
+    }
+    
+    private void processJobsMap(Map<?, ?> jobsMap, List<com.example.jobportal.models.Application> applicationList) {
+        // Sometimes the API might return a map with numeric keys instead of a list
+        for (Object key : jobsMap.keySet()) {
+            Object jobObj = jobsMap.get(key);
+            if (jobObj instanceof Map) {
+                Map<?, ?> jobMap = (Map<?, ?>) jobObj;
+                
+                try {
+                    // Extract job data
+                    String jobId = String.valueOf(jobMap.get("id"));
+                    String title = String.valueOf(jobMap.get("title"));
+                    String company = String.valueOf(jobMap.get("company"));
+                    String location = String.valueOf(jobMap.get("location"));
+                    
+                    // Extract application data if available
+                    if (jobMap.containsKey("application")) {
+                        Object appObj = jobMap.get("application");
+                        if (!(appObj instanceof Map)) {
+                            continue;
+                        }
+                        
+                        Map<?, ?> appData = (Map<?, ?>) appObj;
+                        String appId = String.valueOf(appData.get("id"));
+                        String status = String.valueOf(appData.get("status"));
+                        String appliedDate = String.valueOf(appData.get("applied_date"));
+                        
+                        // Create application object
+                        com.example.jobportal.models.Application application = 
+                            new com.example.jobportal.models.Application();
+                        application.setId(appId);
+                        application.setJobTitle(title);
+                        application.setCompany(company);
+                        application.setStatus(status);
+                        application.setApplicationDate(appliedDate);
+                        
+                        // Create job object and associate with application
+                        Job job = new Job();
+                        job.setId(jobId);
+                        job.setTitle(title);
+                        job.setCompany(company);
+                        job.setLocation(location);
+                        application.setJob(job);
+                        
+                        applicationList.add(application);
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error processing job data from map", e);
+                }
+            }
+        }
     }
 }

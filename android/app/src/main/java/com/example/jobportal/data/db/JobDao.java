@@ -29,4 +29,7 @@ public interface JobDao {
 
     @Query("SELECT * FROM jobs WHERE title LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%'")
     LiveData<List<Job>> searchJobs(String query);
+    
+    @Query("SELECT * FROM jobs WHERE category LIKE :category")
+    LiveData<List<Job>> getJobsByCategory(String category);
 } 

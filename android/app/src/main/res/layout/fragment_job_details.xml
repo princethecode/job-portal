@@ -9,18 +9,22 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize">
 
+        <!-- Loading State -->
         <ProgressBar
             android:id="@+id/progress_bar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:indeterminateTint="@color/primary"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Content Container -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/content_layout"
             android:layout_width="match_parent"
@@ -28,145 +32,282 @@
             android:visibility="gone"
             tools:visibility="visible">
 
+            <!-- Job Header Card -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/header_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="#F5F5F5"
-                app:cardElevation="0dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="#F8F9FA"
+                app:cardElevation="2dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- Company Logo -->
+                    <ImageView
+                        android:id="@+id/company_logo"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="12dp"
+                        android:src="@drawable/ic_company"
+                        app:tint="@color/primary" />
+
+                    <!-- Job Title -->
                     <TextView
                         android:id="@+id/job_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_primary"
                         android:textSize="22sp"
                         android:textStyle="bold"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
                         tools:text="Senior Software Engineer" />
 
-                    <TextView
-                        android:id="@+id/company_name"
-                        android:layout_width="wrap_content"
+                    <!-- Company with icon -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_company"
+                            app:tint="@color/text_secondary" />
+                            
+                        <TextView
+                            android:id="@+id/company_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="16sp"
+                            tools:text="Google Inc." />
+                    </LinearLayout>
+
+                    <!-- Location with icon -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:drawablePadding="8dp"
-                        android:textColor="#666666"
-                        android:textSize="16sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/job_title"
-                        tools:text="Google Inc." />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_location"
+                            app:tint="@color/text_secondary" />
+                            
+                        <TextView
+                            android:id="@+id/location"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="16sp"
+                            tools:text="Mountain View, CA" />
+                    </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/location"
-                        android:layout_width="wrap_content"
+                    <!-- Salary with icon -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:drawablePadding="8dp"
-                        android:textColor="#666666"
-                        android:textSize="16sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/company_name"
-                        tools:text="Mountain View, CA" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_salary"
+                            app:tint="@color/primary" />
+                            
+                        <TextView
+                            android:id="@+id/salary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:textColor="@color/primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:text="$120K - $150K per year" />
+                    </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/salary"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:drawablePadding="8dp"
-                        android:textColor="#4CAF50"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/location"
-                        tools:text="$120K - $150K per year" />
-
-                    <TextView
-                        android:id="@+id/job_type"
-                        android:layout_width="wrap_content"
+                    <!-- Bottom info section with chips -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:background="@drawable/job_type_background"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="4dp"
-                        android:textColor="#666666"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/salary"
-                        tools:text="Full-time" />
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/posting_date"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:textColor="#666666"
-                        android:textSize="14sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/job_type"
-                        tools:text="Posted: May 10, 2023" />
+                        <!-- Job Type Chip -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill_primary"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+                            
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_work"
+                                app:tint="@android:color/white" />
+                                
+                            <TextView
+                                android:id="@+id/job_type"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:textColor="@android:color/white"
+                                android:textSize="14sp"
+                                tools:text="Full-time" />
+                        </LinearLayout>
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                        <!-- Posted Date with icon -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+                            
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_calendar"
+                                app:tint="@color/text_hint" />
+                                
+                            <TextView
+                                android:id="@+id/posting_date"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:textColor="@color/text_hint"
+                                android:textSize="14sp"
+                                tools:text="Posted: May 10, 2023" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:id="@+id/description_label"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="16dp"
-                android:text="Job Description"
-                android:textColor="#333333"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/header_card" />
+            <!-- Job Image -->
+            
 
-            <TextView
-                android:id="@+id/description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="8dp"
-                android:lineSpacingExtra="4dp"
-                android:textColor="#333333"
-                android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/description_label"
-                tools:text="This is a detailed job description that explains all the responsibilities, requirements, and benefits of this position." />
 
-            <Button
-                android:id="@+id/apply_button"
+            <LinearLayout
+                android:id="@+id/description_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="24dp"
-                android:background="#4CAF50"
-                android:padding="12dp"
-                android:text="Apply Now"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/description"
-                app:layout_constraintVertical_bias="0.746" />
+                app:layout_constraintTop_toBottomOf="@id/header_card">
 
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_description"
+                        app:tint="@color/text_primary" />
+                        
+                    <TextView
+                        android:id="@+id/description_label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Job Description"
+                        android:textColor="@color/text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Description Content -->
+
+                <ImageView
+                android:id="@+id/job_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:layout_marginTop="16dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="@string/job_image"
+                android:visibility="gone"
+                tools:src="@drawable/ic_jobs" />
+
+                <TextView
+                    android:id="@+id/description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:lineSpacingExtra="6dp"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    tools:text="This is a detailed job description that explains all the responsibilities, requirements, and benefits of this position." />
+            </LinearLayout>
+
+            <!-- Action Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="24dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/description_container"
+                app:layout_constraintVertical_bias="1.0">
+
+                <!-- Save Button -->
+<!--                <com.google.android.material.button.MaterialButton-->
+<!--                    android:id="@+id/save_button"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="56dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:layout_marginEnd="8dp"-->
+<!--                    android:text="Save"-->
+<!--                    android:textAllCaps="false"-->
+<!--                    app:icon="@drawable/ic_bookmark_border"-->
+<!--                    app:iconGravity="textStart"-->
+<!--                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />-->
+
+                <!-- Apply Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/apply_button"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_weight="2"
+                    android:text="Apply Now"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    android:backgroundTint="@color/primary"
+                    app:icon="@drawable/ic_apply"
+                    app:iconGravity="textStart"
+                    app:iconTint="@android:color/white" />
+            </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView> 

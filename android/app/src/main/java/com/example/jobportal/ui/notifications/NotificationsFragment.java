@@ -28,6 +28,8 @@ public class NotificationsFragment extends Fragment implements NotificationAdapt
     private TextView textNotifications;
     private SwipeRefreshLayout swipeRefreshLayout;
     private TextView emptyView;
+    private View emptyStateContainer;
+    private View progressBar;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -38,6 +40,8 @@ public class NotificationsFragment extends Fragment implements NotificationAdapt
         recyclerView = root.findViewById(R.id.notifications_recycler_view);
         swipeRefreshLayout = root.findViewById(R.id.swipe_refresh_layout);
         emptyView = root.findViewById(R.id.empty_view);
+        emptyStateContainer = root.findViewById(R.id.empty_state_container);
+        progressBar = root.findViewById(R.id.progress_bar);
         
         // Setup SwipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener(() -> {
@@ -64,6 +68,11 @@ public class NotificationsFragment extends Fragment implements NotificationAdapt
         // Observe loading state
         viewModel.getLoading().observe(getViewLifecycleOwner(), isLoading -> {
             swipeRefreshLayout.setRefreshing(isLoading);
+            if (isLoading) {
+                progressBar.setVisibility(View.VISIBLE);
+            } else {
+                progressBar.setVisibility(View.GONE);
+            }
         });
         
         // Observe errors
@@ -82,11 +91,11 @@ public class NotificationsFragment extends Fragment implements NotificationAdapt
         
         if (notifications == null || notifications.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
-            emptyView.setVisibility(View.VISIBLE);
+            emptyStateContainer.setVisibility(View.VISIBLE);
             textNotifications.setText("Notifications");
         } else {
             recyclerView.setVisibility(View.VISIBLE);
-            emptyView.setVisibility(View.GONE);
+            emptyStateContainer.setVisibility(View.GONE);
             textNotifications.setText("Notifications (" + notifications.size() + ")");
         }
     }

@@ -1,0 +1,34 @@
+<IfModule mod_rewrite.c>
+    #Session timeout
+
+    <IfModule mod_negotiation.c>
+        Options -MultiViews
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Handle Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Set proper permissions
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+
+# Allow access to specific file types
+<FilesMatch "\.(pdf|doc|docx|txt|jpg|jpeg|png|gif|webp|svg)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>

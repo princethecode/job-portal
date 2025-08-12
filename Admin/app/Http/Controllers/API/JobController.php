@@ -6,9 +6,18 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Job;
 use Illuminate\Support\Facades\Validator;
+use App\Services\FirebaseNotificationService;
+use App\Models\User;
 
 class JobController extends Controller
 {
+    protected $notificationService;
+
+    public function __construct(FirebaseNotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     /**
      * Display a listing of jobs with optional filters
      *
@@ -44,9 +53,8 @@ class JobController extends Controller
             });
         }
 
-        // Get paginated results
-        $jobs = $query->orderBy('posting_date', 'desc')
-                      ->paginate(10);
+        // Get all results
+        $jobs = $query->orderBy('posting_date', 'desc')->paginate(10);
 
         return response()->json([
             'success' => true,
@@ -86,26 +94,45 @@ class JobController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'company' => 'required|string|max:255',
-            'location' => 'required|string|max:255',
-            'salary' => 'nullable|string|max:255',
-            'job_type' => 'required|in:Full-time,Part-time,Contract',
-            'category' => 'required|string|max:255',
-            'posting_date' => 'required|date',
-            'expiry_date' => 'required|date|after:posting_date',
-        ]);
+    'title' => 'required|string|max:255',
+    'description' => 'required|string',
+    'company' => 'required|string|max:255',
+    'location' => 'required|string|max:255',
+    'salary' => 'nullable|string|max:255',
+    'job_type' => 'required|in:Full-time,Part-time,Contract',
+    'category' => 'required|string|max:255',
+    'posting_date' => 'required|date',
+    'expiry_date' => 'required|date|after:posting_date',
+    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
+if ($validator->fails()) {
+    return response()->json([
+        'success' => false,
+        'message' => 'Validation error',
+        'errors' => $validator->errors()
+    ], 422);
+}
+
+$data = $request->all();
+if ($request->hasFile('image')) {
+    $imagePath = $request->file('image')->store('job_images', 'public');
+    $data['image'] = $imagePath;
+}
+
+$job = Job::create($data);
+
+        // Get all users who should be notified about new jobs
+        $users = User::whereNotNull('fcm_token')->get();
+
+        // Send notification to all users
+        foreach ($users as $user) {
+            $this->notificationService->sendNewJobNotification(
+                $user->fcm_token,
+                $job->title,
+                $job->id
+            );
         }
-
-        $job = Job::create($request->all());
 
         return response()->json([
             'success' => true,

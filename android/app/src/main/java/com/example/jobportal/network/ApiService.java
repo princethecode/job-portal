@@ -1,11 +1,13 @@
 package com.example.jobportal.network;
 
 import com.example.jobportal.models.Application;
+import com.example.jobportal.models.Experience;
 import com.example.jobportal.models.Job;
 import com.example.jobportal.models.JobsListResponse;
 import com.example.jobportal.models.User;
 import com.example.jobportal.models.Notification;
 import com.example.jobportal.models.LoginResponse;
+import com.example.jobportal.models.FeaturedJob;
 
 import java.util.List;
 import java.util.Map;
@@ -14,6 +16,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -23,6 +26,7 @@ import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
 import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
+import retrofit2.http.Headers;
 
 public interface ApiService {
     
@@ -34,18 +38,27 @@ public interface ApiService {
     Call<ApiResponse<User>> register(@Body Map<String, String> registerData);
     
     @POST("forgot-password")
-    Call<ApiResponse<Void>> forgotPassword(@Body Map<String, String> emailData);
+    Call<ApiResponse<Object>> forgotPassword(@Body Map<String, String> emailData);
+    
+    @POST("reset-password")
+    Call<ApiResponse<Void>> resetPassword(@Body Map<String, String> resetData);
     
     @GET("user")
     Call<User> getUserProfile();
     
-    @PUT("profile")
+    @POST("profile")
     Call<ApiResponse<User>> updateUserProfile(@Body Map<String, String> profileData);
     
     @Multipart
     @POST("profile/resume")
     Call<ApiResponse<User>> uploadResume(
             @Part MultipartBody.Part resume
+    );
+    
+    @Multipart
+    @POST("profile/photo")
+    Call<ApiResponse<User>> uploadProfilePhoto(
+            @Part MultipartBody.Part photo
     );
 
     // Contact Upload Endpoint
@@ -75,6 +88,13 @@ public interface ApiService {
             @Part("cover_letter") RequestBody coverLetter,
             @Part MultipartBody.Part resume
     );
+    
+    // New endpoint for job application with employment details
+    @POST("jobs/{id}/apply-with-details")
+    Call<ApiResponse<Application>> applyForJobWithDetails(
+            @Path("id") int jobId,
+            @Body Map<String, String> employmentDetails
+    );
 
     @GET("applications")
     Call<ApiResponse<List<Application>>> getUserApplications();
@@ -85,6 +105,23 @@ public interface ApiService {
     @GET("applications/{id}")
     Call<ApiResponse<Application>> getApplicationDetails(@Path("id") int applicationId);
 
+    // Experience endpoints
+    @GET("experiences")
+    Call<ApiResponse<List<Experience>>> getUserExperiences();
+    
+    @POST("experiences")
+    Call<ApiResponse<Experience>> addExperience(@Body Experience experience);
+    
+    @GET("experiences/{id}")
+    Call<ApiResponse<Experience>> getExperienceDetails(@Path("id") long experienceId);
+    
+    @PUT("experiences/{id}")
+    Call<ApiResponse<Experience>> updateExperience(@Path("id") long experienceId, @Body Experience experience);
+    
+    @DELETE("experiences/{id}")
+    Call<ApiResponse<Void>> deleteExperience(@Path("id") long experienceId);
+
+    // Notification endpoints
     @GET("notifications")
     Call<ApiResponse<List<Notification>>> getNotifications();
     
@@ -97,5 +134,21 @@ public interface ApiService {
     @POST("change-password")
     Call<ApiResponse<Void>> changePassword(@Body Map<String, String> passwordData);
     
+    // Add contact update endpoint
+    @POST("users/update-contact")
+    @Headers({
+        "Accept: application/json",
+        "Content-Type: application/json"
+    })
+    Call<ApiResponse<User>> updateUserContact(@Body Map<String, String> contactData);
 
+    // Add FCM token registration endpoint
+    @POST("users/register-fcm-token")
+    Call<ResponseBody> registerFcmToken(@Body Map<String, String> tokenData);
+
+    @GET("featured-jobs")
+    Call<ApiResponse<List<FeaturedJob>>> getFeaturedJobs();
+    
+    @GET("featured-jobs/{id}")
+    Call<ApiResponse<FeaturedJob>> getFeaturedJobDetails(@Path("id") int jobId);
 }

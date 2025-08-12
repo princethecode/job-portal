@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
+
+    <!-- Top App Bar with improved design -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/white"
+            android:elevation="2dp">
+
+            <TextView
+                android:id="@+id/formTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Experience Details"
+                android:textColor="#333333"
+                android:textSize="20sp"
+                android:fontFamily="sans-serif-medium" />
+
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="16dp">
+
+            <!-- Instructions Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="1dp">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+                    
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_vertical"
+                        android:src="@android:drawable/ic_dialog_info"
+                        app:tint="#3F51B5" />
+                        
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:text="Please provide your work experience"
+                        android:textColor="#555555"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Experience Details Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Job Title Input with icon -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/jobTitleLayout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Job Title"
+                        app:startIconDrawable="@android:drawable/ic_menu_edit"
+                        app:startIconTint="#3F51B5">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etJobTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Company Name Input with icon -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/companyNameLayout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:hint="Company Name"
+                        app:startIconDrawable="@android:drawable/ic_menu_myplaces"
+                        app:startIconTint="#3F51B5">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etCompanyName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="text" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Date Inputs Layout -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal">
+
+                        <!-- Start Date Input with icon -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/startDateLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:hint="Start Date"
+                            app:startIconDrawable="@android:drawable/ic_menu_my_calendar"
+                            app:startIconTint="#3F51B5">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etStartDate"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:clickable="true"
+                                android:focusable="false"
+                                android:inputType="none" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- End Date Input with icon -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/endDateLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:hint="End Date"
+                            app:startIconDrawable="@android:drawable/ic_menu_my_calendar"
+                            app:startIconTint="#3F51B5">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etEndDate"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:clickable="true"
+                                android:focusable="false"
+                                android:inputType="none" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <!-- Current Job Checkbox with improved styling -->
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/cbCurrentJob"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="I currently work here"
+                        android:textColor="#555555" />
+
+                    <!-- Description Input with icon -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/descriptionLayout"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:hint="Description"
+                        app:startIconDrawable="@android:drawable/ic_menu_sort_by_size"
+                        app:startIconTint="#3F51B5">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etDescription"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="top"
+                            android:inputType="textMultiLine"
+                            android:minLines="4" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Buttons Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Save Button with improved styling -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSaveExperience"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Save Experience"
+                        android:textAllCaps="false"
+                        app:cornerRadius="8dp"
+                        app:icon="@android:drawable/ic_menu_save"
+                        app:iconGravity="textStart" />
+
+                    <!-- Delete Button (shown only when editing existing experience) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDeleteExperience"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Delete Experience"
+                        android:textAllCaps="false"
+                        android:textColor="#D32F2F"
+                        android:visibility="gone"
+                        app:cornerRadius="8dp"
+                        app:icon="@android:drawable/ic_menu_delete"
+                        app:iconGravity="textStart"
+                        app:iconTint="#D32F2F"
+                        app:strokeColor="#D32F2F" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -28,6 +28,8 @@ class ApplicationSeeder extends Seeder
                 'user_id' => $users->random()->id,
                 'job_id' => $jobs->random()->id,
                 'status' => $status,
+                'posting_date' => $createdAt,  // Added missing posting_date field
+                'applied_date' => $createdAt,  // Added applied_date for consistency
                 'created_at' => $createdAt,
                 'updated_at' => $createdAt->copy()->addDays(rand(0, 5)),
             ]);

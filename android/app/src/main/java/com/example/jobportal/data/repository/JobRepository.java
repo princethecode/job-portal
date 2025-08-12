@@ -45,6 +45,11 @@ public class JobRepository {
     public LiveData<List<Job>> searchJobs(String query) {
         return jobDao.searchJobs(query);
     }
+    
+    public LiveData<List<Job>> getJobsByCategory(String category) {
+        refreshJobs(); // Refresh jobs to ensure we have the latest data
+        return jobDao.getJobsByCategory(category);
+    }
 
     private void refreshJobs() {
         executorService.execute(() -> {

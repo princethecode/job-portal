@@ -1,27 +1,175 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginTop="?attr/actionBarSize"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    >
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/jobsRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:padding="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="0dp">
+
+            <!-- Section 1: Search Bar -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/search_container"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <androidx.appcompat.widget.SearchView
+                        android:id="@+id/searchEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:iconifiedByDefault="false"
+                        android:queryHint="Search jobs, companies, skills..."
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_hint"
+                        android:textSize="16sp" />
+
+                    <ImageView
+                        android:id="@+id/filter_button"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:padding="12dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_filter_list" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Jobs search RecyclerView (kept for compatibility) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/jobsRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="56dp"
+                android:padding="8dp"
+                android:visibility="gone"
+                />
+
+            <!-- Section 2: Featured Jobs Slide View -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="Featured Jobs"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+                
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/featuredJobsViewPager"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:layout_marginTop="8dp"
+                android:clipToPadding="false"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp" />
+
+            <!-- Section 3: Job Categories -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Job Categories"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/jobCategoryRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="265dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:scrollbars="none"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="4" />
+
+            <!-- Section 4: Recent Jobs -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Recent Jobs"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/viewAllRecentJobs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:text="View All"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recentJobsRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Progress Bar -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
-</androidx.constraintlayout.widget.ConstraintLayout> 
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout> 

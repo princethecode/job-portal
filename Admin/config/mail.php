@@ -49,6 +49,10 @@ return [
         'ses' => [
             'transport' => 'ses',
         ],
+        
+        'mail' => [
+            'transport' => 'mail',
+        ],
 
         'postmark' => [
             'transport' => 'postmark',
@@ -84,6 +88,7 @@ return [
             'mailers' => [
                 'smtp',
                 'log',
+                'sendmail',
             ],
         ],
 
@@ -108,8 +113,8 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', 'Example'),
+        'address' => env('MAIL_FROM_ADDRESS', null),
+        'name' => env('MAIL_FROM_NAME', null),
     ],
 
     /*

@@ -15,9 +15,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.jobportal.R;
 import com.example.jobportal.models.Application;
 import com.example.jobportal.ui.applications.ApplicationAdapter.OnApplicationClickListener;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ApplicationsFragment extends Fragment {
     private RecyclerView recyclerView;
@@ -25,7 +28,19 @@ public class ApplicationsFragment extends Fragment {
     private View progressBar;
     private View emptyView;
     private TextView emptyText;
+    private ChipGroup statusFilterChipGroup;
+    private Chip chipAll, chipApplied, chipUnderReview, chipShortlisted, chipRejected, chipAccepted;
     private ApplicationsViewModel viewModel;
+    
+    // Status constants to match server statuses
+    private static final String STATUS_ALL = "all";
+    private static final String STATUS_APPLIED = "Applied";
+    private static final String STATUS_UNDER_REVIEW = "Under Review";
+    private static final String STATUS_SHORTLISTED = "Shortlisted";
+    private static final String STATUS_REJECTED = "Rejected";
+    private static final String STATUS_ACCEPTED = "Accepted";
+    
+    private String currentFilter = STATUS_ALL;
 
     @Nullable
     @Override
@@ -42,6 +57,22 @@ public class ApplicationsFragment extends Fragment {
         progressBar = view.findViewById(R.id.progress_bar);
         emptyView = view.findViewById(R.id.empty_view);
         emptyText = view.findViewById(R.id.empty_text);
+        
+        // Initialize chip filter group
+        statusFilterChipGroup = view.findViewById(R.id.status_filter_chip_group);
+        chipAll = view.findViewById(R.id.chip_all);
+        chipApplied = view.findViewById(R.id.chip_pending); // Using existing chip_pending for Applied status
+        chipUnderReview = view.findViewById(R.id.chip_reviewing); // Using existing chip_reviewing for Under Review status
+        chipShortlisted = view.findViewById(R.id.chip_shortlisted);
+        chipRejected = view.findViewById(R.id.chip_rejected);
+        chipAccepted = view.findViewById(R.id.chip_accepted);
+        
+        // Update chip text to match server statuses
+        chipApplied.setText(STATUS_APPLIED);
+        chipUnderReview.setText(STATUS_UNDER_REVIEW);
+        
+        // Setup chip filter listeners
+        setupChipFilters();
         
         // Setup RecyclerView
         setupRecyclerView();
@@ -79,7 +110,8 @@ public class ApplicationsFragment extends Fragment {
                 showEmptyView("You haven't applied to any jobs yet");
             } else {
                 recyclerView.setVisibility(View.VISIBLE);
-                applicationAdapter.setApplications(applications);
+                // Apply current filter to applications
+                applyFilter(applications);
             }
         });
         
@@ -106,5 +138,74 @@ public class ApplicationsFragment extends Fragment {
         recyclerView.setVisibility(View.GONE);
         emptyView.setVisibility(View.VISIBLE);
         emptyText.setText(message);
+    }
+    
+    /**
+     * Setup chip filter click listeners for application status filtering
+     */
+    private void setupChipFilters() {
+        // Setup individual chip click listeners
+        View.OnClickListener chipClickListener = view -> {
+            Chip clickedChip = (Chip) view;
+            currentFilter = getFilterValueFromChip(clickedChip);
+            
+            // Apply filter to current applications list
+            if (viewModel.getApplications().getValue() != null) {
+                applyFilter(viewModel.getApplications().getValue());
+            }
+        };
+        
+        // Set click listeners for each chip
+        chipAll.setOnClickListener(chipClickListener);
+        chipApplied.setOnClickListener(chipClickListener);
+        chipUnderReview.setOnClickListener(chipClickListener);
+        chipShortlisted.setOnClickListener(chipClickListener);
+        chipRejected.setOnClickListener(chipClickListener);
+        chipAccepted.setOnClickListener(chipClickListener);
+    }
+    
+    /**
+     * Get the filter value based on the selected chip
+     */
+    private String getFilterValueFromChip(Chip chip) {
+        int chipId = chip.getId();
+        
+        if (chipId == R.id.chip_all) {
+            return STATUS_ALL;
+        } else if (chipId == R.id.chip_pending) { // Applied
+            return STATUS_APPLIED;
+        } else if (chipId == R.id.chip_reviewing) { // Under Review
+            return STATUS_UNDER_REVIEW;
+        } else if (chipId == R.id.chip_shortlisted) {
+            return STATUS_SHORTLISTED;
+        } else if (chipId == R.id.chip_rejected) {
+            return STATUS_REJECTED;
+        } else if (chipId == R.id.chip_accepted) {
+            return STATUS_ACCEPTED;
+        }
+        
+        return STATUS_ALL; // Default to all
+    }
+    
+    /**
+     * Apply the selected filter to the applications list
+     */
+    private void applyFilter(List<Application> applications) {
+        if (currentFilter.equals(STATUS_ALL)) {
+            // Show all applications
+            applicationAdapter.setApplications(applications);
+        } else {
+            // Filter applications by status
+            List<Application> filteredList = applications.stream()
+                    .filter(app -> app.getStatus() != null && app.getStatus().equals(currentFilter))
+                    .collect(Collectors.toList());
+            
+            applicationAdapter.setApplications(filteredList);
+            
+            // Show empty view with filter info if no results
+            if (filteredList.isEmpty()) {
+                showEmptyView("No applications with status: " + currentFilter);
+            }
+        }
     }
 }

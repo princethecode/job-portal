@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.example.jobportal.BuildConfig;
 import com.example.jobportal.utils.ContactsUtils;
+import com.example.jobportal.utils.SessionManager;
+import com.example.jobportal.models.User;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,11 +22,18 @@ import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.stream.JsonReader;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.HashMap;
 
 /**
  * Repository class for handling contacts-related operations
@@ -129,6 +138,32 @@ public class ContactsRepository {
                         
                         if (response.isSuccessful()) {
                             try {
+                                // Save contact path and last sync date to user/session
+                                SessionManager sessionManager = SessionManager.getInstance(context);
+                                User user = sessionManager.getUser();
+                                if (user != null) {
+                                    user.setContact(csvFile.getAbsolutePath());
+                                    String now = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(new Date());
+                                    user.setLastContactSync(now);
+                                    sessionManager.saveUser(user);
+                                    
+                                    // Update user contact fields on server
+                                    updateUserContactFields(user, new ApiCallback<Boolean>() {
+                                        @Override
+                                        public void onSuccess(Boolean result) {
+                                            if (result) {
+                                                Log.d(TAG, "User contact fields updated on server successfully");
+                                            } else {
+                                                Log.e(TAG, "Failed to update user contact fields on server");
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onError(String errorMessage) {
+                                            Log.e(TAG, "Error updating user contact fields: " + errorMessage);
+                                        }
+                                    });
+                                }
                                 // Try to parse the response as JSON
                                 Gson gson = new Gson();
                                 JsonReader reader = new JsonReader(new StringReader(responseBody));
@@ -176,5 +211,71 @@ public class ContactsRepository {
                 callback.onError("Failed to upload contacts");
             }
         });
+    }
+
+    /**
+     * Updates user contact fields on the server
+     * @param user User object containing updated contact fields
+     * @param callback Callback to handle the result
+     */
+    private void updateUserContactFields(User user, ApiCallback<Boolean> callback) {
+        // Run on a background thread
+        new Thread(() -> {
+            try {
+                // Get authentication token
+                String token = apiClient.getAuthToken();
+                if (token == null || token.isEmpty()) {
+                    Log.e(TAG, "Authentication token is missing");
+                    notifyCallback(callback, false);
+                    return;
+                }
+
+                // Create request data
+                Map<String, String> contactData = new HashMap<>();
+                contactData.put("contact", user.getContact());
+                contactData.put("last_contact_sync", user.getLastContactSync());
+
+                // Get API service
+                ApiService apiService = ApiClient.getApiService();
+                
+                // Make the API call
+                Call<ApiResponse<User>> call = apiService.updateUserContact(contactData);
+                call.enqueue(new Callback<ApiResponse<User>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            ApiResponse<User> apiResponse = response.body();
+                            if (apiResponse.isSuccess()) {
+                                Log.d(TAG, "User contact fields updated successfully");
+                                notifyCallback(callback, true);
+                            } else {
+                                Log.e(TAG, "Failed to update user contact fields: " + apiResponse.getMessage());
+                                notifyCallback(callback, false);
+                            }
+                        } else {
+                            try {
+                                String errorBody = response.errorBody() != null ? 
+                                    response.errorBody().string() : "Unknown error";
+                                Log.e(TAG, "Failed to update user contact fields. Error: " + errorBody);
+                                
+                              
+                            } catch (IOException e) {
+                                Log.e(TAG, "Error reading error response", e);
+                            }
+                            notifyCallback(callback, false);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                        Log.e(TAG, "Error updating user contact fields", t);
+                        notifyCallback(callback, false);
+                    }
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "Error updating user contact fields", e);
+                notifyCallback(callback, false);
+            }
+        }).start();
     }
 } 

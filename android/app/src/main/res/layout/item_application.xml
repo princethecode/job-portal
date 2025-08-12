@@ -4,62 +4,145 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="4dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="3dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Status Indicator Ribbon -->
+        <View
+            android:id="@+id/status_indicator"
+            android:layout_width="4dp"
+            android:layout_height="0dp"
+            android:background="@drawable/status_pending_background"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Job Title -->
         <TextView
             android:id="@+id/application_job_title"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
+            android:layout_marginStart="12dp"
             android:ellipsize="end"
             android:maxLines="1"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/status_indicator"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="Senior Software Engineer" />
+
+        <!-- Company with Icon -->
+        <ImageView
+            android:id="@+id/company_icon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_company"
+            android:contentDescription="Company"
+            app:layout_constraintStart_toEndOf="@id/status_indicator"
+            app:layout_constraintTop_toBottomOf="@id/application_job_title" />
 
         <TextView
             android:id="@+id/application_company"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textSize="16sp"
+            android:layout_marginStart="8dp"
             android:textColor="#666666"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="@id/company_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/company_icon"
+            app:layout_constraintTop_toTopOf="@id/company_icon"
             tools:text="Google Inc." />
 
+        <!-- Status Badge -->
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/status_pending_background"
+            android:paddingStart="8dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="4dp"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            app:layout_constraintStart_toEndOf="@id/status_indicator"
+            app:layout_constraintTop_toBottomOf="@id/company_icon"
+            tools:text="Pending" />
+
+        <!-- Application Date with Icon -->
+        <ImageView
+            android:id="@+id/date_icon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginTop="12dp"
+            android:src="@drawable/ic_calendar"
+            android:contentDescription="Application Date"
+            app:layout_constraintEnd_toStartOf="@id/applied_date"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toEndOf="@id/status"
+            app:layout_constraintTop_toBottomOf="@id/company_icon" />
+
+        <TextView
+            android:id="@+id/applied_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textColor="#666666"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="@id/date_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/date_icon"
+            app:layout_constraintTop_toTopOf="@id/date_icon"
+            tools:text="May 15, 2023" />
+
+        <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/status"
+            app:layout_constraintStart_toEndOf="@id/status_indicator">
 
-            <TextView
-                android:id="@+id/status"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/view_details_button"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:text="View Details"
+                android:textAllCaps="false"
+                app:cornerRadius="8dp"
+                app:strokeColor="#3F51B5" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/withdraw_button"
+                style="@style/Widget.MaterialComponents.Button"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:drawableStart="@android:drawable/ic_menu_info_details"
-                android:drawablePadding="4dp"
-                android:textSize="14sp"
-                android:textColor="#666666" />
-
-            <TextView
-                android:id="@+id/applied_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:drawableStart="@android:drawable/ic_menu_today"
-                android:drawablePadding="4dp"
-                android:textSize="14sp"
-                android:textColor="#666666"
-                android:text="May 15, 2023" />
+                android:text="Withdraw"
+                android:textAllCaps="false"
+                app:cornerRadius="8dp" />
         </LinearLayout>
-    </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView> 

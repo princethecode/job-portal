@@ -19,6 +19,9 @@
     <dimen name="text_size_xxlarge">24sp</dimen>
     <dimen name="text_size_headline">28sp</dimen>
     <dimen name="text_size_display">34sp</dimen>
+    
+    <!-- Grid dimensions -->
+    <dimen name="grid_spacing">12dp</dimen>
 
     <!-- Corner radius dimensions -->
     <dimen name="corner_radius_small">4dp</dimen>

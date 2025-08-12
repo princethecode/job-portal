@@ -99,4 +99,37 @@ class UserController extends Controller
                 ->with('error', 'Failed to delete user.');
         }
     }
+
+    /**
+     * Remove multiple users at once
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'integer|exists:users,id'
+        ]);
+
+        try {
+            $users = User::whereIn('id', $request->user_ids)->get();
+            
+            foreach ($users as $user) {
+                // Delete user's resume if exists
+                if ($user->resume_path) {
+                    Storage::disk('public')->delete($user->resume_path);
+                }
+            }
+            
+            $count = User::whereIn('id', $request->user_ids)->delete();
+
+            return redirect()->route('admin.users.index')
+                ->with('success', "{$count} users deleted successfully");
+        } catch (\Exception $e) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Failed to delete users. ' . $e->getMessage());
+        }
+    }
 }

@@ -1,3 +1,79 @@
+# <IfModule mod_rewrite.c>
+#     <IfModule mod_negotiation.c>
+#         Options -MultiViews -Indexes
+#     </IfModule>
+
+#     RewriteEngine On
+
+#     # Allow access to all
+#     Order Allow,Deny
+#     Allow from all
+
+#     # Handle Authorization Header
+#     RewriteCond %{HTTP:Authorization} .
+#     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+#     # Redirect Trailing Slashes If Not A Folder...
+#     RewriteCond %{REQUEST_FILENAME} !-d
+#     RewriteCond %{REQUEST_URI} (.+)/$
+#     RewriteRule ^ %1 [L,R=301]
+
+#     # Send Requests To Front Controller...
+#     RewriteCond %{REQUEST_FILENAME} !-d
+#     RewriteCond %{REQUEST_FILENAME} !-f
+#     RewriteRule ^ index.php [L]
+# </IfModule>
+
+# # Enable directory listing if needed
+# Options +Indexes
+
+# # Set default index files
+# DirectoryIndex index.php index.html
+
+# <Directory /var/www/html/your-app/public>
+#     AllowOverride All
+# </Directory>
+
+# # Allow access to all files
+# <Files *>
+#     Order Allow,Deny
+#     Allow from all
+# </Files>
+
+# # Set proper permissions
+# <IfModule mod_authz_core.c>
+#     Require all granted
+# </IfModule>
+
+#  # Add these lines to your .htaccess file if using Apache
+#   <Files *.apk>
+#       Order Allow,Deny
+#       Allow from all
+#   </Files>
+
+#   # Add this to your site configuration or .htaccess
+#   <Directory "/path/to/your/public">
+#       Options Indexes FollowSymLinks
+#       AllowOverride All
+#       Require all granted
+#   </Directory>
+   
+#   # Add MIME type for APK files
+#   AddType application/vnd.android.package-archive .apk
+   
+#       # Add this to your nginx site config
+#   location ~ \.(apk)$ {
+#       add_header Content-Disposition "attachment";
+#       add_header Content-Type application/vnd.android.package-archive;
+#   }
+   
+#   # Make sure your server block includes
+#   location /assets/images/ {
+#       try_files $uri $uri/ =404;
+#   }
+
+
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
@@ -14,8 +90,26 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
+    # Handle Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Set proper permissions
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+
+# Allow access to specific file types
+<FilesMatch "\.(pdf|doc|docx|txt)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Add MIME types
+AddType application/pdf .pdf
+AddType application/msword .doc
+AddType application/vnd.openxmlformats-officedocument.wordprocessingml.document .docx
+AddType text/plain .txt
+

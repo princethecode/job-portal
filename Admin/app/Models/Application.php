@@ -16,6 +16,8 @@ class Application extends Model
         'status',
         'cover_letter',
         'resume_path',
+        'posting_date',
+        'applied_date',
     ];
 
     protected $casts = [

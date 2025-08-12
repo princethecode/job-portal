@@ -1,52 +1,179 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/text_jobs"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="@string/available_jobs"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/jobs_recycler_view"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:padding="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_jobs"
-        app:layout_constraintVertical_bias="0.0"
-        tools:layout_editor_absoluteX="0dp" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:fillViewport="true">
         
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/empty_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="No jobs available"
-        android:textSize="16sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+            <!-- Header with Title and Total Count -->
+            <LinearLayout
+                android:id="@+id/header_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="8dp"
+                app:layout_constraintTop_toTopOf="parent">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <TextView
+                    android:id="@+id/text_jobs"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/available_jobs"
+                    android:textColor="@color/text_primary"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/text_job_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:textColor="@color/primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    tools:text="24 Jobs" />
+            </LinearLayout>
+
+            <!-- Search Bar -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/search_container"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:layout_constraintTop_toBottomOf="@id/header_container">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <androidx.appcompat.widget.SearchView
+                        android:id="@+id/searchEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent"
+                        android:iconifiedByDefault="false"
+                        android:queryHint="Search job title, company..."
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_hint"
+                        android:textSize="16sp" />
+                    
+                    <ImageView
+                        android:id="@+id/filter_button"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:padding="12dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_filter_list" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Filter Chips -->
+            <HorizontalScrollView
+                android:id="@+id/filters_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:clipToPadding="false"
+                android:paddingHorizontal="16dp"
+                android:scrollbars="none"
+                app:layout_constraintTop_toBottomOf="@id/search_container">
+
+            </HorizontalScrollView>
+
+            <!-- Main Jobs RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/jobs_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="12dp"
+                android:clipToPadding="false"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/filters_scroll" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Loading State -->
+    <FrameLayout
+        android:id="@+id/loading_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80FFFFFF"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/primary" />
+    </FrameLayout>
+
+    <!-- Empty State -->
+    <LinearLayout
+        android:id="@+id/empty_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_no_jobs"
+            app:tint="@color/text_hint" />
+
+        <TextView
+            android:id="@+id/empty_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="No jobs available"
+            android:textAlignment="center"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Try different search terms or check back later for new opportunities"
+            android:textAlignment="center"
+            android:textColor="@color/text_secondary" />
+
+        <Button
+            android:id="@+id/refresh_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Refresh"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

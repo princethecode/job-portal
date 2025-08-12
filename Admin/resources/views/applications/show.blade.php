@@ -31,15 +31,15 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-4">
-                        <h4>{{ $application['job']['title'] }}</h4>
+                        <h4>{{ $application->job ? $application->job->title : 'Deleted Job' }}</h4>
                         <p class="text-muted">
-                            <i class="fas fa-building me-2"></i>{{ $application['job']['company'] }}
+                            <i class="fas fa-building me-2"></i>{{ $application->job ? $application->job->company : 'N/A' }}
                         </p>
                         <p class="text-muted">
-                            <i class="fas fa-map-marker-alt me-2"></i>{{ $application['job']['location'] }}
+                            <i class="fas fa-map-marker-alt me-2"></i>{{ $application->job ? $application->job->location : 'N/A' }}
                         </p>
                         <p class="text-muted">
-                            <i class="fas fa-calendar-alt me-2"></i>Applied on: {{ \Carbon\Carbon::parse($application['applied_date'])->format('M d, Y') }}
+                            <i class="fas fa-calendar-alt me-2"></i>Applied on: {{ $application->created_at->format('M d, Y') }}
                         </p>
                     </div>
                     
@@ -56,6 +56,7 @@
                                         <option value="Under Review" {{ $application['status'] == 'Under Review' ? 'selected' : '' }}>Under Review</option>
                                         <option value="Shortlisted" {{ $application['status'] == 'Shortlisted' ? 'selected' : '' }}>Shortlisted</option>
                                         <option value="Rejected" {{ $application['status'] == 'Rejected' ? 'selected' : '' }}>Rejected</option>
+                                        <option value="Accepted" {{ $application['status'] == 'Accepted' ? 'selected' : '' }}>Accepted</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4 mb-3">
@@ -71,10 +72,10 @@
                     <div class="mb-4">
                         <h5>Resume</h5>
                         <div class="mt-2">
-                            <a href="{{ env('API_URL') . '/storage/' . $application['resume_path'] }}" target="_blank" class="btn btn-outline-primary">
+                            <a href="{{ route('admin.resume.view', basename($application['resume_path'])) }}" target="_blank" class="btn btn-outline-primary">
                                 <i class="fas fa-file-pdf me-1"></i> View Resume
                             </a>
-                            <a href="{{ env('API_URL') . '/storage/' . $application['resume_path'] }}" download class="btn btn-outline-secondary ms-2">
+                            <a href="{{ route('admin.resume.view', basename($application['resume_path'])) }}" download class="btn btn-outline-secondary ms-2">
                                 <i class="fas fa-download me-1"></i> Download Resume
                             </a>
                         </div>
@@ -93,39 +94,41 @@
                 <div class="card-body">
                     <div class="text-center mb-3">
                         <i class="fas fa-user-circle fa-5x text-gray-300"></i>
-                        <h5 class="mt-3">{{ $application['user']['name'] }}</h5>
+                        <h5 class="mt-3">{{ $application->user ? $application->user->name : 'Deleted User' }}</h5>
                     </div>
                     
                     <div class="mb-3">
-                        <p><i class="fas fa-envelope me-2"></i>{{ $application['user']['email'] }}</p>
-                        @if($application['user']['mobile'])
-                            <p><i class="fas fa-phone me-2"></i>{{ $application['user']['mobile'] }}</p>
+                        <p><i class="fas fa-envelope me-2"></i>{{ $application->user ? $application->user->email : 'N/A' }}</p>
+                        @if($application->user && $application->user->mobile)
+                            <p><i class="fas fa-phone me-2"></i>{{ $application->user->mobile }}</p>
                         @endif
                     </div>
                     
-                    @if($application['user']['skills'])
+                    @if($application->user && $application->user->skills)
                     <div class="mb-3">
                         <h6>Skills</h6>
                         <div class="p-2 bg-light rounded">
-                            {!! nl2br(e($application['user']['skills'])) !!}
+                            {!! nl2br(e($application->user->skills)) !!}
                         </div>
                     </div>
                     @endif
                     
-                    @if($application['user']['experience'])
+                    @if($application->user && $application->user->experience)
                     <div class="mb-3">
                         <h6>Experience</h6>
                         <div class="p-2 bg-light rounded">
-                            {!! nl2br(e($application['user']['experience'])) !!}
+                            {!! nl2br(e($application->user->experience)) !!}
                         </div>
                     </div>
                     @endif
                     
+                    @if($application->user)
                     <div class="d-grid gap-2">
-                        <a href="{{ route('admin.users.show', $application['user']['id']) }}" class="btn btn-info">
+                        <a href="{{ route('admin.users.show', $application->user->id) }}" class="btn btn-info">
                             <i class="fas fa-user me-1"></i> View Full Profile
                         </a>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>

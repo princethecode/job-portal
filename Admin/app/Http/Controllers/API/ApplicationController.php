@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Application;
 use App\Models\Job;
+use App\Models\FeaturedJob;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 
@@ -42,23 +43,80 @@ class ApplicationController extends Controller
             ], 422);
         }
 
-        // Check if job exists and is active
-        $job = Job::where('id', $jobId)
-                  ->where('is_active', true)
-                  ->where('expiry_date', '>=', now())
-                  ->first();
+        // Check if this is a featured job application
+        $isFeaturedJob = $request->has('is_featured_job') && $request->is_featured_job === 'true';
+        
+        if ($isFeaturedJob) {
+            // Look for the job in the featured jobs table
+            $featuredJob = FeaturedJob::where('id', $jobId)
+                      ->where('is_active', true)
+                      ->first();
+                      
+            if (!$featuredJob) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Featured job not found or no longer available'
+                ], 404);
+            }
+            
+            // Check if we already created a regular job entry for this featured job
+            $job = Job::where('title', 'LIKE', "[Featured Job {$featuredJob->id}] %")->first();
+            
+            if (!$job) {
+                // Create a copy of the featured job in the regular jobs table
+                $job = new Job();
+                $job->title = "[Featured Job {$featuredJob->id}] {$featuredJob->job_title}";
+                $job->company = $featuredJob->company_name;
+                $job->location = $featuredJob->location;
+                $job->description = $featuredJob->description;
+                $job->salary = $featuredJob->salary;
+                $job->job_type = $featuredJob->job_type;
+                $job->posting_date = now(); // Add the required posting_date field
+                $job->is_active = true;
+                $job->category = 'Featured'; // Set a default category for featured jobs
+                $job->expiry_date = now()->addMonths(1); // Set an expiry date for the copied job
+                $job->created_at = now();
+                $job->updated_at = now();
+                $job->save();
+            }
+            
+            // Use the ID of the newly created or existing job
+            $jobId = $job->id;
+        } else {
+            // Check if regular job exists and is active
+            $job = Job::where('id', $jobId)
+                      ->where('is_active', true)
+                      ->where('expiry_date', '>=', now())
+                      ->first();
 
-        if (!$job) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Job not found or no longer available'
-            ], 404);
+            if (!$job) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Job not found or no longer available'
+                ], 404);
+            }
         }
 
         // Check if user has already applied
-        $existingApplication = Application::where('user_id', $request->user()->id)
-                                         ->where('job_id', $jobId)
-                                         ->first();
+        // We need to be careful with the job ID since featured jobs might have overlapping IDs with regular jobs
+        $query = Application::where('user_id', $request->user()->id)
+                          ->where('job_id', $jobId);
+                          
+        // For featured job applications, we'll check the cover_letter field for our marker
+        if ($isFeaturedJob) {
+            $query->where(function($q) {
+                $q->where('cover_letter', 'LIKE', '%[FEATURED JOB APPLICATION]%')
+                  ->orWhereNull('cover_letter');
+            });
+        } else {
+            // For regular jobs, exclude any applications marked as featured job applications
+            $query->where(function($q) {
+                $q->where('cover_letter', 'NOT LIKE', '%[FEATURED JOB APPLICATION]%')
+                  ->orWhereNull('cover_letter');
+            });
+        }
+        
+        $existingApplication = $query->first();
 
         if ($existingApplication) {
             return response()->json([
@@ -83,6 +141,7 @@ class ApplicationController extends Controller
             'resume_path' => $resumePath,
             'status' => 'Applied',
             'applied_date' => now(),
+            'posting_date' => now(), // Added missing posting_date field
         ]);
 
         return response()->json([
@@ -161,7 +220,7 @@ class ApplicationController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:Applied,Under Review,Shortlisted,Rejected',
+            'status' => 'required|in:Applied,Under Review,Shortlisted,Rejected,Accepted',
         ]);
 
         if ($validator->fails()) {
@@ -271,5 +330,199 @@ class ApplicationController extends Controller
                 ]
             ]
         ]);
+    }
+
+    /**
+     * Apply for a job with employment details
+     *
+     * @param Request $request
+     * @param int $jobId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function applyWithDetails(Request $request, $jobId)
+    {
+        // Check if user is authenticated
+        if (!$request->user()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated'
+            ], 401);
+        }
+
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'current_company' => 'nullable|string|max:255',
+            'department' => 'nullable|string|max:255',
+            'current_salary' => 'nullable|string|max:50',
+            'expected_salary' => 'nullable|string|max:50',
+            'joining_period' => 'nullable|string|max:50',
+            'skills' => 'nullable|string|max:500',
+            'experience' => 'nullable|string|max:1000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Check if this is a featured job application
+        $isFeaturedJob = $request->has('is_featured_job') && $request->is_featured_job === 'true';
+        
+        if ($isFeaturedJob) {
+            // Look for the job in the featured jobs table
+            $featuredJob = FeaturedJob::where('id', $jobId)
+                      ->where('is_active', true)
+                      ->first();
+                      
+            if (!$featuredJob) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Featured job not found or no longer available'
+                ], 404);
+            }
+            
+            // Check if we already created a regular job entry for this featured job
+            $job = Job::where('title', 'LIKE', "[Featured Job {$featuredJob->id}] %")->first();
+            
+            if (!$job) {
+                // Create a copy of the featured job in the regular jobs table
+                $job = new Job();
+                $job->title = "[Featured Job {$featuredJob->id}] {$featuredJob->job_title}";
+                $job->company = $featuredJob->company_name;
+                $job->location = $featuredJob->location;
+                $job->description = $featuredJob->description;
+                $job->salary = $featuredJob->salary;
+                $job->job_type = $featuredJob->job_type;
+                $job->posting_date = now(); // Add the required posting_date field
+                $job->is_active = true;
+                $job->category = 'Featured'; // Set a default category for featured jobs
+                $job->expiry_date = now()->addMonths(1); // Set an expiry date for the copied job
+                $job->created_at = now();
+                $job->updated_at = now();
+                $job->save();
+            }
+            
+            // Use the ID of the newly created or existing job
+            $jobId = $job->id;
+        } else {
+            // Check if regular job exists and is active
+            $job = Job::where('id', $jobId)
+                      ->where('is_active', true)
+                      ->where('expiry_date', '>=', now())
+                      ->first();
+
+            if (!$job) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Job not found or no longer available'
+                ], 404);
+            }
+        }
+
+        // Check if user has already applied
+        // We need to be careful with the job ID since featured jobs might have overlapping IDs with regular jobs
+        $query = Application::where('user_id', $request->user()->id)
+                          ->where('job_id', $jobId);
+                          
+        // For featured job applications, we'll check the cover_letter field for our marker
+        if ($isFeaturedJob) {
+            $query->where(function($q) {
+                $q->where('cover_letter', 'LIKE', '%[FEATURED JOB APPLICATION]%')
+                  ->orWhereNull('cover_letter');
+            });
+        } else {
+            // For regular jobs, exclude any applications marked as featured job applications
+            $query->where(function($q) {
+                $q->where('cover_letter', 'NOT LIKE', '%[FEATURED JOB APPLICATION]%')
+                  ->orWhereNull('cover_letter');
+            });
+        }
+        
+        $existingApplication = $query->first();
+
+        if ($existingApplication) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You have already applied for this job'
+            ], 422);
+        }
+
+        // Update user employment details
+        $user = $request->user();
+        
+        // Only update if values are provided
+        if ($request->has('current_company')) {
+            $user->current_company = $request->current_company;
+        }
+        
+        if ($request->has('department')) {
+            $user->department = $request->department;
+        }
+        
+        if ($request->has('current_salary')) {
+            $user->current_salary = $request->current_salary;
+        }
+        
+        if ($request->has('expected_salary')) {
+            $user->expected_salary = $request->expected_salary;
+        }
+        
+        if ($request->has('joining_period')) {
+            $user->joining_period = $request->joining_period;
+        }
+        
+        // Update skills and experience if provided
+        if ($request->has('skills')) {
+            $user->skills = $request->skills;
+        }
+        
+        if ($request->has('experience')) {
+            $user->experience = $request->experience;
+        }
+        
+        $user->save();
+
+        // Create a cover letter from employment details
+        $coverLetter = "Employment Details:\n";
+        $coverLetter .= "Current Company: " . ($request->current_company ?? 'Not specified') . "\n";
+        $coverLetter .= "Department: " . ($request->department ?? 'Not specified') . "\n";
+        $coverLetter .= "Current Salary: " . ($request->current_salary ?? 'Not specified') . "\n";
+        $coverLetter .= "Expected Salary: " . ($request->expected_salary ?? 'Not specified') . "\n";
+        $coverLetter .= "Joining Period: " . ($request->joining_period ?? 'Not specified') . "\n\n";
+        $coverLetter .= "Skills: " . ($request->skills ?? 'Not specified') . "\n";
+        $coverLetter .= "Experience: " . ($request->experience ?? 'Not specified') . "\n";
+
+        // Use existing resume if available
+        $resumePath = $user->resume_path;
+
+        // Prepare application data
+        $applicationData = [
+            'user_id' => $user->id,
+            'job_id' => $jobId,
+            'cover_letter' => $coverLetter,
+            'resume_path' => $resumePath,
+            'status' => 'Applied',
+            'applied_date' => now(),
+            'posting_date' => now(), // Added missing posting_date field
+        ];
+        
+        // For featured job applications, we'll use the existing structure without the notes field
+        // We'll store the job title in the cover letter instead since we don't have a notes column
+        if ($isFeaturedJob) {
+            // Add a marker at the beginning of the cover letter to identify featured job applications
+            $applicationData['cover_letter'] = "[FEATURED JOB APPLICATION]\n\n" . $applicationData['cover_letter'];
+        }
+        
+        // Create application
+        $application = Application::create($applicationData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Job application with employment details submitted successfully',
+            'data' => $application
+        ], 201);
     }
 }

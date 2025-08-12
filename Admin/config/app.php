@@ -17,6 +17,18 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+    
+      /*
+    |--------------------------------------------------------------------------
+    | Frontend URL
+    |--------------------------------------------------------------------------
+    |
+    | This URL is used for generating password reset links and other URLs that
+    | need to reference the frontend application. This should be the base URL
+    | of your frontend application.
+    |
+    */
+    'frontend_url' => env('APP_FRONTEND_URL', 'http://emps.co.in/api'),
 
     /*
     |--------------------------------------------------------------------------

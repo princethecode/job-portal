@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,15 +12,33 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
-// Change this import to use the network package
+import androidx.viewpager2.widget.ViewPager2;
+import androidx.viewpager2.widget.CompositePageTransformer;
+import androidx.viewpager2.widget.MarginPageTransformer;
+import androidx.appcompat.widget.SearchView;
+
+import com.example.jobportal.ui.FeaturedJobs.FeaturedJobsAdapter;
+import  com.example.jobportal.ui.FeaturedJobs.FeaturedJobsViewModel;
+// Import jobs related classes
+import com.example.jobportal.models.FeaturedJob;
 import com.example.jobportal.models.JobsListResponse;
 import com.example.jobportal.network.ApiClient;
+import com.example.jobportal.R;  // Add R class import
+import com.example.jobportal.ui.jobs.JobsFragment;
+import com.example.jobportal.ui.jobs.JobsViewModel;
+import com.example.jobportal.ui.jobdetails.JobDetailsFragment;
 
 import com.example.jobportal.models.Job;
 import com.example.jobportal.databinding.FragmentHomeBinding;
 import com.example.jobportal.network.ApiResponse;
 import com.example.jobportal.ui.jobs.JobAdapter;
+import com.example.jobportal.ui.JobCategory.JobCategoryAdapter;
+import com.example.jobportal.models.JobCategory;
+import com.example.jobportal.ui.search.SearchFragment;
+import com.example.jobportal.utils.JobConverter;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -30,9 +49,15 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobClickListener, JobAdapter.OnJobClickListener {
+    private static final String TAG = "HomeFragment";
     private FragmentHomeBinding binding;
     private JobAdapter jobAdapter;
+    private JobAdapter recentJobsAdapter;
+    private FeaturedJobsAdapter featuredJobsAdapter;
+    private JobCategoryAdapter jobCategoryAdapter;
+    private JobsViewModel jobsViewModel;
+    private FeaturedJobsViewModel featuredJobsViewModel;
 
     @Nullable
     @Override
@@ -43,56 +68,251 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        // Initialize ViewModel
+        jobsViewModel = new ViewModelProvider(this, 
+            new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication()))
+            .get(JobsViewModel.class);
+        
+        featuredJobsViewModel = new ViewModelProvider(this,
+            new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication()))
+            .get(FeaturedJobsViewModel.class);
+        
+        Log.d(TAG, "ViewModel initialized in onCreate");
+    }
+    
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setupRecyclerView();
         
-        // Check if we have internet connectivity first
-        if (isNetworkAvailable()) {
-            // Try to ping the server directly to check DNS
-            new Thread(() -> {
-                try {
-                    boolean reachable = isHostReachable("emps.co.in", 5000);
-                    requireActivity().runOnUiThread(() -> {
-                        if (reachable) {
-                            fetchJobs();
-                        } else {
-                            binding.progressBar.setVisibility(View.GONE);
-                            Toast.makeText(requireContext(), 
-                                "Unable to reach server domain: emps.co.in. DNS resolution failed.", 
-                                Toast.LENGTH_LONG).show();
-                            
-                            // Show mock data anyway
-                            showMockData();
-                        }
-                    });
-                } catch (Exception e) {
-                    requireActivity().runOnUiThread(() -> {
-                        binding.progressBar.setVisibility(View.GONE);
-                        Toast.makeText(requireContext(), 
-                            "Network check error: " + e.getMessage(), 
-                            Toast.LENGTH_LONG).show();
-                        
-                        // Show mock data anyway
-                        showMockData();
-                    });
-                }
-            }).start();
-        } else {
+        // Setup all recycler views and view pagers
+        setupFeaturedJobsViewPager();
+        setupCategoryRecyclerView();
+        setupRecentJobsRecyclerView();
+        setupRecyclerView();
+        setupSearchView();
+        
+        // Setup click listener for View All button
+        binding.viewAllRecentJobs.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new JobsFragment())
+                .addToBackStack(null)
+                .commit();
+        });
+        
+        // Observe ViewModel data for recent jobs
+        jobsViewModel.getJobs().observe(getViewLifecycleOwner(), jobs -> {
+            Log.d(TAG, "Recent jobs updated. Count: " + (jobs != null ? jobs.size() : 0));
+            if (jobs != null && !jobs.isEmpty()) {
+                // Only take the first 5 jobs for the recent jobs section
+                List<Job> recentJobs = jobs.size() > 5 ? jobs.subList(0, 5) : jobs;
+                recentJobsAdapter.submitList(recentJobs);
+                binding.recentJobsRecyclerView.setVisibility(View.VISIBLE);
+            } else {
+                Log.d(TAG, "No recent jobs to display, showing mock data");
+                // Show mock data if no jobs available
+                recentJobsAdapter.submitList(createMockJobs());
+                binding.recentJobsRecyclerView.setVisibility(View.VISIBLE);
+            }
+        });
+        
+        // Observe loading state
+        jobsViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            if (isLoading) {
+                binding.progressBar.setVisibility(View.VISIBLE);
+            } else {
+                binding.progressBar.setVisibility(View.GONE);
+            }
+        });
+        
+        // Observe errors
+        jobsViewModel.getError().observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
+                // Show mock data as fallback
+                showMockData();
+            }
+        });
+        
+        // Refresh jobs from repository
+        jobsViewModel.refreshJobs();
+        
+        // Check connectivity as a fallback
+        if (!isNetworkAvailable()) {
             binding.progressBar.setVisibility(View.GONE);
             Toast.makeText(requireContext(), 
-                "No internet connection available. Please check your connectivity.", 
+                "No internet connection available. Showing cached data.", 
                 Toast.LENGTH_LONG).show();
-            
-            // Show mock data anyway
-            showMockData();
         }
+
+        // Observe LiveData
+        featuredJobsViewModel.getFeaturedJobs().observe(getViewLifecycleOwner(), jobs -> {
+            featuredJobsAdapter.submitList(jobs);
+        });
+        featuredJobsViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
+            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        });
+        featuredJobsViewModel.getError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Fetch data
+        featuredJobsViewModel.fetchFeaturedJobs();
+    }
+
+    private void setupCategoryRecyclerView() {
+        List<JobCategory> categories = new ArrayList<>();
+        categories.add(new JobCategory("Delivery", R.drawable.delivery_guy));
+        categories.add(new JobCategory("Electrician", R.drawable.electrician));
+        categories.add(new JobCategory("Welder", R.drawable.welder));
+        categories.add(new JobCategory("Labor/Helper", R.drawable.labor));
+        categories.add(new JobCategory("Carpenter", R.drawable.carpenter));
+        categories.add(new JobCategory("More", R.drawable.ic_more));
+        
+        jobCategoryAdapter = new JobCategoryAdapter(categories, category -> {
+            if (category.getName().equals("More")) {
+                // Navigate to the AllJobCategoriesFragment
+                requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new com.example.jobportal.ui.JobCategory.AllJobCategoriesFragment())
+                    .addToBackStack(null)
+                    .commit();
+            } else {
+                // Navigate to JobsFragment with category filter
+                navigateToJobsByCategory(category.getName());
+            }
+        });
+        
+        // Use GridLayoutManager with 3 columns for categories
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(requireContext(), 3);
+        binding.jobCategoryRecyclerView.setLayoutManager(gridLayoutManager);
+        binding.jobCategoryRecyclerView.setAdapter(jobCategoryAdapter);
+    }
+    
+    private void setupFeaturedJobsViewPager() {
+        // Setup featured jobs ViewPager2
+        // Use this fragment as the click listener for featured jobs
+        featuredJobsAdapter = new FeaturedJobsAdapter(this);
+        
+        binding.featuredJobsViewPager.setAdapter(featuredJobsAdapter);
+        binding.featuredJobsViewPager.setClipToPadding(false);
+        binding.featuredJobsViewPager.setClipChildren(false);
+        binding.featuredJobsViewPager.setOffscreenPageLimit(3);
+        
+        // Add page transformer for nice visual effect
+        CompositePageTransformer compositeTransformer = new CompositePageTransformer();
+        compositeTransformer.addTransformer(new MarginPageTransformer(40));
+        compositeTransformer.addTransformer((page, position) -> {
+            float r = 1 - Math.abs(position);
+            page.setScaleY(0.85f + r * 0.15f);
+        });
+        
+        binding.featuredJobsViewPager.setPageTransformer(compositeTransformer);
+    }
+    
+    private void setupRecentJobsRecyclerView() {
+        // Use this fragment as the click listener for jobs
+        recentJobsAdapter = new JobAdapter(this);
+        
+        binding.recentJobsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.recentJobsRecyclerView.setAdapter(recentJobsAdapter);
+        binding.recentJobsRecyclerView.setNestedScrollingEnabled(false);
+    }
+    
+    @Override
+    public void onJobClick(Job job) {
+        // Add logging
+        Log.d(TAG, "Featured Job clicked: ID=" + job.getId() + ", Title=" + job.getTitle());
+        
+        // Navigate to job details fragment - using the same approach as JobsFragment
+        requireActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, JobDetailsFragment.newInstance(String.valueOf(job.getId())))
+                .addToBackStack(null)
+                .commit();
+    }
+
+    @Override
+    public void onJobClick(FeaturedJob job, int position) {
+        // Add logging
+        Log.d(TAG, "Featured Job clicked: ID=" + job.getId() + ", Title=" + job.getJobTitle());
+        
+        // Check if job data is valid
+        if (job == null) {
+            Toast.makeText(requireContext(), "Error loading job details", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Show loading indicator
+        binding.progressBar.setVisibility(View.VISIBLE);
+        
+        // Fetch complete featured job details from API
+        ApiClient.getApiService().getFeaturedJobDetails(job.getId()).enqueue(new Callback<ApiResponse<FeaturedJob>>() {
+            @Override
+            public void onResponse(@NonNull Call<ApiResponse<FeaturedJob>> call, @NonNull Response<ApiResponse<FeaturedJob>> response) {
+                binding.progressBar.setVisibility(View.GONE);
+                
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    FeaturedJob featuredJob = response.body().getData();
+                    if (featuredJob != null) {
+                        // Navigate to job details with the full data
+                        navigateToJobDetails(featuredJob);
+                    } else {
+                        Toast.makeText(requireContext(), "Error: Job details not found", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // Handle error
+                    Toast.makeText(requireContext(), "Error loading job details", Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onFailure(@NonNull Call<ApiResponse<FeaturedJob>> call, @NonNull Throwable t) {
+                binding.progressBar.setVisibility(View.GONE);
+                Log.e(TAG, "Network error: " + t.getMessage(), t);
+                Toast.makeText(requireContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                
+                // As a fallback, try to navigate with the available data
+                navigateToJobDetails(job);
+            }
+        });
+    }
+    
+    /**
+     * Navigate to the job details screen for a featured job
+     * 
+     * @param featuredJob The featured job to display
+     */
+    private void navigateToJobDetails(FeaturedJob featuredJob) {
+        // Create job details fragment with the job ID, explicitly marking as a featured job
+        JobDetailsFragment detailsFragment = JobDetailsFragment.newInstance(String.valueOf(featuredJob.getId()), true);
+        
+        // Pass additional data as arguments if needed
+        Bundle args = detailsFragment.getArguments();
+        if (args == null) {
+            args = new Bundle();
+        }
+        
+        // Add any extra data that might be needed
+        args.putString("job_title", featuredJob.getJobTitle());
+        args.putString("company_name", featuredJob.getCompanyName());
+        args.putString("company_logo", featuredJob.getCompanyLogo());
+        detailsFragment.setArguments(args);
+        
+        // Add transition animation
+        requireActivity().getSupportFragmentManager().beginTransaction()
+            .setCustomAnimations(
+                R.anim.slide_in_right, R.anim.slide_out_left,
+                R.anim.slide_in_left, R.anim.slide_out_right)
+            .replace(R.id.fragment_container, detailsFragment)
+            .addToBackStack(null)
+            .commit();
     }
 
     private void setupRecyclerView() {
-        jobAdapter = new JobAdapter(job -> {
-            // TODO: Navigate to job details
-        });
+        jobAdapter = new JobAdapter(this);
         binding.jobsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.jobsRecyclerView.setAdapter(jobAdapter);
     }
@@ -168,6 +388,94 @@ public class HomeFragment extends Fragment {
     private void showMockData() {
         List<Job> mockJobs = createMockJobs();
         jobAdapter.submitList(mockJobs);
+        recentJobsAdapter.submitList(mockJobs);
+    }
+    
+    private List<Job> getCreateFeaturedJobs() {
+        List<Job> featuredJobs = new ArrayList<>();
+        
+        // Featured job examples with company logos and attractive salaries
+        featuredJobs.add(new Job(
+            "f1",
+            "Senior UX Designer",
+            "Design beautiful and intuitive user interfaces for our flagship products. Work with cross-functional teams to deliver exceptional user experiences.",
+            "Google",
+            "San Francisco, CA",
+            "$120K - $150K",
+            "Full-time",
+            "Design",
+            "2025-05-23",
+            "2025-06-23",
+            true,
+            "2025-05-23",
+            "2025-05-23"
+        ));
+        
+        featuredJobs.add(new Job(
+            "f2",
+            "Frontend Developer",
+            "Build responsive web applications using modern frameworks. Strong experience with React and TypeScript required.",
+            "Spotify",
+            "New York, NY",
+            "$90K - $120K",
+            "Full-time",
+            "Technology",
+            "2025-05-22",
+            "2025-06-22",
+            true,
+            "2025-05-22",
+            "2025-05-22"
+        ));
+        
+        featuredJobs.add(new Job(
+            "f3",
+            "UI/UX Designer",
+            "Create delightful user experiences for our creative tools. Collaborate with product and engineering teams.",
+            "Adobe",
+            "San Jose, CA",
+            "$95K - $120K",
+            "Full-time",
+            "Design",
+            "2025-05-25",
+            "2025-06-25",
+            true,
+            "2025-05-25",
+            "2025-05-25"
+        ));
+        
+        featuredJobs.add(new Job(
+            "f4",
+            "Frontend Developer",
+            "Build and maintain high-quality web applications. Work with React, TypeScript, and CSS to create pixel-perfect interfaces.",
+            "Airbnb",
+            "Remote",
+            "$100K - $130K",
+            "Full-time",
+            "Technology",
+            "2025-05-23",
+            "2025-06-23",
+            true,
+            "2025-05-23",
+            "2025-05-23"
+        ));
+        
+        featuredJobs.add(new Job(
+            "f5",
+            "Backend Engineer",
+            "Design and implement scalable backend services. Experience with distributed systems and microservices architecture required.",
+            "Netflix",
+            "Los Gatos, CA",
+            "$130K - $170K",
+            "Full-time",
+            "Technology",
+            "2025-05-24",
+            "2025-06-24",
+            true,
+            "2025-05-24",
+            "2025-05-24"
+        ));
+        
+        return featuredJobs;
     }
     
     private List<Job> createMockJobs() {
@@ -194,9 +502,148 @@ public class HomeFragment extends Fragment {
         return mockJobs;
     }
 
+    private void setupSearchView() {
+        binding.searchEditText.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (query.length() >= 2) {
+                    searchJobs(query);
+                }
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.length() >= 2) {
+                    searchJobs(newText);
+                } else if (newText.isEmpty()) {
+                    showHomeSections();
+                }
+                return true;
+            }
+        });
+
+        // Listen for the X (close) button
+        binding.searchEditText.setOnCloseListener(() -> {
+            showHomeSections();
+            return false; // Let SearchView handle default behavior (clearing text)
+        });
+    }
+
+    private void showHomeSections() {
+        // Show all main sections
+        binding.featuredJobsViewPager.setVisibility(View.VISIBLE);
+        binding.jobCategoryRecyclerView.setVisibility(View.VISIBLE);
+        binding.recentJobsRecyclerView.setVisibility(View.VISIBLE);
+        binding.viewAllRecentJobs.setVisibility(View.VISIBLE);
+        binding.jobsRecyclerView.setVisibility(View.GONE); // Hide search results
+        // Optionally, clear focus from SearchView
+        binding.searchEditText.clearFocus();
+    }
+
+    private void searchJobs(String query) {
+        binding.progressBar.setVisibility(View.VISIBLE);
+        
+        ApiClient.getApiService().getJobs().enqueue(new Callback<JobsListResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<JobsListResponse> call, 
+                          @NonNull Response<JobsListResponse> response) {
+                binding.progressBar.setVisibility(View.GONE);
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    JobsListResponse jobsResponse = response.body();
+                    if (jobsResponse.isSuccess() && jobsResponse.getData() != null && 
+                        jobsResponse.getData().getJobs() != null) {
+                        List<Job> jobs = jobsResponse.getData().getJobs();
+                        List<Job> filteredJobs = filterJobsByQuery(jobs, query);
+                        displaySearchResults(filteredJobs);
+                    } else {
+                        showEmptySearchResults();
+                    }
+                } else {
+                    showEmptySearchResults();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<JobsListResponse> call, @NonNull Throwable t) {
+                binding.progressBar.setVisibility(View.GONE);
+                showEmptySearchResults();
+            }
+        });
+    }
+
+    private List<Job> filterJobsByQuery(List<Job> jobs, String query) {
+        List<Job> filteredJobs = new ArrayList<>();
+        String lowercaseQuery = query.toLowerCase();
+        
+        for (Job job : jobs) {
+            if (job.getTitle().toLowerCase().contains(lowercaseQuery) || 
+                job.getCompany().toLowerCase().contains(lowercaseQuery) ||
+                job.getLocation().toLowerCase().contains(lowercaseQuery) ||
+                job.getDescription().toLowerCase().contains(lowercaseQuery) ||
+                job.getCategory().toLowerCase().contains(lowercaseQuery)) {
+                filteredJobs.add(job);
+            }
+        }
+        
+        return filteredJobs;
+    }
+
+    private void displaySearchResults(List<Job> jobs) {
+        if (jobs.isEmpty()) {
+            showEmptySearchResults();
+        } else {
+            // Hide other sections
+            binding.featuredJobsViewPager.setVisibility(View.GONE);
+            binding.jobCategoryRecyclerView.setVisibility(View.GONE);
+            binding.recentJobsRecyclerView.setVisibility(View.GONE);
+            binding.viewAllRecentJobs.setVisibility(View.GONE);
+            
+            // Show search results
+            binding.jobsRecyclerView.setVisibility(View.VISIBLE);
+            jobAdapter.submitList(jobs);
+        }
+    }
+
+    private void showEmptySearchResults() {
+        // Show empty state
+        binding.featuredJobsViewPager.setVisibility(View.GONE);
+        binding.jobCategoryRecyclerView.setVisibility(View.GONE);
+        binding.recentJobsRecyclerView.setVisibility(View.GONE);
+        binding.viewAllRecentJobs.setVisibility(View.GONE);
+        binding.jobsRecyclerView.setVisibility(View.GONE);
+        
+        // Show empty state message
+        Toast.makeText(requireContext(), "No jobs found matching your search", Toast.LENGTH_SHORT).show();
+    }
+    
+    /**
+     * Navigate to the JobsFragment with the selected category as a filter
+     * @param categoryName The name of the category to filter jobs by
+     */
+    private void navigateToJobsByCategory(String categoryName) {
+        // Show toast notification with selected category
+        Toast.makeText(requireContext(), "Showing " + categoryName + " jobs", Toast.LENGTH_SHORT).show();
+        
+        // Create a bundle with the category parameter
+        Bundle bundle = new Bundle();
+        bundle.putString("category", categoryName.toLowerCase());
+        
+        // Create the JobsFragment and set the arguments
+        Fragment jobsFragment = new com.example.jobportal.ui.jobs.JobsFragment();
+        jobsFragment.setArguments(bundle);
+        
+        // Navigate to the JobsFragment
+        requireActivity().getSupportFragmentManager().beginTransaction()
+            .replace(R.id.fragment_container, jobsFragment)
+            .addToBackStack(null)
+            .commit();
+    }
+
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
+        super.onDestroyView();  
         binding = null;
     }
 }

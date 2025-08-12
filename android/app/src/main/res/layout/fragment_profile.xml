@@ -4,13 +4,41 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="#F5F5F5"
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_height="match_parent">
+
+        <!-- Header with Profile Title and Settings Button -->
+        <LinearLayout
+            android:id="@+id/profile_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:background="@color/white"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Profile"
+                android:textColor="#333333"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Settings"
+                android:padding="8dp"
+                android:src="@android:drawable/ic_menu_preferences" />
+        </LinearLayout>
 
         <ProgressBar
             android:id="@+id/progress_profile"
@@ -22,41 +50,99 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/profile_image"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="32dp"
-            android:src="@android:drawable/ic_menu_myplaces"
-            app:civ_border_color="#EEEEEE"
-            app:civ_border_width="2dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/name_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textColor="#333333"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/profile_image"
-            tools:text="John Doe" />
-
+        <!-- Profile Card with User Information -->
         <androidx.cardview.widget.CardView
-            android:id="@+id/info_card"
+            android:id="@+id/profile_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
             app:cardCornerRadius="8dp"
-            app:cardElevation="2dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/name_text">
+            app:cardElevation="1dp"
+            app:layout_constraintTop_toBottomOf="@id/profile_header">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/profile_image"
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:src="@android:drawable/ic_menu_myplaces"
+                    app:civ_border_color="#EEEEEE"
+                    app:civ_border_width="2dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/name_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:textColor="#333333"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/profile_image"
+                    app:layout_constraintTop_toTopOf="@id/profile_image"
+                    tools:text="Emily Chen" />
+
+                <TextView
+                    android:id="@+id/job_title_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:text="Senior UI/UX Designer"
+                    android:textColor="#666666"
+                    android:textSize="14sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/profile_image"
+                    app:layout_constraintTop_toBottomOf="@id/name_text" />
+
+                <TextView
+                    android:id="@+id/location_text"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="4dp"
+                    android:textColor="#666666"
+                    android:textSize="14sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/profile_image"
+                    app:layout_constraintTop_toBottomOf="@id/job_title_text"
+                    tools:text="San Francisco, CA" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/edit_profile_button"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginRight="55dp"
+                    android:text="Edit Profile"
+                    android:textAllCaps="false"
+                    android:textSize="14sp"
+                    android:backgroundTint="#6200EE"
+                    app:cornerRadius="20dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/profile_image" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- About Me Section Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/about_me_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="1dp"
+            app:layout_constraintTop_toBottomOf="@id/profile_card">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -64,20 +150,305 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="About Me"
+                        android:textColor="#333333"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+
+                </LinearLayout>
+
                 <TextView
+                    android:id="@+id/about_me_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Passionate UI/UX designer with 6+ years of experience creating intuitive digital experiences. Specialized in user research, wireframing, and prototyping. Strong advocate for accessibility and inclusive design."
+                    android:textColor="#555555"
+                    android:textSize="14sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal"
+                    android:gravity="start">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_share"
+                        app:tint="#0077B5"
+                        android:contentDescription="LinkedIn"
+                        android:padding="2dp" />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="16dp"
+                        android:src="@android:drawable/ic_menu_gallery"
+                        app:tint="#EA4C89"
+                        android:contentDescription="Dribbble"
+                        android:padding="2dp" />
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="16dp"
+                        android:src="@android:drawable/ic_menu_send"
+                        app:tint="#1769FF"
+                        android:contentDescription="Behance"
+                        android:padding="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        
+        <!-- Experience Section -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/experience_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="1dp"
+            app:layout_constraintTop_toBottomOf="@id/about_me_card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Experience"
+                        android:textColor="#333333"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/add_experience_button"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_input_add"
+                        app:tint="#6200EE"
+                        android:contentDescription="Add Experience"
+                        android:background="?attr/selectableItemBackgroundBorderless" />
+                </LinearLayout>
+
+                <!-- Container for multiple experiences -->
+                <LinearLayout
+                    android:id="@+id/experiences_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="16dp">
+                    
+                    <!-- Experiences will be added here dynamically -->
+                    
+                </LinearLayout>
+                
+                <!-- Empty state for when no experiences exist -->
+                <LinearLayout
+                    android:id="@+id/empty_experiences_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:visibility="gone">
+                    
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="No experiences added yet"
+                        android:textAlignment="center"
+                        android:textColor="#757575"
+                        android:textSize="14sp" />
+                    
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Add your professional experience to showcase your skills"
+                        android:textAlignment="center"
+                        android:textColor="#AAAAAA"
+                        android:textSize="12sp"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+                <!-- View all experiences button -->
+                <Button
+                    android:id="@+id/view_all_experiences_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Personal Information"
-                    android:textColor="#333333"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:text="View All Experiences"
+                    android:textAllCaps="false"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="16dp"
+                    android:textColor="#000000"
+                    android:visibility="gone"
+                    style="@style/Widget.MaterialComponents.Button.TextButton" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        
+        <!-- Skills Section -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/skills_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="1dp"
+            app:layout_constraintTop_toBottomOf="@id/experience_card">
 
-                <View
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="#E0E0E0" />
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Skills"
+                        android:textColor="#333333"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:id="@+id/add_skill_button"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_input_add"
+                        app:tint="#6200EE"
+                        android:contentDescription="Add Skill"
+                        android:background="?attr/selectableItemBackgroundBorderless" />
+                </LinearLayout>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/skills_chip_group"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:chipSpacingHorizontal="8dp"
+                    app:chipSpacingVertical="8dp">
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="UI Design"
+                        android:textColor="#333333"
+                        app:chipBackgroundColor="#F0F0F0" />
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="UX Research"
+                        android:textColor="#333333"
+                        app:chipBackgroundColor="#F0F0F0" />
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wireframing"
+                        android:textColor="#333333"
+                        app:chipBackgroundColor="#F0F0F0" />
+                        
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Prototyping"
+                        android:textColor="#333333"
+                        app:chipBackgroundColor="#F0F0F0" />
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Figma"
+                        android:textColor="#333333"
+                        app:chipBackgroundColor="#F0F0F0" />
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Adobe XD"
+                        android:textColor="#333333"
+                        app:chipBackgroundColor="#F0F0F0" />
+                        
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sketch"
+                        android:textColor="#333333"
+                        app:chipBackgroundColor="#F0F0F0" />
+
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="HTML/CSS"
+                        android:textColor="#333333"
+                        app:chipBackgroundColor="#F0F0F0" />
+                        
+                    <com.google.android.material.chip.Chip
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Design Systems"
+                        android:textColor="#333333"
+                        app:chipBackgroundColor="#F0F0F0" />
+                </com.google.android.material.chip.ChipGroup>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Personal Information Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/info_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="1dp"
+            app:layout_constraintTop_toBottomOf="@id/skills_card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Contact Information"
+                    android:textColor="#333333"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -89,128 +460,167 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:contentDescription="Email"
-                        android:src="@android:drawable/ic_dialog_email" />
+                        android:src="@android:drawable/ic_dialog_email"
+                        app:tint="#3F51B5" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/email_text"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Email"
-                            android:textColor="#666666"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/email_text"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:textColor="#333333"
-                            android:textSize="16sp"
-                            tools:text="johndoe@example.com" />
-                    </LinearLayout>
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:textColor="#333333"
+                        android:textSize="14sp"
+                        tools:text="emily.chen@example.com" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
                     android:orientation="horizontal">
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:contentDescription="Phone"
-                        android:src="@android:drawable/ic_menu_call" />
+                        android:src="@android:drawable/ic_menu_call"
+                        app:tint="#4CAF50" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/phone_text"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Phone"
-                            android:textColor="#666666"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/phone_text"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:textColor="#333333"
-                            android:textSize="16sp"
-                            tools:text="(123) 456-7890" />
-                    </LinearLayout>
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:textColor="#333333"
+                        android:textSize="14sp"
+                        tools:text="(123) 456-7890" />
                 </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        
+        <!-- Resume Section -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/resume_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="1dp"
+            app:layout_constraintTop_toBottomOf="@id/info_card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Resume/CV"
+                        android:textColor="#333333"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Resume Item -->
+                <LinearLayout
+                    android:id="@+id/resume_item"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="16dp"
+                    android:background="#F5F5F5"
+                    android:padding="12dp"
+                    android:gravity="center_vertical">
+
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:contentDescription="Location"
-                        android:src="@android:drawable/ic_menu_mylocation" />
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@android:drawable/ic_menu_agenda"
+                        app:tint="#5F6368"
+                        android:contentDescription="PDF File" />
 
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:orientation="vertical">
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:id="@+id/resume_file_name"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Location"
-                            android:textColor="#666666"
-                            android:textSize="14sp" />
-
-                        <TextView
-                            android:id="@+id/location_text"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
+                            android:text="Emily_Chen_Resume.pdf"
                             android:textColor="#333333"
-                            android:textSize="16sp"
-                            tools:text="New York, NY" />
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/resume_update_date"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Updated 2 weeks ago"
+                            android:textColor="#757575"
+                            android:textSize="12sp" />
                     </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/download_resume_button"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_save"
+                        app:tint="#6200EE"
+                        android:contentDescription="Download Resume"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="2dp" />
+
+                    <ImageView
+                        android:id="@+id/edit_resume_button"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@android:drawable/ic_menu_edit"
+                        app:tint="#6200EE"
+                        android:contentDescription="Edit Resume"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="2dp" />
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <Button
-            android:id="@+id/edit_profile_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:background="#3F51B5"
-            android:text="Edit Profile"
-            android:textColor="@android:color/white"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/info_card" />
-
+        <!-- Logout Button -->
         <Button
             android:id="@+id/logout_button"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="#F44336"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:background="@android:color/transparent"
             android:text="Logout"
-            android:textColor="@android:color/white"
+            android:textColor="#D32F2F"
+            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/edit_profile_button" />
+            app:layout_constraintTop_toBottomOf="@id/resume_card"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Bottom Navigation Spacer -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            app:layout_constraintTop_toBottomOf="@id/logout_button" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView> 

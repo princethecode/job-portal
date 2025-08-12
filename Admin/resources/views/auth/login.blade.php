@@ -50,11 +50,9 @@
         </div>
     </div>
 </div>
-
-<!-- Add this somewhere in your login form, typically at the bottom -->
 <div class="text-center mt-3">
     <p>Don't have an account? <a href="{{ route('admin.register') }}">Register here</a></p>
 </div>
-
 @endsection
+
 

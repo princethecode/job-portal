@@ -23,10 +23,22 @@ class User extends Authenticatable
         'password',
         'mobile',
         'resume_path',
+        'profile_photo',
+        'location',
+        'job_title',
+        'about_me',
         'skills',
         'experience',
         'is_active',
         'is_admin',
+        'current_company',
+        'department',
+        'current_salary',
+        'expected_salary',
+        'joining_period',
+        'contact',
+        'last_contact_sync',
+        'fcm_token',
     ];
 
     /**
@@ -49,7 +61,22 @@ class User extends Authenticatable
         'password' => 'hashed',
         'is_active' => 'boolean',
         'is_admin' => 'boolean',
+        'current_salary' => 'decimal:2',
+        'expected_salary' => 'decimal:2',
     ];
+
+    /**
+     * Boot method to implement cascade delete
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Delete related applications when a user is deleted
+        static::deleting(function (User $user) {
+            $user->applications()->delete();
+        });
+    }
 
     /**
      * Get the applications for the user.
@@ -57,5 +84,13 @@ class User extends Authenticatable
     public function applications()
     {
         return $this->hasMany(Application::class);
+    }
+    
+    /**
+     * Get the experiences for the user.
+     */
+    public function experiences()
+    {
+        return $this->hasMany(Experience::class);
     }
 }

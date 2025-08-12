@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Job Portal Admin')</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Job Portal Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .sidebar {
             min-height: 100vh;
             background-color: #343a40;
             color: white;
+            padding-top: 20px;
         }
         .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
             margin-bottom: 5px;
+            padding: 10px 20px;
         }
         .sidebar .nav-link:hover {
             color: white;
+            background-color: rgba(255, 255, 255, 0.1);
         }
         .sidebar .nav-link.active {
             background-color: #007bff;
@@ -27,13 +30,7 @@
             padding: 20px;
         }
         .navbar {
-            background-color: #007bff;
-        }
-        .stats-card {
-            transition: transform 0.3s;
-        }
-        .stats-card:hover {
-            transform: translateY(-5px);
+            background-color: #343a40;
         }
         .loading {
             position: fixed;
@@ -59,7 +56,6 @@
         </div>
     </div>
 
-    @auth
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
@@ -80,6 +76,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('featured-jobs.*') ? 'active' : '' }}" href="{{ route('featured-jobs.index') }}">
+                            <i class="fas fa-star me-2"></i> Featured Jobs
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.applications.*') ? 'active' : '' }}" href="{{ route('admin.applications.index') }}">
                             <i class="fas fa-file-alt me-2"></i> Applications
                         </a>
@@ -92,6 +93,11 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}" href="{{ route('admin.notifications.index') }}">
                             <i class="fas fa-bell me-2"></i> Notifications
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('contacts.*') ? 'active' : '' }}" href="{{ route('contacts.index') }}">
+                            <i class="fas fa-address-book me-2"></i> Contacts
                         </a>
                     </li>
                 </ul>
@@ -107,6 +113,7 @@
                         </button>
                         <div class="collapse navbar-collapse" id="navbarNav">
                             <ul class="navbar-nav ms-auto">
+                                @auth
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                                         <i class="fas fa-user-circle me-1"></i> {{ Auth::user()->name }}
@@ -123,6 +130,7 @@
                                         </li>
                                     </ul>
                                 </li>
+                                @endauth
                             </ul>
                         </div>
                     </div>
@@ -149,12 +157,8 @@
             </div>
         </div>
     </div>
-    @else
-        @yield('content')
-    @endauth
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Show loading overlay
         function showLoading() {
@@ -185,6 +189,6 @@
             });
         });
     </script>
-    @yield('scripts')
+    @stack('scripts')
 </body>
 </html>

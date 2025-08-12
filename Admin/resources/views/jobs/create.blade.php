@@ -26,7 +26,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('admin.jobs.store') }}" method="POST">
+            <form action="{{ route('admin.jobs.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
                     <div class="col-md-6 mb-3">
@@ -87,6 +87,11 @@
                 <div class="mb-3">
                     <label for="description" class="form-label">Job Description</label>
                     <textarea class="form-control" id="description" name="description" rows="6" required>{{ old('description') }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="image">Job Image</label>
+                    <input type="file" name="image" id="image" class="form-control-file" accept="image/*">
                 </div>
                 
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
