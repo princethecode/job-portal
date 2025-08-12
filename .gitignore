@@ -38,14 +38,25 @@ vendor/
 .env.production.local
 
 # Laravel specific
+/Admin/.env
+/Admin/.env.*
+!Admin/.env.example
 /Admin/storage/*.key
 /Admin/storage/logs/
 /Admin/storage/framework/cache/
 /Admin/storage/framework/sessions/
 /Admin/storage/framework/views/
+/Admin/storage/framework/testing/
 /Admin/bootstrap/cache/
 /Admin/public/storage
 /Admin/public/hot
+/Admin/.phpunit.result.cache
+/Admin/Homestead.json
+/Admin/Homestead.yaml
+/Admin/auth.json
+/Admin/npm-debug.log
+/Admin/yarn-error.log
+/Admin/.DS_Store
 
 # Composer
 composer.phar
