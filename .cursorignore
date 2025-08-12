@@ -1,0 +1,45 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build and cache directories
+/public/build/
+/public/hot/
+/bootstrap/cache/
+/storage/*.key
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+
+# Environment and configuration files
+.env
+.env.*
+!.env.example
+phpunit.xml
+composer.lock
+package-lock.json
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-*
+.DS_Store
+Thumbs.db
+
+# Compiled files
+*.compiled.*
+*.min.js
+*.min.css
+
+# Test coverage
+/coverage/
+.phpunit.result.cache
+
+# Temporary files
+*.log
+*.cache
+*.tmp
+*.temp
