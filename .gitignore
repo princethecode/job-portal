@@ -76,7 +76,7 @@ composer.phar
 /android/.idea/workspace.xml
 /android/.idea/navEditor.xml
 /android/.idea/assetWizardSettings.xml
-/android/app/build/*
+/android/app/build/
 /android/build/
 /android/captures/
 /android/.externalNativeBuild/
@@ -87,9 +87,44 @@ composer.phar
 *.dex
 *.class
 
-# Gradle
+# Gradle specific files
 .gradle/
 build/
+/android/gradle/
+android/.gradle/
+android/build/
+android/app/build/
+android/gradle.properties
+android/gradlew
+android/gradlew.bat
+
+# Gradle cache and wrapper files
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+gradle/wrapper/gradle-wrapper.properties
+
+# Android Gradle build files
+android/.gradle/
+android/build/
+android/app/build/
+android/*/build/
+android/**/.gradle/
+android/**/build/
+
+# Gradle execution history and file hashes
+android/.gradle/*/executionHistory/
+android/.gradle/*/fileHashes/
+android/.gradle/*/fileContent/
+android/.gradle/buildOutputCleanup/
+android/.gradle/vcs-1/
+
+# Gradle build cache
+android/.gradle/buildOutputCleanup/
+android/.gradle/checksums/
+android/.gradle/configuration-cache/
+android/.gradle/file-system.probe
 
 # Local configuration file (sdk path, etc)
 local.properties
