@@ -1,9 +1,12 @@
 package com.example.jobportal.ui.search;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import androidx.appcompat.widget.SearchView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -157,5 +160,52 @@ public class SearchFragment extends Fragment implements JobAdapter.OnJobClickLis
                 .replace(R.id.fragment_container, JobDetailsFragment.newInstance(job.getId()))
                 .addToBackStack(null)
                 .commit();
+    }
+
+    @Override
+    public void onJobDetailsClick(Job job) {
+        Log.d("SearchFragment", "Job Details button clicked: ID=" + job.getId() + ", Title=" + job.getTitle());
+        requireActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, JobDetailsFragment.newInstance(job.getId()))
+                .addToBackStack(null)
+                .commit();
+    }
+
+    @Override
+    public void onWhatsAppShareClick(Job job) {
+        Log.d("SearchFragment", "WhatsApp share clicked for job: " + job.getTitle());
+        shareJobOnWhatsApp(job);
+    }
+
+    private void shareJobOnWhatsApp(Job job) {
+        try {
+            String shareText = "🔥 *Job Opportunity* 🔥\n\n" +
+                    "📋 *Position:* " + job.getTitle() + "\n" +
+                    "🏢 *Company:* " + job.getCompany() + "\n" +
+                    "📍 *Location:* " + job.getLocation() + "\n" +
+                    "💰 *Salary:* " + job.getSalary() + "\n\n" +
+                    "📝 *Description:* " + job.getDescription() + "\n\n" +
+                    "Apply now through our Job Portal app! 📱\n\n" +
+                    "📲 Download app from => https://emps.co.in/";
+
+            Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
+            whatsappIntent.setType("text/plain");
+            whatsappIntent.setPackage("com.whatsapp");
+            whatsappIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+            
+            try {
+                startActivity(whatsappIntent);
+            } catch (android.content.ActivityNotFoundException ex) {
+                // WhatsApp not installed, try with general share
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+                shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Job Opportunity: " + job.getTitle());
+                startActivity(Intent.createChooser(shareIntent, "Share Job"));
+            }
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Unable to share job", Toast.LENGTH_SHORT).show();
+            Log.e("SearchFragment", "Error sharing job", e);
+        }
     }
 }

@@ -1,8 +1,11 @@
 package com.example.jobportal.ui.jobs;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,6 +29,8 @@ public class    JobAdapter extends ListAdapter<Job, JobAdapter.JobViewHolder> {
     
     public interface OnJobClickListener {
         void onJobClick(Job job);
+        void onJobDetailsClick(Job job);
+        void onWhatsAppShareClick(Job job);
     }
     
     public JobAdapter(OnJobClickListener listener) {
@@ -53,6 +58,9 @@ public class    JobAdapter extends ListAdapter<Job, JobAdapter.JobViewHolder> {
         private final TextView locationTextView;
         private final TextView salaryTextView;
         private final TextView postingDateTextView;
+        private final TextView shareCountTextView;
+        private final LinearLayout whatsappShareButton;
+        private final Button jobDetailsButton;
         
         public JobViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -61,6 +69,9 @@ public class    JobAdapter extends ListAdapter<Job, JobAdapter.JobViewHolder> {
             locationTextView = itemView.findViewById(R.id.job_location);
             salaryTextView = itemView.findViewById(R.id.job_salary);
             postingDateTextView = itemView.findViewById(R.id.job_posting_date);
+            shareCountTextView = itemView.findViewById(R.id.tv_share_count);
+            whatsappShareButton = itemView.findViewById(R.id.btn_whatsapp_share);
+            jobDetailsButton = itemView.findViewById(R.id.btn_job_details);
         }
         
         public void bind(Job job, OnJobClickListener listener) {
@@ -86,6 +97,22 @@ public class    JobAdapter extends ListAdapter<Job, JobAdapter.JobViewHolder> {
             } else {
                 postingDateTextView.setText("Posted on: N/A");
             }
+            
+            // Set share count (you can implement this based on your backend)
+            shareCountTextView.setText("0");
+            
+            // Set click listeners for buttons
+            whatsappShareButton.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onWhatsAppShareClick(job);
+                }
+            });
+            
+            jobDetailsButton.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onJobDetailsClick(job);
+                }
+            });
             
             itemView.setOnClickListener(v -> {
                 if (listener != null) {
