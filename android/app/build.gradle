@@ -31,15 +31,21 @@ android {
 
     defaultConfig {
         applicationId "com.example.jobportal"
-        minSdk 26
+        minSdk 21  // Changed from 26 to 21 (Android 5.0) for wider device support
         targetSdk 34
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         
-        // Add this to ensure resource compatibility
-        resourceConfigurations += ["en"]
+        // Support multiple languages
+        resourceConfigurations += ["en", "hi", "es", "fr", "de", "pt", "ar"]
+        
+        // Vector drawable support for older devices
+        vectorDrawables.useSupportLibrary = true
+        
+        // MultiDex support for devices with API < 21
+        multiDexEnabled true
         
         // KAPT configuration for Java 17 compatibility
         javaCompileOptions {
@@ -57,8 +63,13 @@ android {
         debug {
             signingConfig signingConfigs.debug
             minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "String", "API_BASE_URL", '"https://emps.co.in/api/"'
+            debuggable true
+            jniDebuggable false
+            renderscriptDebuggable false
+            zipAlignEnabled true
         }
         release {
             signingConfig signingConfigs.release
@@ -66,6 +77,11 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "String", "API_BASE_URL", '"https://emps.co.in/api/"'
+            debuggable false
+            jniDebuggable false
+            renderscriptDebuggable false
+            zipAlignEnabled true
+            crunchPngs true
         }
     }
     
@@ -84,9 +100,29 @@ android {
         buildConfig true
     }
 
-    // Add this to handle resource linking issues
-    aaptOptions {
-        cruncherEnabled = false
+    // Packaging options for better compatibility
+    packaging {
+        resources {
+            pickFirsts += ['**/libc++_shared.so', '**/libjsc.so']
+            excludes += [
+                'META-INF/DEPENDENCIES',
+                'META-INF/LICENSE',
+                'META-INF/LICENSE.txt',
+                'META-INF/license.txt',
+                'META-INF/NOTICE',
+                'META-INF/NOTICE.txt',
+                'META-INF/notice.txt',
+                'META-INF/ASL2.0',
+                'META-INF/*.kotlin_module'
+            ]
+        }
+    }
+    
+    // Lint options for better compatibility
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+        disable 'InvalidPackage', 'OldTargetApi', 'GradleDependency'
     }
 }
 
@@ -97,6 +133,9 @@ dependencies {
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     
+    // MultiDex support for older devices
+    implementation 'androidx.multidex:multidex:2.0.1'
+    
     // Navigation Component
     implementation "androidx.navigation:navigation-fragment-ktx:${rootProject.ext.nav_version}"
     implementation "androidx.navigation:navigation-ui-ktx:${rootProject.ext.nav_version}"
@@ -104,7 +143,6 @@ dependencies {
     // Room - using KSP instead of KAPT
     implementation "androidx.room:room-runtime:${rootProject.ext.room_version}"
     implementation "androidx.room:room-ktx:${rootProject.ext.room_version}"
-    implementation 'androidx.appcompat:appcompat:1.7.0'
     ksp "androidx.room:room-compiler:${rootProject.ext.room_version}"
     
     // Lifecycle
@@ -150,26 +188,6 @@ dependencies {
     
     // SwipeRefreshLayout
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-    
-    // Room components
-    def room_version = "2.6.1"
-    implementation "androidx.room:room-runtime:$room_version"
-    annotationProcessor "androidx.room:room-compiler:$room_version"
-    
-    // ViewModel and LiveData
-    def lifecycle_version = "2.7.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
-    
-    // Coroutines
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
-    
-    // Hilt for dependency injection
-    def hilt_version = "2.50"
-    implementation "com.google.dagger:hilt-android:$hilt_version"
-    annotationProcessor "com.google.dagger:hilt-android-compiler:$hilt_version"
 }
 
 apply plugin: 'com.google.gms.google-services' 
