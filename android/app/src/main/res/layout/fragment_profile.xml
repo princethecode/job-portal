@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
+    android:background="@color/background_primary"
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -18,7 +18,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="16dp"
-            android:background="@color/white"
+            android:background="@color/background_card"
             android:gravity="center_vertical"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Profile"
-                android:textColor="#333333"
+                android:textColor="@color/text_primary"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -71,7 +71,7 @@
                     android:layout_width="72dp"
                     android:layout_height="72dp"
                     android:src="@android:drawable/ic_menu_myplaces"
-                    app:civ_border_color="#EEEEEE"
+                    app:civ_border_color="@color/border_light"
                     app:civ_border_width="2dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -81,7 +81,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:textColor="#333333"
+                    android:textColor="@color/text_primary"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -96,7 +96,7 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="4dp"
                     android:text="Senior UI/UX Designer"
-                    android:textColor="#666666"
+                    android:textColor="@color/text_secondary"
                     android:textSize="14sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/profile_image"
@@ -108,7 +108,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="4dp"
-                    android:textColor="#666666"
+                    android:textColor="@color/text_secondary"
                     android:textSize="14sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/profile_image"
@@ -125,7 +125,7 @@
                     android:text="Edit Profile"
                     android:textAllCaps="false"
                     android:textSize="14sp"
-                    android:backgroundTint="#6200EE"
+                    android:backgroundTint="@color/primary"
                     app:cornerRadius="20dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -160,7 +160,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="About Me"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -174,7 +174,7 @@
                     android:layout_marginTop="8dp"
                     android:lineSpacingExtra="4dp"
                     android:text="Passionate UI/UX designer with 6+ years of experience creating intuitive digital experiences. Specialized in user research, wireframing, and prototyping. Strong advocate for accessibility and inclusive design."
-                    android:textColor="#555555"
+                    android:textColor="@color/text_secondary"
                     android:textSize="14sp" />
 
                 <LinearLayout
@@ -240,7 +240,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Experience"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -249,7 +249,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/ic_input_add"
-                        app:tint="#6200EE"
+                        app:tint="@color/primary"
                         android:contentDescription="Add Experience"
                         android:background="?attr/selectableItemBackgroundBorderless" />
                 </LinearLayout>
@@ -281,7 +281,7 @@
                         android:layout_height="wrap_content"
                         android:text="No experiences added yet"
                         android:textAlignment="center"
-                        android:textColor="#757575"
+                        android:textColor="@color/text_secondary"
                         android:textSize="14sp" />
                     
                     <TextView
@@ -289,7 +289,7 @@
                         android:layout_height="wrap_content"
                         android:text="Add your professional experience to showcase your skills"
                         android:textAlignment="center"
-                        android:textColor="#AAAAAA"
+                        android:textColor="@color/text_tertiary"
                         android:textSize="12sp"
                         android:layout_marginTop="4dp" />
                 </LinearLayout>
@@ -303,7 +303,7 @@
                     android:textAllCaps="false"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="16dp"
-                    android:textColor="#000000"
+                    android:textColor="@color/text_primary"
                     android:visibility="gone"
                     style="@style/Widget.MaterialComponents.Button.TextButton" />
             </LinearLayout>
@@ -336,7 +336,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Skills"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -345,7 +345,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/ic_input_add"
-                        app:tint="#6200EE"
+                        app:tint="@color/primary"
                         android:contentDescription="Add Skill"
                         android:background="?attr/selectableItemBackgroundBorderless" />
                 </LinearLayout>
@@ -362,64 +362,64 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="UI Design"
-                        android:textColor="#333333"
-                        app:chipBackgroundColor="#F0F0F0" />
+                        android:textColor="@color/text_primary"
+                        app:chipBackgroundColor="@color/chip_background" />
 
                     <com.google.android.material.chip.Chip
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="UX Research"
-                        android:textColor="#333333"
-                        app:chipBackgroundColor="#F0F0F0" />
+                        android:textColor="@color/text_primary"
+                        app:chipBackgroundColor="@color/chip_background" />
 
                     <com.google.android.material.chip.Chip
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Wireframing"
-                        android:textColor="#333333"
-                        app:chipBackgroundColor="#F0F0F0" />
+                        android:textColor="@color/text_primary"
+                        app:chipBackgroundColor="@color/chip_background" />
                         
                     <com.google.android.material.chip.Chip
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Prototyping"
-                        android:textColor="#333333"
-                        app:chipBackgroundColor="#F0F0F0" />
+                        android:textColor="@color/text_primary"
+                        app:chipBackgroundColor="@color/chip_background" />
 
                     <com.google.android.material.chip.Chip
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Figma"
-                        android:textColor="#333333"
-                        app:chipBackgroundColor="#F0F0F0" />
+                        android:textColor="@color/text_primary"
+                        app:chipBackgroundColor="@color/chip_background" />
 
                     <com.google.android.material.chip.Chip
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Adobe XD"
-                        android:textColor="#333333"
-                        app:chipBackgroundColor="#F0F0F0" />
+                        android:textColor="@color/text_primary"
+                        app:chipBackgroundColor="@color/chip_background" />
                         
                     <com.google.android.material.chip.Chip
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Sketch"
-                        android:textColor="#333333"
-                        app:chipBackgroundColor="#F0F0F0" />
+                        android:textColor="@color/text_primary"
+                        app:chipBackgroundColor="@color/chip_background" />
 
                     <com.google.android.material.chip.Chip
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="HTML/CSS"
-                        android:textColor="#333333"
-                        app:chipBackgroundColor="#F0F0F0" />
+                        android:textColor="@color/text_primary"
+                        app:chipBackgroundColor="@color/chip_background" />
                         
                     <com.google.android.material.chip.Chip
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Design Systems"
-                        android:textColor="#333333"
-                        app:chipBackgroundColor="#F0F0F0" />
+                        android:textColor="@color/text_primary"
+                        app:chipBackgroundColor="@color/chip_background" />
                 </com.google.android.material.chip.ChipGroup>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -445,7 +445,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Contact Information"
-                    android:textColor="#333333"
+                    android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_marginBottom="12dp"/>
@@ -461,7 +461,7 @@
                         android:layout_height="24dp"
                         android:contentDescription="Email"
                         android:src="@android:drawable/ic_dialog_email"
-                        app:tint="#3F51B5" />
+                        app:tint="@color/primary" />
 
                     <TextView
                         android:id="@+id/email_text"
@@ -470,7 +470,7 @@
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         tools:text="emily.chen@example.com" />
                 </LinearLayout>
@@ -494,7 +494,7 @@
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         tools:text="(123) 456-7890" />
                 </LinearLayout>
@@ -528,7 +528,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Resume/CV"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -540,7 +540,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:layout_marginTop="16dp"
-                    android:background="#F5F5F5"
+                    android:background="@color/background_secondary"
                     android:padding="12dp"
                     android:gravity="center_vertical">
 
@@ -563,7 +563,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Emily_Chen_Resume.pdf"
-                            android:textColor="#333333"
+                            android:textColor="@color/text_primary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
@@ -572,7 +572,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Updated 2 weeks ago"
-                            android:textColor="#757575"
+                            android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
                     </LinearLayout>
 
@@ -581,7 +581,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/ic_menu_save"
-                        app:tint="#6200EE"
+                        app:tint="@color/primary"
                         android:contentDescription="Download Resume"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:padding="2dp" />
@@ -592,7 +592,7 @@
                         android:layout_height="24dp"
                         android:layout_marginStart="8dp"
                         android:src="@android:drawable/ic_menu_edit"
-                        app:tint="#6200EE"
+                        app:tint="@color/primary"
                         android:contentDescription="Edit Resume"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:padding="2dp" />
@@ -609,7 +609,7 @@
             android:layout_marginBottom="24dp"
             android:background="@android:color/transparent"
             android:text="Logout"
-            android:textColor="#D32F2F"
+            android:textColor="@color/error"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

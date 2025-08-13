@@ -51,15 +51,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Prevent activity recreation on configuration changes
-        if (savedInstanceState != null) {
-            Log.d(TAG, "Activity recreated with saved state");
-            return;
-        }
-        
         setContentView(R.layout.activity_main);
         
+        // Always initialize sessionManager
         sessionManager = SessionManager.getInstance(getApplicationContext());
+        
+        // Prevent duplicate initialization on configuration changes
+        if (savedInstanceState != null) {
+            Log.d(TAG, "Activity recreated with saved state");
+            // Still need to set up toolbar and navigation even on recreation
+            setupToolbar();
+            setupBottomNavigation();
+            return;
+        }
         
         // Check session validity
         if (!isCheckingSession) {
@@ -75,29 +79,21 @@ public class MainActivity extends AppCompatActivity {
             isCheckingSession = false;
         }
 
-        // Initialize toolbar components
+        // Initialize components
         initializeComponents(savedInstanceState);
-
-        Toolbar toolbar = findViewById(R.id.mainToolbar);
-        setSupportActionBar(toolbar);
-
-      /*  // Optionally, set click listeners for notification and profile icons
-      ImageView notificationIcon = toolbar.findViewById(R.id.notificationIcon);
-        ImageView profileIcon = toolbar.findViewById(R.id.profileIcon);
-
-        notificationIcon.setOnClickListener(v -> {
-            // Handle notification click
-        });
-
-        profileIcon.setOnClickListener(v -> {
-            // Handle profile click
-        });*/
+        setupToolbar();
+        setupBottomNavigation();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         Log.d(TAG, "onResume called - isCheckingSession: " + isCheckingSession);
+        
+        // Ensure sessionManager is initialized
+        if (sessionManager == null) {
+            sessionManager = SessionManager.getInstance(getApplicationContext());
+        }
         
         // Only check session if we haven't already
         if (!isCheckingSession) {
@@ -112,6 +108,31 @@ public class MainActivity extends AppCompatActivity {
             }
             isCheckingSession = false;
         }
+    }
+    
+    private void setupToolbar() {
+        Toolbar toolbar = findViewById(R.id.mainToolbar);
+        setSupportActionBar(toolbar);
+
+        // Set click listeners for toolbar icons
+        ImageView notificationIcon = toolbar.findViewById(R.id.notificationIcon);
+        ImageView settingsIcon = toolbar.findViewById(R.id.settingsIcon);
+
+        notificationIcon.setOnClickListener(v -> {
+            // Navigate to notifications fragment
+            getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new NotificationsFragment())
+                .addToBackStack(null)
+                .commit();
+        });
+
+        settingsIcon.setOnClickListener(v -> {
+            // Navigate to settings fragment
+            getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new com.example.jobportal.ui.settings.SettingsFragment())
+                .addToBackStack(null)
+                .commit();
+        });
     }
 
     @Override
@@ -136,6 +157,15 @@ public class MainActivity extends AppCompatActivity {
         // Start contact sync service with 2 minute delay
         new android.os.Handler().postDelayed(this::checkAndHandleContactSync, 120_000);
 
+        // Set default fragment only if this is a fresh start
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new HomeFragment())
+                .commit();
+        }
+    }
+    
+    private void setupBottomNavigation() {
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
         bottomNav.setOnItemSelectedListener(item -> {
             Fragment selectedFragment = null;
@@ -158,13 +188,6 @@ public class MainActivity extends AppCompatActivity {
             }
             return true;
         });
-
-        // Set default fragment only if this is a fresh start
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new HomeFragment())
-                .commit();
-        }
     }
 
     private void startContactSyncService() {
@@ -232,6 +255,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkAndHandleContactSync() {
+        if (sessionManager == null) {
+            sessionManager = SessionManager.getInstance(getApplicationContext());
+        }
         User user = sessionManager.getUser();
         boolean needsSync = false;
         boolean shouldRequestPermission = false;

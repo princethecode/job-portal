@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@color/background_secondary">
 
     <!-- Top App Bar -->
     <androidx.appcompat.widget.Toolbar
@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/profile"
-            android:textColor="#333333"
+            android:textColor="@color/text_primary"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -68,7 +68,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Personal Information"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                         
@@ -85,7 +85,7 @@
                             android:id="@+id/profileImageView"
                             android:layout_width="96dp"
                             android:layout_height="96dp"
-                            android:background="#EEEEEE"
+                            android:background="@color/background_secondary"
                             android:src="@android:drawable/ic_menu_camera"
                             android:padding="24dp"
                             android:scaleType="centerInside" />
@@ -125,7 +125,7 @@
                         android:layout_marginTop="12dp"
                         android:hint="@string/email"
                         app:startIconDrawable="@android:drawable/ic_dialog_email"
-                        app:startIconTint="#3F51B5">
+                        app:startIconTint="@color/primary">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/emailInput"
@@ -191,7 +191,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="About Me"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
@@ -232,7 +232,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Professional Information"
-                        android:textColor="#333333"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                         
@@ -297,7 +297,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Resume/CV"
-                            android:textColor="#333333"
+                            android:textColor="@color/text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
                             
@@ -346,7 +346,7 @@
                 android:layout_marginTop="24dp"
                 android:layout_gravity="center"
                 android:text="@string/logout"
-                android:textColor="#D32F2F"
+                android:textColor="@color/error"
                 android:textStyle="bold" />
 
         </LinearLayout>

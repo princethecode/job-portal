@@ -34,7 +34,7 @@
             android:layout_marginStart="12dp"
             android:ellipsize="end"
             android:maxLines="1"
-            android:textColor="@android:color/black"
+            android:textColor="@color/text_primary"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -59,7 +59,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:textColor="#666666"
+            android:textColor="@color/text_secondary"
             android:textSize="15sp"
             app:layout_constraintBottom_toBottomOf="@id/company_icon"
             app:layout_constraintEnd_toEndOf="parent"
@@ -79,7 +79,7 @@
             android:paddingTop="4dp"
             android:paddingEnd="8dp"
             android:paddingBottom="4dp"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/text_on_primary"
             android:textSize="12sp"
             app:layout_constraintStart_toEndOf="@id/status_indicator"
             app:layout_constraintTop_toBottomOf="@id/company_icon"
@@ -103,7 +103,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
-            android:textColor="#666666"
+            android:textColor="@color/text_secondary"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="@id/date_icon"
             app:layout_constraintEnd_toEndOf="parent"
@@ -131,7 +131,7 @@
                 android:text="View Details"
                 android:textAllCaps="false"
                 app:cornerRadius="8dp"
-                app:strokeColor="#3F51B5" />
+                app:strokeColor="@color/primary" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/withdraw_button"

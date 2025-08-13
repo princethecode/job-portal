@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@color/background_secondary">
 
     <!-- Header Section Card -->
     <com.google.android.material.card.MaterialCardView
@@ -32,14 +32,14 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@android:drawable/ic_menu_myplaces"
-                    app:tint="#3F51B5" />
+                    app:tint="@color/primary" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="Experience Details"
-                    android:textColor="#333333"
+                    android:textColor="@color/text_primary"
                     android:textSize="24sp"
                     android:fontFamily="sans-serif-medium" />
             </LinearLayout>
@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Your previous work experience"
-                android:textColor="#757575" />
+                android:textColor="@color/text_secondary" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -87,14 +87,14 @@
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:src="@android:drawable/ic_menu_recent_history"
-            app:tint="#CCCCCC" />
+            app:tint="@color/text_tertiary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="No work experience added yet"
-            android:textColor="#666666"
+            android:textColor="@color/text_secondary"
             android:textSize="18sp" />
 
         <TextView
@@ -103,7 +103,7 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:text="Add your work history to showcase your professional experience"
-            android:textColor="#999999" />
+            android:textColor="@color/text_tertiary" />
     </LinearLayout>
 
     <!-- Progress Bar -->

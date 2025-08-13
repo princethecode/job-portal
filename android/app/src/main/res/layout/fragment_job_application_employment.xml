@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Employment Details"
-            android:textColor="#333333"
+            android:textColor="@color/text_primary"
             android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Please provide your employment information"
-            android:textColor="#757575"
+            android:textColor="@color/text_secondary"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -198,20 +198,20 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:src="@drawable/ic_upload"
-                        android:tint="#AAAAAA" />
+                        app:tint="@color/text_tertiary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Upload your resume"
-                        android:textColor="#757575" />
+                        android:textColor="@color/text_secondary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="PDF, DOCX files (Max 5MB)"
-                        android:textColor="#AAAAAA"
+                        android:textColor="@color/text_tertiary"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -220,7 +220,7 @@
                     android:id="@+id/resume_display_ui"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="#F5F5F5"
+                    android:background="@color/background_secondary"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="16dp"
@@ -230,21 +230,21 @@
                         android:layout_width="36dp"
                         android:layout_height="36dp"
                         android:src="@drawable/ic_pdf"
-                        android:tint="#F44336" />
+                        app:tint="@color/red_error" />
 
                     <TextView
                         android:id="@+id/tv_resume_name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="#333333" />
+                        android:textColor="@color/text_primary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="Tap to change"
-                        android:textColor="#757575"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
 

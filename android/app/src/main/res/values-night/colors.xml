@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Override colors for dark theme -->
+    <color name="background_primary">@color/dark_background_primary</color>
+    <color name="background_secondary">@color/dark_background_secondary</color>
+    <color name="background_tertiary">@color/dark_background_tertiary</color>
+    <color name="background_card">@color/dark_background_card</color>
+    
+    <color name="text_primary">@color/dark_text_primary</color>
+    <color name="text_secondary">@color/dark_text_secondary</color>
+    <color name="text_tertiary">@color/dark_text_tertiary</color>
+    
+    <color name="divider">@color/dark_divider</color>
+    <color name="border_light">@color/dark_border</color>
+    <color name="border_medium">@color/dark_border</color>
+    
+    <!-- Card specific colors for better visibility in dark mode -->
+    <color name="card_background">@color/dark_background_card</color>
+    <color name="card_border">#4B5563</color>
+    <color name="card_highlight">#1F2937</color>
+    
+    <!-- Chip colors for dark mode -->
+    <color name="chip_background">#374151</color>
+    <color name="chip_text">@color/dark_text_primary</color>
+</resources>

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">जॉब पोर्टल</string>
+    <string name="app_logo">ऐप लोगो</string>
+    
+    <!-- Navigation -->
+    <string name="home">होम</string>
+    <string name="search">खोजें</string>
+    <string name="applications">आवेदन</string>
+    <string name="profile">प्रोफाइल</string>
+    <string name="jobs">नौकरियां</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="notifications">सूचनाएं</string>
+    <string name="logout">लॉगआउट</string>
+    
+    <!-- Actions -->
+    <string name="apply">आवेदन करें</string>
+    <string name="cancel">रद्द करें</string>
+    <string name="ok">ठीक है</string>
+    <string name="loading">लोड हो रहा है…</string>
+    <string name="try_again">पुनः प्रयास करें</string>
+    <string name="success">सफल</string>
+    <string name="error_occurred">एक त्रुटि हुई</string>
+    
+    <!-- Authentication -->
+    <string name="login">लॉगिन</string>
+    <string name="login_title">स्वागत</string>
+    <string name="register">रजिस्टर</string>
+    <string name="email">ईमेल</string>
+    <string name="password">पासवर्ड</string>
+    <string name="confirm_password">पासवर्ड की पुष्टि करें</string>
+    <string name="forgot_password">पासवर्ड भूल गए?</string>
+    <string name="reset_password">पासवर्ड रीसेट करें</string>
+    <string name="full_name">पूरा नाम</string>
+    <string name="mobile">मोबाइल नंबर</string>
+    <string name="phone_number">फोन नंबर</string>
+    <string name="create_account">खाता बनाएं</string>
+    <string name="already_have_account">पहले से खाता है? </string>
+    <string name="dont_have_account">खाता नहीं है? </string>
+    <string name="register_title">खाता बनाएं</string>
+    <string name="register_button">रजिस्टर</string>
+    <string name="sign_in">साइन इन</string>
+    <string name="upload_resume">रिज्यूमे अपलोड करें</string>
+    <string name="resume_formats">(PDF/DOC)</string>
+    <string name="forgot_password_title">पासवर्ड रीसेट करें</string>
+    <string name="reset_instructions">पासवर्ड रीसेट निर्देश प्राप्त करने के लिए अपना ईमेल पता दर्ज करें</string>
+    <string name="send_instructions">निर्देश भेजें</string>
+    <string name="back_to_login">लॉगिन पर वापस जाएं</string>
+    
+    <!-- Profile -->
+    <string name="edit_profile">प्रोफाइल संपादित करें</string>
+    <string name="save_changes">परिवर्तन सहेजें</string>
+    <string name="skills">कौशल</string>
+    <string name="experience">अनुभव</string>
+    <string name="change_password">पासवर्ड बदलें</string>
+    <string name="current_password">वर्तमान पासवर्ड</string>
+    <string name="new_password">नया पासवर्ड</string>
+    <string name="change_photo">फोटो बदलें</string>
+    <string name="education">शिक्षा</string>
+    <string name="languages">भाषाएं</string>
+    <string name="certifications">प्रमाणपत्र</string>
+    <string name="about_me">मेरे बारे में</string>
+    <string name="add_education">शिक्षा जोड़ें</string>
+    <string name="add_experience">अनुभव जोड़ें</string>
+    <string name="add_skill">कौशल जोड़ें</string>
+    <string name="resume">रिज्यूमे</string>
+    <string name="view_resume">रिज्यूमे देखें</string>
+    
+    <!-- Job Listings -->
+    <string name="job_search">नौकरी खोजें</string>
+    <string name="job_title">नौकरी का शीर्षक</string>
+    <string name="company_name">कंपनी का नाम</string>
+    <string name="location">स्थान</string>
+    <string name="job_type">नौकरी का प्रकार</string>
+    <string name="salary">वेतन</string>
+    <string name="posted_on">पोस्ट किया गया</string>
+    <string name="apply_now">अभी आवेदन करें</string>
+    <string name="job_description">नौकरी का विवरण</string>
+    <string name="requirements">आवश्यकताएं</string>
+    <string name="qualifications">योग्यताएं</string>
+    <string name="responsibilities">जिम्मेदारियां</string>
+    <string name="benefits">लाभ</string>
+    <string name="apply_before">इससे पहले आवेदन करें</string>
+    <string name="full_time">पूर्णकालिक</string>
+    <string name="part_time">अंशकालिक</string>
+    <string name="contract">अनुबंध</string>
+    <string name="remote">रिमोट</string>
+    <string name="internship">इंटर्नशिप</string>
+    <string name="browse_all_jobs">सभी नौकरियां देखें</string>
+    <string name="similar_jobs">समान नौकरियां</string>
+    <string name="filter_jobs">नौकरियां फिल्टर करें</string>
+    <string name="sort_by">इसके अनुसार क्रमबद्ध करें</string>
+    <string name="clear_filters">फिल्टर साफ करें</string>
+    <string name="apply_filters">फिल्टर लागू करें</string>
+    <string name="error_loading_jobs">नौकरियां लोड करने में त्रुटि। कृपया पुनः प्रयास करें।</string>
+    <string name="no_jobs">कोई नौकरी नहीं मिली</string>
+    
+    <!-- Applications -->
+    <string name="my_applications">मेरे आवेदन</string>
+    <string name="application_date">आवेदन की तारीख</string>
+    <string name="application_status">स्थिति</string>
+    <string name="pending">लंबित</string>
+    <string name="reviewing">समीक्षा में</string>
+    <string name="rejected">अस्वीकृत</string>
+    <string name="shortlisted">शॉर्टलिस्ट</string>
+    <string name="accepted">स्वीकृत</string>
+    <string name="cover_letter">कवर लेटर</string>
+    <string name="submit_application">आवेदन जमा करें</string>
+    <string name="application_submitted">आवेदन सफलतापूर्वक जमा किया गया</string>
+    <string name="view_application">आवेदन देखें</string>
+    <string name="withdraw_application">आवेदन वापस लें</string>
+    <string name="no_applications">कोई आवेदन नहीं मिला</string>
+    
+    <!-- Settings -->
+    <string name="account_settings">खाता सेटिंग्स</string>
+    <string name="notification_settings">सूचना सेटिंग्स</string>
+    <string name="privacy_settings">गोपनीयता सेटिंग्स</string>
+    <string name="theme">थीम</string>
+    <string name="light">हल्का</string>
+    <string name="dark">गहरा</string>
+    <string name="system_default">सिस्टम डिफ़ॉल्ट</string>
+    <string name="language">भाषा</string>
+    <string name="english">English</string>
+    <string name="hindi">हिंदी</string>
+    <string name="delete_account">खाता हटाएं</string>
+    <string name="appearance">दिखावट</string>
+    <string name="language_region">भाषा और क्षेत्र</string>
+    <string name="app_info">ऐप जानकारी</string>
+    <string name="legal">कानूनी</string>
+    <string name="light_mode">लाइट मोड</string>
+    <string name="dark_mode">डार्क मोड</string>
+    <string name="choose_theme">थीम चुनें</string>
+    <string name="choose_language">भाषा चुनें</string>
+    <string name="app_version">ऐप संस्करण</string>
+    <string name="privacy_policy">गोपनीयता नीति</string>
+    <string name="terms_conditions">नियम और शर्तें</string>
+    <string name="app_information">ऐप जानकारी</string>
+    <string name="app_info_details">संस्करण: %1$s (%2$s)\nएंड्रॉइड: %3$s (API %4$s)</string>
+    <string name="error_opening_link">लिंक खोलने में त्रुटि</string>
+    <string name="error_getting_app_info">ऐप जानकारी प्राप्त करने में त्रुटि</string>
+    
+    <!-- Error Messages -->
+    <string name="error_invalid_email">अमान्य ईमेल पता</string>
+    <string name="error_invalid_password">पासवर्ड कम से कम 8 अक्षर का होना चाहिए</string>
+    <string name="error_password_mismatch">पासवर्ड मेल नहीं खाते</string>
+    <string name="error_required_field">यह फील्ड आवश्यक है</string>
+    <string name="error_network">नेटवर्क त्रुटि। कृपया अपना कनेक्शन जांचें</string>
+    <string name="error_something_went_wrong">कुछ गलत हुआ। कृपया पुनः प्रयास करें</string>
+    <string name="error_login_failed">लॉगिन असफल। कृपया अपनी जानकारी जांचें</string>
+    <string name="error_server">सर्वर त्रुटि। कृपया बाद में पुनः प्रयास करें</string>
+    <string name="error_no_internet">कोई इंटरनेट कनेक्शन उपलब्ध नहीं</string>
+    <string name="error_timeout">अनुरोध समय समाप्त। कृपया पुनः प्रयास करें</string>
+    <string name="error_unauthorized">कृपया फिर से लॉगिन करें</string>
+    <string name="error_forbidden">आपको यह कार्य करने की अनुमति नहीं है</string>
+    <string name="error_not_found">अनुरोधित संसाधन नहीं मिला</string>
+    <string name="error_unknown">एक अज्ञात त्रुटि हुई</string>
+    
+    <!-- Success Messages -->
+    <string name="success_profile_updated">प्रोफाइल सफलतापूर्वक अपडेट किया गया</string>
+    <string name="success_password_reset">पासवर्ड रीसेट ईमेल भेजा गया</string>
+    <string name="success_registered">पंजीकरण सफल</string>
+    
+    <!-- Misc -->
+    <string name="filter">फिल्टर</string>
+    <string name="sort">क्रमबद्ध करें</string>
+    <string name="date">तारीख</string>
+    <string name="newest_first">नवीनतम पहले</string>
+    <string name="oldest_first">पुराने पहले</string>
+    <string name="save">सहेजें</string>
+    <string name="share">साझा करें</string>
+    <string name="retry">पुनः प्रयास करें</string>
+    <string name="yes">हां</string>
+    <string name="no">नहीं</string>
+    <string name="confirm">पुष्टि करें</string>
+    <string name="see_all">सभी देखें</string>
+    <string name="no_results">कोई परिणाम नहीं मिला</string>
+
+    <!-- Common Actions -->
+    <string name="action_search">खोजें</string>
+    <string name="action_filter">फिल्टर</string>
+    <string name="action_sort">क्रमबद्ध करें</string>
+    <string name="action_save">सहेजें</string>
+    <string name="action_apply">आवेदन करें</string>
+    <string name="action_cancel">रद्द करें</string>
+    <string name="action_edit">संपादित करें</string>
+    <string name="action_delete">हटाएं</string>
+    <string name="action_share">साझा करें</string>
+    <string name="action_back">वापस</string>
+    <string name="action_next">अगला</string>
+    <string name="action_done">पूर्ण</string>
+    <string name="action_submit">जमा करें</string>
+    <string name="action_retry">पुनः प्रयास करें</string>
+    <string name="action_continue">जारी रखें</string>
+    <string name="action_upload">अपलोड करें</string>
+    <string name="action_download">डाउनलोड करें</string>
+    <string name="action_more">और</string>
+    <string name="action_view_all">सभी देखें</string>
+    <string name="action_refresh">रीफ्रेश करें</string>
+    <string name="action_login">लॉगिन</string>
+    <string name="action_signup">साइन अप</string>
+    <string name="action_logout">लॉगआउट</string>
+    <string name="action_reset_password">पासवर्ड रीसेट करें</string>
+    <string name="action_update">अपडेट करें</string>
+    <string name="action_confirm">पुष्टि करें</string>
+    <string name="action_change">बदलें</string>
+    <string name="action_remove">हटाएं</string>
+
+    <!-- Navigation Menu -->
+    <string name="nav_home">होम</string>
+    <string name="nav_jobs">नौकरियां</string>
+    <string name="nav_applications">आवेदन</string>
+    <string name="nav_profile">प्रोफाइल</string>
+    <string name="nav_saved_jobs">सहेजी गई नौकरियां</string>
+    <string name="nav_settings">सेटिंग्स</string>
+    <string name="nav_about">के बारे में</string>
+    <string name="nav_help">सहायता और समर्थन</string>
+    <string name="nav_feedback">फीडबैक</string>
+    <string name="nav_notifications">सूचनाएं</string>
+    <string name="nav_messages">संदेश</string>
+    
+    <!-- Jobs Listing -->
+    <string name="jobs_title">नौकरी खोजें</string>
+    <string name="jobs_subtitle">अपने कौशल से मेल खाने वाले अवसर खोजें</string>
+    <string name="available_jobs">उपलब्ध नौकरियां</string>
+    <string name="email_or_mobile">ईमेल पता</string>
+    <string name="work_experience">कार्य अनुभव</string>
+    <string name="job_image">नौकरी की छवि</string>
+</resources>

@@ -36,7 +36,7 @@
             android:contentDescription="Notification"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="#000000" />
+            app:tint="@color/text_primary" />
 
         <!-- Notification title -->
         <TextView
@@ -46,7 +46,7 @@
             android:layout_marginStart="12dp"
             android:textSize="17sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black"
+            android:textColor="@color/text_primary"
             app:layout_constraintEnd_toStartOf="@id/notification_indicator"
             app:layout_constraintStart_toEndOf="@id/notification_icon"
             app:layout_constraintTop_toTopOf="parent"
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:textSize="15sp"
-            android:textColor="#555555"
+            android:textColor="@color/text_secondary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/notification_title"
@@ -71,7 +71,7 @@
             android:layout_width="16dp"
             android:layout_height="16dp"
             android:src="@drawable/ic_calendar"
-            android:tint="#000000"
+            app:tint="@color/text_primary"
             android:contentDescription="Date"
             android:layout_marginTop="12dp"
             app:layout_constraintStart_toStartOf="parent"
@@ -83,7 +83,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:textSize="13sp"
-            android:textColor="#666666"
+            android:textColor="@color/text_secondary"
             app:layout_constraintBottom_toBottomOf="@id/date_icon"
             app:layout_constraintStart_toEndOf="@id/date_icon"
             app:layout_constraintTop_toTopOf="@id/date_icon"

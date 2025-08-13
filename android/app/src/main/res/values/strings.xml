@@ -121,7 +121,23 @@
     <string name="system_default">System Default</string>
     <string name="language">Language</string>
     <string name="english">English</string>
+    <string name="hindi">हिंदी</string>
     <string name="delete_account">Delete Account</string>
+    <string name="appearance">Appearance</string>
+    <string name="language_region">Language &amp; Region</string>
+    <string name="app_info">App Information</string>
+    <string name="legal">Legal</string>
+    <string name="light_mode">Light Mode</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="choose_theme">Choose Theme</string>
+    <string name="choose_language">Choose Language</string>
+    <string name="app_version">App Version</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_conditions">Terms &amp; Conditions</string>
+    <string name="app_information">App Information</string>
+    <string name="app_info_details">Version: %1$s (%2$s)\nAndroid: %3$s (API %4$s)</string>
+    <string name="error_opening_link">Error opening link</string>
+    <string name="error_getting_app_info">Error getting app information</string>
     
     <!-- Error Messages -->
     <string name="error_invalid_email">Invalid email address</string>

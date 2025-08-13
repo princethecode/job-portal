@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white">
+    android:background="@color/background_primary">
     
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -29,7 +29,7 @@
                 android:layout_height="24dp"
                 android:contentDescription="Notifications"
                 android:src="@drawable/ic_notifications"
-                android:tint="#000000" />
+                app:tint="@color/text_primary" />
 
             <TextView
                 android:id="@+id/text_notifications"
@@ -39,7 +39,7 @@
                 android:layout_weight="1"
                 android:text="Notifications"
                 android:textSize="22sp"
-                android:textColor="#333333"
+                android:textColor="@color/text_primary"
                 android:textStyle="bold" />
 
             <com.google.android.material.button.MaterialButton
@@ -49,15 +49,15 @@
                 android:layout_height="wrap_content"
                 android:text="Clear All"
                 android:textAllCaps="false"
-                android:textColor="#3F51B5"
-                app:rippleColor="#1A3F51B5" />
+                android:textColor="@color/primary"
+                app:rippleColor="@color/primary" />
         </LinearLayout>
 
         <View
             android:id="@+id/divider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#EEEEEE"
+            android:background="@color/divider"
             app:layout_constraintTop_toBottomOf="@id/notifications_header" />
 
         <!-- SwipeRefreshLayout for Notifications List -->
@@ -120,7 +120,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="No notifications yet"
-                android:textColor="#666666"
+                android:textColor="@color/text_secondary"
                 android:textSize="18sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

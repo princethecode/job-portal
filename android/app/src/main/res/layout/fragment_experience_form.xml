@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:background="@color/background_secondary">
 
     <!-- Top App Bar with improved design -->
     <com.google.android.material.appbar.AppBarLayout
@@ -26,7 +26,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:text="Experience Details"
-                android:textColor="#333333"
+                android:textColor="@color/text_primary"
                 android:textSize="20sp"
                 android:fontFamily="sans-serif-medium" />
 
@@ -76,14 +76,14 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center_vertical"
                         android:src="@android:drawable/ic_dialog_info"
-                        app:tint="#3F51B5" />
+                        app:tint="@color/primary" />
                         
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:text="Please provide your work experience"
-                        android:textColor="#555555"
+                        android:textColor="@color/text_secondary"
                         android:textSize="16sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -109,7 +109,7 @@
                         android:layout_height="wrap_content"
                         android:hint="Job Title"
                         app:startIconDrawable="@android:drawable/ic_menu_edit"
-                        app:startIconTint="#3F51B5">
+                        app:startIconTint="@color/primary">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etJobTitle"
@@ -127,7 +127,7 @@
                         android:layout_marginTop="16dp"
                         android:hint="Company Name"
                         app:startIconDrawable="@android:drawable/ic_menu_myplaces"
-                        app:startIconTint="#3F51B5">
+                        app:startIconTint="@color/primary">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etCompanyName"
@@ -153,7 +153,7 @@
                             android:layout_marginEnd="8dp"
                             android:hint="Start Date"
                             app:startIconDrawable="@android:drawable/ic_menu_my_calendar"
-                            app:startIconTint="#3F51B5">
+                            app:startIconTint="@color/primary">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etStartDate"
@@ -174,7 +174,7 @@
                             android:layout_marginStart="8dp"
                             android:hint="End Date"
                             app:startIconDrawable="@android:drawable/ic_menu_my_calendar"
-                            app:startIconTint="#3F51B5">
+                            app:startIconTint="@color/primary">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etEndDate"
@@ -193,7 +193,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="I currently work here"
-                        android:textColor="#555555" />
+                        android:textColor="@color/text_secondary" />
 
                     <!-- Description Input with icon -->
                     <com.google.android.material.textfield.TextInputLayout
@@ -204,7 +204,7 @@
                         android:layout_marginTop="16dp"
                         android:hint="Description"
                         app:startIconDrawable="@android:drawable/ic_menu_sort_by_size"
-                        app:startIconTint="#3F51B5">
+                        app:startIconTint="@color/primary">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etDescription"
@@ -251,13 +251,13 @@
                         android:layout_marginTop="8dp"
                         android:text="Delete Experience"
                         android:textAllCaps="false"
-                        android:textColor="#D32F2F"
+                        android:textColor="@color/error"
                         android:visibility="gone"
                         app:cornerRadius="8dp"
                         app:icon="@android:drawable/ic_menu_delete"
                         app:iconGravity="textStart"
-                        app:iconTint="#D32F2F"
-                        app:strokeColor="#D32F2F" />
+                        app:iconTint="@color/error"
+                        app:strokeColor="@color/error" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
