@@ -451,7 +451,11 @@ public class JobApplicationNewFragment extends Fragment {
         private TextView joiningPeriodEditText;
         private TextView skillsEditText;
         private TextView resumeNameTextView;
+        private TextView resumeStatusTextView;
         private View resumeUploadContainer;
+        private View resumeUploadUI;
+        private View resumeLoadingUI;
+        private View resumeDisplayUI;
         private Uri selectedResumeUri;
         private String selectedResumeFileName;
         private User currentUser;
@@ -477,7 +481,11 @@ public class JobApplicationNewFragment extends Fragment {
             joiningPeriodEditText = view.findViewById(R.id.joining_period);
             skillsEditText = view.findViewById(R.id.skills);
             resumeNameTextView = view.findViewById(R.id.tv_resume_name);
+            resumeStatusTextView = view.findViewById(R.id.tv_resume_status);
             resumeUploadContainer = view.findViewById(R.id.resume_upload_container);
+            resumeUploadUI = view.findViewById(R.id.resume_upload_ui);
+            resumeLoadingUI = view.findViewById(R.id.resume_loading_ui);
+            resumeDisplayUI = view.findViewById(R.id.resume_display_ui);
 
             // Get current user data
             SessionManager sessionManager = SessionManager.getInstance(requireContext());
@@ -519,20 +527,13 @@ public class JobApplicationNewFragment extends Fragment {
                                 // Create a temporary file from the URI
                                 resumeFile = createFileFromUri(uri);
                                 
-                                // Update UI
-                                resumeNameTextView.setText(selectedResumeFileName);
-                                resumeNameTextView.setVisibility(View.VISIBLE);
+                                // Upload resume to server immediately
+                                uploadResumeToServer(resumeFile);
                                 
-                                // Pass the resume info to the parent fragment
-                                if (getParentFragment() instanceof JobApplicationNewFragment) {
-                                    ((JobApplicationNewFragment) getParentFragment()).setResumeInfo(uri, selectedResumeFileName);
-                                }
-                                
-                                // Show success message
-                                Toast.makeText(requireContext(), 
-                                    "Resume uploaded successfully", Toast.LENGTH_SHORT).show();
                             } catch (IOException e) {
                                 Log.e(TAG, "Error processing resume file", e);
+                                // Show error and revert to upload state
+                                updateResumeUI(null, false);
                                 Toast.makeText(requireContext(), 
                                     "Error processing resume file", Toast.LENGTH_SHORT).show();
                             }
@@ -544,6 +545,87 @@ public class JobApplicationNewFragment extends Fragment {
                 // Launch file picker for PDF files only
                 getContentLauncher.launch("application/pdf");
             });
+        }
+        
+        private void uploadResumeToServer(File resumeFile) {
+            // Show loading state
+            showResumeLoading();
+            
+            // Get ApiClient instance
+            ApiClient apiClient = ApiClient.getInstance(requireContext());
+            
+            // Upload resume using the same method as in edit profile
+            apiClient.uploadResume(resumeFile, new ApiCallback<ApiResponse<User>>() {
+                @Override
+                public void onSuccess(ApiResponse<User> response) {
+                    if (response.isSuccess() && response.getData() != null) {
+                        // Update UI to show success with new upload indicator
+                        updateResumeUI(selectedResumeFileName, true);
+                        
+                        // Pass the resume info to the parent fragment
+                        if (getParentFragment() instanceof JobApplicationNewFragment) {
+                            ((JobApplicationNewFragment) getParentFragment()).setResumeInfo(selectedResumeUri, selectedResumeFileName);
+                        }
+                        
+                        Log.d(TAG, "Resume uploaded successfully to server");
+                    } else {
+                        // Show error and revert to upload state
+                        updateResumeUI(null, false);
+                        Toast.makeText(requireContext(), 
+                            "Failed to upload resume: " + response.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+                
+                @Override
+                public void onError(String errorMessage) {
+                    // Show error and revert to upload state
+                    updateResumeUI(null, false);
+                    Toast.makeText(requireContext(), 
+                        "Error uploading resume: " + errorMessage, Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Resume upload failed: " + errorMessage);
+                }
+            });
+        }
+        
+        /**
+         * Updates the resume UI section with different states.
+         * @param fileName The name of the resume file. If null or empty, shows the "Upload Now" UI.
+         * @param isNewUpload Whether this is a newly uploaded file (shows success message)
+         */
+        private void updateResumeUI(String fileName, boolean isNewUpload) {
+            // Hide loading state
+            resumeLoadingUI.setVisibility(View.GONE);
+            
+            if (fileName != null && !fileName.isEmpty()) {
+                // A resume exists, so show its name.
+                resumeNameTextView.setText(fileName);
+                
+                // Show appropriate status message
+                if (isNewUpload) {
+                    resumeStatusTextView.setText("✓ Successfully uploaded");
+                    resumeStatusTextView.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+                } else {
+                    resumeStatusTextView.setText("✓ Resume available");
+                    resumeStatusTextView.setTextColor(getResources().getColor(android.R.color.holo_blue_dark));
+                }
+                
+                resumeUploadUI.setVisibility(View.GONE);
+                resumeDisplayUI.setVisibility(View.VISIBLE);
+            } else {
+                // No resume, so show the "Upload Now" prompt.
+                resumeNameTextView.setText("");
+                resumeUploadUI.setVisibility(View.VISIBLE);
+                resumeDisplayUI.setVisibility(View.GONE);
+            }
+        }
+        
+        /**
+         * Shows the loading state during resume upload
+         */
+        private void showResumeLoading() {
+            resumeUploadUI.setVisibility(View.GONE);
+            resumeDisplayUI.setVisibility(View.GONE);
+            resumeLoadingUI.setVisibility(View.VISIBLE);
         }
 
         private String getFileNameFromUri(Uri uri) {

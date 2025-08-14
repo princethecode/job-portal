@@ -236,6 +236,53 @@ class UserController extends Controller
     }
 
     /**
+     * Upload resume file
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadResume(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'resume' => 'required|file|mimes:pdf,doc,docx|max:5120', // 5MB max
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = $request->user();
+            
+            // Delete old resume if exists
+            if ($user->resume_path) {
+                Storage::disk('public')->delete($user->resume_path);
+            }
+            
+            // Store the new resume in the resumes folder
+            $path = $request->file('resume')->store('resumes', 'public');
+            $user->resume_path = $path;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Resume uploaded successfully',
+                'data' => $user
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error uploading resume: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload resume'
+            ], 500);
+        }
+    }
+
+    /**
      * Get all users (Admin only)
      *
      * @return \Illuminate\Http\JsonResponse

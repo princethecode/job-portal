@@ -1168,6 +1168,74 @@ public class ApiClient {
             return "1.0";
         }
     }
+    
+    /**
+     * Upload resume file
+     * 
+     * @param resumeFile The resume file to upload
+     * @param callback Callback to handle the response
+     */
+    public void uploadResume(File resumeFile, final ApiCallback<ApiResponse<User>> callback) {
+        if (resumeFile == null) {
+            callback.onError("No resume file provided");
+            return;
+        }
+        
+        // Check if user is logged in
+        if (!sessionManager.isLoggedIn()) {
+            callback.onError("User not logged in");
+            return;
+        }
+        
+        // Create request body for the resume file
+        RequestBody requestFile = RequestBody.create(MediaType.parse("application/pdf"), resumeFile);
+        
+        // MultipartBody.Part is used to send also the actual file name
+        MultipartBody.Part resumePart = MultipartBody.Part.createFormData(
+                "resume", resumeFile.getName(), requestFile);
+        
+        Log.d("ApiClient", "Uploading resume file: " + resumeFile.getName());
+        
+        // Create the API call
+        Call<ApiResponse<User>> call = apiService.uploadResume(resumePart);
+        
+        // Execute the request
+        call.enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                Log.d("ApiClient", "Resume upload response code: " + response.code());
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<User> apiResponse = response.body();
+                    Log.d("ApiClient", "Resume upload success: " + apiResponse.isSuccess() + ", message: " + apiResponse.getMessage());
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        // Update the user in session manager
+                        sessionManager.saveUser(apiResponse.getData());
+                        callback.onSuccess(apiResponse);
+                    } else {
+                        callback.onError(apiResponse.getMessage());
+                    }
+                } else {
+                    try {
+                        String errorMessage = response.errorBody() != null ? 
+                            response.errorBody().string() : "Unknown error";
+                        Log.e("ApiClient", "Resume upload failed with error: " + errorMessage);
+                        callback.onError("Failed to upload resume: " + errorMessage);
+                    } catch (IOException e) {
+                        Log.e("ApiClient", "Error reading response body", e);
+                        callback.onError("Failed to upload resume: " + e.getMessage());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                Log.e("ApiClient", "Resume upload network error", t);
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+    }
 }
 
 

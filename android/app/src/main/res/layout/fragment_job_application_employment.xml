@@ -215,6 +215,29 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
+                <!-- Loading UI (shown during upload) -->
+                <LinearLayout
+                    android:id="@+id/resume_loading_ui"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <ProgressBar
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:indeterminate="true" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Uploading resume..."
+                        android:textColor="@color/text_secondary" />
+                </LinearLayout>
+
                 <!-- Resume display (shown when resume is available) -->
                 <LinearLayout
                     android:id="@+id/resume_display_ui"
@@ -237,15 +260,27 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="@color/text_primary" />
+                        android:maxLines="2"
+                        android:ellipsize="middle"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_resume_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="✓ Successfully uploaded"
+                        android:textColor="@android:color/holo_green_dark"
+                        android:textSize="12sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="2dp"
                         android:text="Tap to change"
                         android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
+                        android:textSize="11sp" />
                 </LinearLayout>
 
             </FrameLayout>

@@ -86,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // User profile
     Route::post('/profile', [UserController::class, 'updateProfile']);
     Route::post('/profile/photo', [UserController::class, 'uploadProfilePhoto']);
+    Route::post('/profile/resume', [UserController::class, 'uploadResume']);
     Route::post('/change-password', [UserController::class, 'changePassword']);
     
     // Contacts
@@ -116,5 +117,19 @@ Route::get('profile_photos/{filename}', function ($filename) {
     return response()->file($path, [
         'Content-Type' => $mimeType,
         'Content-Disposition' => 'inline; filename="' . $filename . '"'
+    ]);
+});
+
+// Resume file access route
+Route::get('resumes/{filename}', function ($filename) {
+    $path = storage_path('app/public/resumes/' . $filename);
+    if (!file_exists($path)) {
+        return response()->json(['error' => 'Resume not found'], 404);
+    }
+    
+    $mimeType = mime_content_type($path);
+    return response()->file($path, [
+        'Content-Type' => $mimeType,
+        'Content-Disposition' => 'attachment; filename="' . $filename . '"'
     ]);
 });
