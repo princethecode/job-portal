@@ -88,6 +88,17 @@
                 android:textColor="@color/text_on_primary"
                 app:layout_constraintTop_toBottomOf="@id/passwordLayout" />
 
+            <!-- Progress Bar -->
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/loginButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
             <!-- Forgot Password -->
         <TextView
             android:id="@+id/forgotPassword"
@@ -126,29 +137,17 @@
 
                 <Button
                     android:id="@+id/googleSignInButton"
+                    style="@style/GoogleSignInButtonBlue"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:text="Google"
-                    android:textColor="@color/text_primary"
-                    android:drawableLeft="@android:drawable/ic_menu_search"
-                    android:backgroundTint="@color/button_tertiary"
-                    android:elevation="2dp" />
+                    android:text="Continue with Google"
+                    android:drawableStart="@drawable/ic_google_logo"
+                    android:drawablePadding="12dp" />
 
-                <Space
-                    android:layout_width="16dp"
-                    android:layout_height="0dp" />
 
-        <Button
-                    android:id="@+id/linkedinSignInButton"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:text="LinkedIn"
-                    android:textColor="@color/primary"
-                    android:drawableLeft="@android:drawable/ic_menu_share"
-                    android:backgroundTint="@color/button_tertiary"
-                    android:elevation="2dp" />
+
+
             </LinearLayout>
 
             <!-- Don't have an account? Sign Up -->

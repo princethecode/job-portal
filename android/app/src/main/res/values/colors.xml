@@ -168,4 +168,13 @@
     <color name="light_gray">#F5F5F5</color>
     <color name="red">#F44336</color>
 
+    <!-- Google Brand Colors -->
+    <color name="google_blue">#4285F4</color>
+    <color name="google_green">#34A853</color>
+    <color name="google_yellow">#FBBC05</color>
+    <color name="google_red">#EA4335</color>
+    <color name="google_button_background">#FFFFFF</color>
+    <color name="google_button_border">#DADCE0</color>
+    <color name="google_button_pressed">#F8F9FA</color>
+
 </resources>

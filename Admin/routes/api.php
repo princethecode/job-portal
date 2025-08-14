@@ -45,6 +45,10 @@ Route::post('/logout', [AuthController::class, 'logout']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
+// Google Authentication
+Route::post('/login/google', [AuthController::class, 'loginWithGoogle']);
+Route::post('/register/google', [AuthController::class, 'registerWithGoogle']);
+
 // Jobs
 Route::get('/jobs', [JobController::class, 'index']);
 Route::get('/jobs/{id}', [JobController::class, 'show']);

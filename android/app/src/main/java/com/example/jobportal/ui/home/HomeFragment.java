@@ -150,19 +150,51 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
 
         // Observe LiveData
         featuredJobsViewModel.getFeaturedJobs().observe(getViewLifecycleOwner(), jobs -> {
-            featuredJobsAdapter.submitList(jobs);
+            if (jobs != null && !jobs.isEmpty()) {
+                featuredJobsAdapter.submitList(jobs);
+                binding.featuredJobsViewPager.setVisibility(View.VISIBLE);
+            } else {
+                // Hide featured jobs section if no data
+                binding.featuredJobsViewPager.setVisibility(View.GONE);
+                Log.d(TAG, "No featured jobs available, hiding section");
+            }
         });
+        
         featuredJobsViewModel.getIsLoading().observe(getViewLifecycleOwner(), isLoading -> {
-            binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+            // Only show progress bar if it's not already visible from other operations
+            if (isLoading && binding.progressBar.getVisibility() != View.VISIBLE) {
+                binding.progressBar.setVisibility(View.VISIBLE);
+            } else if (!isLoading) {
+                binding.progressBar.setVisibility(View.GONE);
+            }
         });
+        
         featuredJobsViewModel.getError().observe(getViewLifecycleOwner(), error -> {
-            if (error != null) {
-                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+            if (error != null && !error.isEmpty()) {
+                Log.e(TAG, "Featured jobs error: " + error);
+                
+                // Show user-friendly error message
+                String userMessage = error;
+                if (error.contains("JsonSyntaxException") || error.contains("invalid data format")) {
+                    userMessage = "Unable to load featured jobs. Please try again later.";
+                } else if (error.contains("Network error") || error.contains("Unable to connect")) {
+                    userMessage = "Please check your internet connection and try again.";
+                }
+                
+                Toast.makeText(requireContext(), userMessage, Toast.LENGTH_SHORT).show();
+                
+                // Hide featured jobs section on error
+                binding.featuredJobsViewPager.setVisibility(View.GONE);
             }
         });
 
         // Fetch data
         featuredJobsViewModel.fetchFeaturedJobs();
+        
+        // Add debug test for the API endpoint (only in debug builds)
+        if (com.example.jobportal.BuildConfig.DEBUG) {
+            testFeaturedJobsEndpoint();
+        }
     }
 
     private void setupCategoryRecyclerView() {
@@ -687,6 +719,47 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
             .replace(R.id.fragment_container, jobsFragment)
             .addToBackStack(null)
             .commit();
+    }
+
+    /**
+     * Test method to debug the featured jobs API endpoint
+     */
+    private void testFeaturedJobsEndpoint() {
+        Log.d(TAG, "Testing featured jobs API endpoint...");
+        
+        // Make a simple HTTP request to test the endpoint
+        new Thread(() -> {
+            try {
+                java.net.URL url = new java.net.URL("https://emps.co.in/api/featured-jobs");
+                java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
+                
+                int responseCode = connection.getResponseCode();
+                Log.d(TAG, "Direct API test - Response code: " + responseCode);
+                
+                java.io.InputStream inputStream = responseCode >= 200 && responseCode < 300 
+                    ? connection.getInputStream() 
+                    : connection.getErrorStream();
+                
+                if (inputStream != null) {
+                    java.util.Scanner scanner = new java.util.Scanner(inputStream).useDelimiter("\\A");
+                    String response = scanner.hasNext() ? scanner.next() : "";
+                    Log.d(TAG, "Direct API test - Response body: " + response);
+                    
+                    if (response.trim().startsWith("<")) {
+                        Log.e(TAG, "FOUND THE ISSUE: Server is returning HTML instead of JSON!");
+                    }
+                }
+                
+                connection.disconnect();
+            } catch (Exception e) {
+                Log.e(TAG, "Direct API test failed", e);
+            }
+        }).start();
     }
 
     @Override

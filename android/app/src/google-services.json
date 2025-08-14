@@ -12,7 +12,36 @@
           "package_name": "com.example.jobportal"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "838981324108-it0d2m654l7u45aqhuhjhfc2u66arc23.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.jobportal",
+            "certificate_hash": "815ac555e7b2f20450f7dbca9f2521da4999e12c"
+          }
+        },
+        {
+          "client_id": "838981324108-jmd3evhbnhn5le46r85cj0s0kfa398bq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.jobportal",
+            "certificate_hash": "74ce11ac19fb06d606b0109e59bebf60d416da95"
+          }
+        },
+        {
+          "client_id": "838981324108-n3mi4nkc085mb9sptvi2ibq9qoa7nmt9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.jobportal",
+            "certificate_hash": "b5cd547d1fd47940edf31348a8ab79e0ca5ef413"
+          }
+        },
+        {
+          "client_id": "838981324108-pu5ktscdqbpmq3d3kiprm1jb204uup9i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCjh-3LaCTsEBpgF9Q82tPFFY9NkcO70h4"
@@ -20,7 +49,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "838981324108-pu5ktscdqbpmq3d3kiprm1jb204uup9i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

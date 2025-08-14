@@ -13,6 +13,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import com.example.jobportal.BuildConfig;
 import com.example.jobportal.MainActivity;
@@ -28,6 +30,7 @@ import com.example.jobportal.utils.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.auth.FirebaseUser;
 import java.util.HashMap;
 import java.util.Map;
 import retrofit2.Call;
@@ -48,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private TextInputLayout tilMobile, tilPassword;
     private TextInputEditText etMobile, etPassword;
-    private Button btnLogin;
+    private Button btnLogin, btnGoogleSignIn;
     private TextView tvForgotPassword, tvRegister;
     private View progressBar;
     private ActivityLoginBinding binding;
@@ -58,6 +61,58 @@ public class LoginActivity extends AppCompatActivity {
     private User authenticatedUser;
     private ApiClient apiClient;
     private SessionManager sessionManager;
+    
+    // Firebase Auth Helper
+    private FirebaseAuthHelper firebaseAuthHelper;
+    
+    // Activity result launcher for Google Sign-In
+    private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                Log.d(TAG, "Google Sign-In result received. Result code: " + result.getResultCode());
+                
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Log.d(TAG, "Processing Google Sign-In result...");
+                    firebaseAuthHelper.handleGoogleSignInResult(result.getData(), new FirebaseAuthHelper.AuthCallback() {
+                        @Override
+                        public void onSuccess(FirebaseUser user) {
+                            Log.d(TAG, "Firebase authentication successful");
+                            handleGoogleSignInSuccess(user);
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            Log.e(TAG, "Firebase authentication failed: " + error);
+                            showProgress(false);
+                            
+                            // Show more user-friendly error messages
+                            if (error.contains("Configuration error") || error.contains("SHA-1")) {
+                                Toast.makeText(LoginActivity.this, 
+                                    "Google Sign-In is not properly configured. Please contact support.", 
+                                    Toast.LENGTH_LONG).show();
+                            } else if (error.contains("cancelled")) {
+                                Toast.makeText(LoginActivity.this, 
+                                    "Sign-in was cancelled. Please try again.", 
+                                    Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(LoginActivity.this, 
+                                    "Google Sign-In failed: " + error, 
+                                    Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+                } else {
+                    Log.w(TAG, "Google Sign-In was cancelled or failed. Result code: " + result.getResultCode());
+                    showProgress(false);
+                    
+                    if (result.getResultCode() == RESULT_CANCELED) {
+                        Toast.makeText(this, "Google Sign-In was cancelled", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Google Sign-In failed. Please try again.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +130,9 @@ public class LoginActivity extends AppCompatActivity {
         // Initialize API client and SessionManager
         apiClient = new ApiClient(this);
         sessionManager = SessionManager.getInstance(getApplicationContext());
+        
+        // Initialize Firebase Auth Helper
+        firebaseAuthHelper = new FirebaseAuthHelper(this);
         
         // Check if user is already logged in
         if (!isCheckingSession) {
@@ -135,6 +193,7 @@ public class LoginActivity extends AppCompatActivity {
         etMobile = binding.emailInput;
         etPassword = binding.passwordInput;
         btnLogin = binding.loginButton;
+        btnGoogleSignIn = binding.googleSignInButton;
         tvForgotPassword = binding.forgotPassword;
         tvRegister = binding.registerLink;
         progressBar = findViewById(R.id.progress_bar); // Make sure to add this to your layout
@@ -145,6 +204,10 @@ public class LoginActivity extends AppCompatActivity {
             if (validateInputs()) {
                 attemptLogin();
             }
+        });
+
+        btnGoogleSignIn.setOnClickListener(v -> {
+            attemptGoogleSignIn();
         });
 
         tvForgotPassword.setOnClickListener(v -> {
@@ -387,5 +450,93 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             Log.d(TAG, "No FCM token available to register after login");
         }
+    }
+    
+    private void attemptGoogleSignIn() {
+        showProgress(true);
+        Intent signInIntent = firebaseAuthHelper.getGoogleSignInIntent();
+        googleSignInLauncher.launch(signInIntent);
+    }
+    
+    private void handleGoogleSignInSuccess(FirebaseUser firebaseUser) {
+        Log.d(TAG, "Google Sign-In successful: " + firebaseUser.getEmail());
+        
+        // Create a User object from Firebase user data
+        User user = new User();
+        user.setId("0"); // Temporary ID, will be updated from server
+        user.setFullName(firebaseUser.getDisplayName() != null ? firebaseUser.getDisplayName() : "");
+        user.setEmail(firebaseUser.getEmail() != null ? firebaseUser.getEmail() : "");
+        
+        // Check if user exists in your backend, if not register them
+        checkOrRegisterGoogleUser(user, firebaseUser);
+    }
+    
+    private void checkOrRegisterGoogleUser(User user, FirebaseUser firebaseUser) {
+        // First, try to login with Google email
+        apiClient.loginWithGoogle(user.getEmail(), firebaseUser.getUid(), new ApiCallback<ApiResponse<LoginResponse>>() {
+            @Override
+            public void onSuccess(ApiResponse<LoginResponse> response) {
+                showProgress(false);
+                if (response.isSuccess() && response.getData() != null) {
+                    // User exists, handle successful login
+                    handleLoginResponse(response);
+                } else {
+                    // User doesn't exist, register them
+                    registerGoogleUser(user, firebaseUser);
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                // If login fails, try to register the user
+                Log.d(TAG, "Google login failed, attempting registration: " + errorMessage);
+                registerGoogleUser(user, firebaseUser);
+            }
+        });
+    }
+    
+    private void registerGoogleUser(User user, FirebaseUser firebaseUser) {
+        // Register the Google user in your backend
+        apiClient.registerWithGoogle(
+            user.getFullName(),
+            user.getEmail(),
+            firebaseUser.getUid(),
+            new ApiCallback<ApiResponse<User>>() {
+                @Override
+                public void onSuccess(ApiResponse<User> response) {
+                    showProgress(false);
+                    if (response.isSuccess() && response.getData() != null) {
+                        // Registration successful, now login
+                        Toast.makeText(LoginActivity.this, "Google account registered successfully!", Toast.LENGTH_SHORT).show();
+                        
+                        // Try to login again after registration
+                        apiClient.loginWithGoogle(user.getEmail(), firebaseUser.getUid(), new ApiCallback<ApiResponse<LoginResponse>>() {
+                            @Override
+                            public void onSuccess(ApiResponse<LoginResponse> loginResponse) {
+                                if (loginResponse.isSuccess() && loginResponse.getData() != null) {
+                                    handleLoginResponse(loginResponse);
+                                } else {
+                                    Toast.makeText(LoginActivity.this, "Registration successful but login failed. Please try again.", Toast.LENGTH_LONG).show();
+                                }
+                            }
+
+                            @Override
+                            public void onError(String errorMessage) {
+                                Toast.makeText(LoginActivity.this, "Registration successful but login failed: " + errorMessage, Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Google registration failed: " + 
+                            (response.getMessage() != null ? response.getMessage() : "Unknown error"), Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    showProgress(false);
+                    Toast.makeText(LoginActivity.this, "Google registration failed: " + errorMessage, Toast.LENGTH_LONG).show();
+                }
+            }
+        );
     }
 }

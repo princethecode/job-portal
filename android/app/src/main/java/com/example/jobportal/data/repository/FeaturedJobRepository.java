@@ -58,21 +58,65 @@ public class FeaturedJobRepository {
             @Override
             public void onResponse(Call<ApiResponse<List<FeaturedJob>>> call, Response<ApiResponse<List<FeaturedJob>>> response) {
                 isLoading.setValue(false);
-                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
-                    featuredJobs.setValue(response.body().getData());
-                    Log.d(TAG, "Featured jobs fetched successfully: " + response.body().getData().size());
+                
+                Log.d(TAG, "Featured jobs API response code: " + response.code());
+                
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
+                        if (response.body().isSuccess() && response.body().getData() != null) {
+                            featuredJobs.setValue(response.body().getData());
+                            Log.d(TAG, "Featured jobs fetched successfully: " + response.body().getData().size());
+                        } else {
+                            String errorMsg = response.body().getMessage() != null ? 
+                                response.body().getMessage() : "No featured jobs available";
+                            error.setValue(errorMsg);
+                            Log.e(TAG, "API returned unsuccessful response: " + errorMsg);
+                            // Set empty list to avoid null pointer exceptions
+                            featuredJobs.setValue(new ArrayList<>());
+                        }
+                    } else {
+                        error.setValue("Empty response from server");
+                        Log.e(TAG, "Response body is null");
+                        featuredJobs.setValue(new ArrayList<>());
+                    }
                 } else {
-                    String errorMsg = response.isSuccessful() ? "No data received" : "Error: " + response.code();
-                    error.setValue("Failed to load featured jobs. " + errorMsg);
-                    Log.e(TAG, "Error fetching featured jobs: " + errorMsg);
+                    // Handle HTTP error responses
+                    String errorMsg = "Server error: " + response.code();
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBody = response.errorBody().string();
+                            Log.e(TAG, "Error response body: " + errorBody);
+                            errorMsg += " - " + errorBody;
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error reading error body", e);
+                    }
+                    error.setValue(errorMsg);
+                    Log.e(TAG, "HTTP error fetching featured jobs: " + errorMsg);
+                    featuredJobs.setValue(new ArrayList<>());
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<List<FeaturedJob>>> call, Throwable t) {
                 isLoading.setValue(false);
-                error.setValue("Network error: " + t.getMessage());
+                String errorMessage = "Network error: " + t.getMessage();
+                
+                // Check for specific error types
+                if (t instanceof com.google.gson.JsonSyntaxException) {
+                    errorMessage = "Server returned invalid data format. Please try again later.";
+                    Log.e(TAG, "JSON parsing error - server likely returned HTML or plain text instead of JSON", t);
+                } else if (t instanceof java.net.UnknownHostException) {
+                    errorMessage = "Unable to connect to server. Please check your internet connection.";
+                } else if (t instanceof java.net.SocketTimeoutException) {
+                    errorMessage = "Connection timeout. Please try again.";
+                } else if (t instanceof java.net.ConnectException) {
+                    errorMessage = "Unable to connect to server. Please try again later.";
+                }
+                
+                error.setValue(errorMessage);
                 Log.e(TAG, "Network error fetching featured jobs", t);
+                featuredJobs.setValue(new ArrayList<>());
             }
         });
     }
@@ -87,17 +131,82 @@ public class FeaturedJobRepository {
             @Override
             public void onResponse(Call<ApiResponse<FeaturedJob>> call, Response<ApiResponse<FeaturedJob>> response) {
                 isLoading.setValue(false);
-                if (response.isSuccessful() && response.body() != null) {
-                    callback.onSuccess(response.body());
+                
+                if (response.isSuccessful()) {
+                    if (response.body() != null && response.body().isSuccess()) {
+                        callback.onSuccess(response.body());
+                    } else {
+                        String errorMsg = response.body() != null && response.body().getMessage() != null ? 
+                            response.body().getMessage() : "Job details not found";
+                        callback.onError(errorMsg);
+                    }
                 } else {
-                    callback.onError("Failed to get job details");
+                    String errorMsg = "Server error: " + response.code();
+                    try {
+                        if (response.errorBody() != null) {
+                            errorMsg += " - " + response.errorBody().string();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error reading error body", e);
+                    }
+                    callback.onError(errorMsg);
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<FeaturedJob>> call, Throwable t) {
                 isLoading.setValue(false);
-                callback.onError("Network error: " + t.getMessage());
+                String errorMessage = "Network error: " + t.getMessage();
+                
+                if (t instanceof com.google.gson.JsonSyntaxException) {
+                    errorMessage = "Server returned invalid data format";
+                    Log.e(TAG, "JSON parsing error for job details", t);
+                }
+                
+                callback.onError(errorMessage);
+            }
+        });
+    }
+    
+    /**
+     * Refresh featured jobs data
+     */
+    public void refreshFeaturedJobs() {
+        fetchFeaturedJobs();
+    }
+    
+    /**
+     * Test the featured jobs API endpoint with raw response handling
+     */
+    public void testFeaturedJobsEndpoint() {
+        Log.d(TAG, "Testing featured jobs endpoint...");
+        
+        // Make a raw HTTP call to see what the server actually returns
+        okhttp3.OkHttpClient client = new okhttp3.OkHttpClient();
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url(com.example.jobportal.BuildConfig.API_BASE_URL + "featured-jobs")
+                .addHeader("Accept", "application/json")
+                .addHeader("Content-Type", "application/json")
+                .build();
+        
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(okhttp3.Call call, java.io.IOException e) {
+                Log.e(TAG, "Raw API test failed", e);
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws java.io.IOException {
+                String responseBody = response.body() != null ? response.body().string() : "null";
+                Log.d(TAG, "Raw API test response:");
+                Log.d(TAG, "Status: " + response.code());
+                Log.d(TAG, "Headers: " + response.headers());
+                Log.d(TAG, "Body: " + responseBody);
+                
+                // Check if it's HTML (common error case)
+                if (responseBody.trim().startsWith("<")) {
+                    Log.e(TAG, "Server returned HTML instead of JSON - this is the source of the JsonSyntaxException");
+                }
             }
         });
     }

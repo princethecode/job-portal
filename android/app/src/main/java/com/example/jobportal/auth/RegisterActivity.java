@@ -21,14 +21,18 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.example.jobportal.databinding.ActivityRegisterBinding;
 import com.example.jobportal.models.User;
 import com.example.jobportal.network.ApiClient;
+import com.google.firebase.auth.FirebaseUser;
 public class RegisterActivity extends AppCompatActivity {
 
     private TextInputLayout tilFullName, tilEmail, tilMobile, tilPassword, tilConfirmPassword;
     private TextInputEditText etFullName, etEmail, etMobile, etPassword, etConfirmPassword;
-    private Button btnUploadResume, btnRegister;
+    private Button btnUploadResume, btnRegister, btnGoogleSignIn;
     private TextView tvResumeStatus, tvLogin;
     
     private Uri resumeUri = null;
+    
+    // Firebase Auth Helper
+    private FirebaseAuthHelper firebaseAuthHelper;
     
     // Activity result launcher for resume file picking
     private final ActivityResultLauncher<String[]> resumePicker = registerForActivityResult(
@@ -43,6 +47,32 @@ public class RegisterActivity extends AppCompatActivity {
                 }
             }
     );
+    
+    // Activity result launcher for Google Sign-In
+    private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    firebaseAuthHelper.handleGoogleSignInResult(result.getData(), new FirebaseAuthHelper.AuthCallback() {
+                        @Override
+                        public void onSuccess(FirebaseUser user) {
+                            handleGoogleSignInSuccess(user);
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            btnGoogleSignIn.setEnabled(true);
+                            btnGoogleSignIn.setText("Google");
+                            Toast.makeText(RegisterActivity.this, error, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } else {
+                    btnGoogleSignIn.setEnabled(true);
+                    btnGoogleSignIn.setText("Google");
+                    Toast.makeText(this, "Google Sign-In cancelled", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
 
     private ActivityRegisterBinding binding;
 
@@ -51,6 +81,9 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        // Initialize Firebase Auth Helper
+        firebaseAuthHelper = new FirebaseAuthHelper(this);
 
         // Initialize views
         initViews();
@@ -74,6 +107,7 @@ public class RegisterActivity extends AppCompatActivity {
         
         btnUploadResume = binding.uploadResumeButton;
         btnRegister = binding.registerButton;
+        btnGoogleSignIn = binding.googleSignInButton;
         
         tvResumeStatus = binding.resumeFormats; // This TextView serves dual purpose as status
         tvLogin = binding.signInLink;
@@ -90,6 +124,10 @@ public class RegisterActivity extends AppCompatActivity {
             if (validateInputs()) {
                 performRegistration();
             }
+        });
+
+        btnGoogleSignIn.setOnClickListener(v -> {
+            attemptGoogleSignIn();
         });
 
         tvLogin.setOnClickListener(v -> {
@@ -308,5 +346,70 @@ public class RegisterActivity extends AppCompatActivity {
             fileName = uri.getLastPathSegment();
         }
         return fileName;
+    }
+    
+    private void attemptGoogleSignIn() {
+        btnGoogleSignIn.setEnabled(false);
+        btnGoogleSignIn.setText("Signing in...");
+        Intent signInIntent = firebaseAuthHelper.getGoogleSignInIntent();
+        googleSignInLauncher.launch(signInIntent);
+    }
+    
+    private void handleGoogleSignInSuccess(FirebaseUser firebaseUser) {
+        Log.d("RegisterActivity", "Google Sign-In successful: " + firebaseUser.getEmail());
+        
+        // Create a User object from Firebase user data
+        User user = new User();
+        user.setId("0"); // Temporary ID, will be updated from server
+        user.setFullName(firebaseUser.getDisplayName() != null ? firebaseUser.getDisplayName() : "");
+        user.setEmail(firebaseUser.getEmail() != null ? firebaseUser.getEmail() : "");
+        
+        // Register the Google user in your backend
+        registerGoogleUser(user, firebaseUser);
+    }
+    
+    private void registerGoogleUser(User user, FirebaseUser firebaseUser) {
+        // Initialize API client
+        ApiClient apiClient = new ApiClient(this);
+        
+        // Register the Google user in your backend
+        apiClient.registerWithGoogle(
+            user.getFullName(),
+            user.getEmail(),
+            firebaseUser.getUid(),
+            new ApiCallback<ApiResponse<User>>() {
+                @Override
+                public void onSuccess(ApiResponse<User> response) {
+                    btnGoogleSignIn.setEnabled(true);
+                    btnGoogleSignIn.setText("Google");
+                    
+                    if (response.isSuccess() && response.getData() != null) {
+                        // Registration successful
+                        Toast.makeText(RegisterActivity.this, 
+                            "Google account registered successfully! Please login.", Toast.LENGTH_LONG).show();
+                        
+                        // Navigate to login screen
+                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        // Registration failed with error from server
+                        Toast.makeText(RegisterActivity.this, 
+                            response.getMessage() != null ? response.getMessage() : "Google registration failed", 
+                            Toast.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    btnGoogleSignIn.setEnabled(true);
+                    btnGoogleSignIn.setText("Google");
+                    
+                    // Handle network or other errors
+                    Toast.makeText(RegisterActivity.this, 
+                        "Google registration failed: " + errorMessage, Toast.LENGTH_LONG).show();
+                }
+            }
+        );
     }
 }

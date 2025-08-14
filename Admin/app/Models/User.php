@@ -22,6 +22,8 @@ class User extends Authenticatable
         'email',
         'password',
         'mobile',
+        'google_id',
+        'provider',
         'resume_path',
         'profile_photo',
         'location',
@@ -49,6 +51,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google_id', // Hide sensitive Google ID
     ];
 
     /**
@@ -92,5 +95,21 @@ class User extends Authenticatable
     public function experiences()
     {
         return $this->hasMany(Experience::class);
+    }
+
+    /**
+     * Check if user is a Google user
+     */
+    public function isGoogleUser()
+    {
+        return $this->provider === 'google';
+    }
+
+    /**
+     * Check if user has password (non-Google user)
+     */
+    public function hasPassword()
+    {
+        return !is_null($this->password);
     }
 }

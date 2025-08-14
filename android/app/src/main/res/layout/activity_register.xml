@@ -149,6 +149,26 @@
                 android:backgroundTint="@color/primary"
                 android:textColor="@color/text_on_primary" />
 
+            <!-- Or continue with -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                android:text="Or continue with"
+                android:textColor="@color/text_hint" />
+
+            <!-- Google Sign-In Button -->
+            <Button
+                android:id="@+id/googleSignInButton"
+                style="@style/GoogleSignInButtonBlue"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:text="Continue with Google"
+                android:drawableStart="@drawable/ic_google_logo_white"
+                android:drawablePadding="12dp" />
+
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

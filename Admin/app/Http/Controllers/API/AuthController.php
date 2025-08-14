@@ -82,6 +82,16 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Check if user exists and is a Google user
+        $user = User::where('mobile', $request->mobile)->first();
+        
+        if ($user && $user->isGoogleUser()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Please use Google Sign-In for this account'
+            ], 422);
+        }
+
         // Login with mobile number
         $credentials = [
             'mobile' => $request->mobile,
@@ -479,6 +489,131 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Server error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Login with Google
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function loginWithGoogle(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'google_id' => 'required|string',
+            'provider' => 'required|string|in:google'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Find user by email or google_id
+            $user = User::where('email', $request->email)
+                       ->orWhere('google_id', $request->google_id)
+                       ->first();
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found. Please register first.'
+                ], 404);
+            }
+
+            // Check if user is active
+            if (!$user->is_active) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your account has been deactivated. Please contact admin.'
+                ], 403);
+            }
+
+            // Update google_id if not set (for existing users who sign in with Google for the first time)
+            if (!$user->google_id) {
+                $user->google_id = $request->google_id;
+                $user->provider = 'google';
+                $user->email_verified_at = now();
+                $user->save();
+            }
+
+            // Create token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'data' => [
+                    'user' => $user,
+                    'access_token' => $token,
+                    'token_type' => 'Bearer'
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Google login error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Login failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Register with Google
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function registerWithGoogle(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'google_id' => 'required|string|unique:users,google_id',
+            'provider' => 'required|string|in:google'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Create new user
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'google_id' => $request->google_id,
+                'provider' => 'google',
+                'email_verified_at' => now(),
+                'password' => null, // No password for Google users
+                'is_active' => true
+            ]);
+
+            \Log::info('Google user registered successfully', ['user_id' => $user->id, 'email' => $user->email]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Registration successful',
+                'data' => $user
+            ], 201);
+
+        } catch (\Exception $e) {
+            \Log::error('Google registration error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Registration failed: ' . $e->getMessage()
             ], 500);
         }
     }

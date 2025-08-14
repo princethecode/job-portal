@@ -225,4 +225,7 @@
     <string name="email_or_mobile">Email Address</string>
     <string name="work_experience">Work Experience</string>
     <string name="job_image">Job Image</string>
+    
+    <!-- Firebase Google Sign-In -->
+    <string name="default_web_client_id">838981324108-pu5ktscdqbpmq3d3kiprm1jb204uup9i.apps.googleusercontent.com</string>
 </resources>

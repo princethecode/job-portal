@@ -75,6 +75,9 @@ public class ApiClient {
                 logging.setLevel(HttpLoggingInterceptor.Level.BODY);
                 httpClient.addInterceptor(logging);
             }
+            
+            // Add response interceptor to handle non-JSON responses
+            httpClient.addInterceptor(new ResponseInterceptor());
 
             // Add auth token to requests if available
             SessionManager sessionManager = SessionManager.getInstance(context);
@@ -171,6 +174,72 @@ public class ApiClient {
             public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
                 Log.e("ApiClient", "Network error", t);
                 Log.e("ApiClient", Log.getStackTraceString(t));
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+    }
+    
+    /**
+     * Login with Google account
+     * 
+     * @param email Google account email
+     * @param googleId Google account ID
+     * @param callback Callback to handle response
+     */
+    public void loginWithGoogle(String email, String googleId, ApiCallback<ApiResponse<LoginResponse>> callback) {
+        Map<String, String> googleData = new HashMap<>();
+        googleData.put("email", email);
+        googleData.put("google_id", googleId);
+        googleData.put("provider", "google");
+
+        Call<ApiResponse<LoginResponse>> call = apiService.loginWithGoogle(googleData);
+        call.enqueue(new Callback<ApiResponse<LoginResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<LoginResponse>> call, Response<ApiResponse<LoginResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError("Google login failed: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
+                Log.e("ApiClient", "Google login network error", t);
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+    }
+    
+    /**
+     * Register with Google account
+     * 
+     * @param fullName User's full name from Google
+     * @param email Google account email
+     * @param googleId Google account ID
+     * @param callback Callback to handle response
+     */
+    public void registerWithGoogle(String fullName, String email, String googleId, ApiCallback<ApiResponse<User>> callback) {
+        Map<String, String> googleData = new HashMap<>();
+        googleData.put("name", fullName);
+        googleData.put("email", email);
+        googleData.put("google_id", googleId);
+        googleData.put("provider", "google");
+
+        Call<ApiResponse<User>> call = apiService.registerWithGoogle(googleData);
+        call.enqueue(new Callback<ApiResponse<User>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onError("Google registration failed: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
+                Log.e("ApiClient", "Google registration network error", t);
                 callback.onError("Network error: " + t.getMessage());
             }
         });

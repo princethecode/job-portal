@@ -37,8 +37,14 @@ public interface ApiService {
     @POST("login")
     Call<ApiResponse<LoginResponse>> login(@Body Map<String, String> loginData);
     
+    @POST("login/google")
+    Call<ApiResponse<LoginResponse>> loginWithGoogle(@Body Map<String, String> googleData);
+    
     @POST("register")
     Call<ApiResponse<User>> register(@Body Map<String, String> registerData);
+    
+    @POST("register/google")
+    Call<ApiResponse<User>> registerWithGoogle(@Body Map<String, String> googleData);
     
     @POST("forgot-password")
     Call<ApiResponse<Object>> forgotPassword(@Body Map<String, String> emailData);
