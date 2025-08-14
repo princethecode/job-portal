@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FeaturedJobWebController;
+use App\Http\Controllers\AppVersionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -162,6 +163,19 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
     Route::post('/labels', [ContactController::class, 'storeLabel'])->name('labels.store');
     Route::put('/labels/{label}', [ContactController::class, 'updateLabel'])->name('labels.update');
     Route::delete('/labels/{label}', [ContactController::class, 'deleteLabel'])->name('labels.destroy');
+    
+    // App Version Management Routes
+    Route::prefix('app-versions')->group(function () {
+        Route::get('/', [AppVersionController::class, 'index'])->name('admin.app-versions.index');
+        Route::get('/create', [AppVersionController::class, 'create'])->name('admin.app-versions.create');
+        Route::post('/', [AppVersionController::class, 'store'])->name('admin.app-versions.store');
+        Route::get('/{id}', [AppVersionController::class, 'show'])->name('admin.app-versions.show');
+        Route::get('/{id}/edit', [AppVersionController::class, 'edit'])->name('admin.app-versions.edit');
+        Route::put('/{id}', [AppVersionController::class, 'update'])->name('admin.app-versions.update');
+        Route::delete('/{id}', [AppVersionController::class, 'destroy'])->name('admin.app-versions.destroy');
+        Route::post('/{id}/toggle-status', [AppVersionController::class, 'toggleStatus'])->name('admin.app-versions.toggle-status');
+        Route::get('/latest/{platform}', [AppVersionController::class, 'getLatestVersion'])->name('admin.app-versions.latest');
+    });
 });
 
 // Serve app screenshots

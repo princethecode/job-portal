@@ -100,6 +100,11 @@
                             <i class="fas fa-address-book me-2"></i> Contacts
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.app-versions.*') ? 'active' : '' }}" href="{{ route('admin.app-versions.index') }}">
+                            <i class="fas fa-mobile-alt me-2"></i> App Version
+                        </a>
+                    </li>
                 </ul>
             </div>
             

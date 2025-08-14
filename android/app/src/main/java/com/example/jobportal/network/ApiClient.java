@@ -10,6 +10,9 @@ import com.example.jobportal.models.User;
 import com.example.jobportal.models.LoginResponse;
 import com.example.jobportal.models.Application;
 import com.example.jobportal.utils.SessionManager;
+import com.example.jobportal.data.model.AppVersionResponse;
+import com.example.jobportal.data.model.AppVersionData;
+import com.example.jobportal.data.api.VersionCheckRequest;
 import java.io.IOException;
 
 import java.io.File;
@@ -1037,6 +1040,133 @@ public class ApiClient {
     public void resetPassword(Map<String, String> resetData, final ApiCallback<ApiResponse<Void>> callback) {
         Call<ApiResponse<Void>> call = apiService.resetPassword(resetData);
         executeCall(call, callback);
+    }
+    
+    /**
+     * Check for app version updates using the new API
+     * @param callback Callback to handle the response
+     */
+    public void checkAppVersion(final ApiCallback<ApiResponse<AppVersionData>> callback) {
+        try {
+            // Get current app version info
+            int currentVersionCode = getCurrentVersionCode();
+            String currentVersionName = getCurrentVersionName();
+            
+            Log.d("ApiClient", "Checking app version:");
+            Log.d("ApiClient", "- Current version code: " + currentVersionCode);
+            Log.d("ApiClient", "- Current version name: " + currentVersionName);
+            
+            // Create version check request for the new API
+            VersionCheckRequest request = new VersionCheckRequest("android", currentVersionCode);
+            
+            Log.d("ApiClient", "Making API call to check-update endpoint");
+            
+            // Use the new check-update endpoint
+            Call<ApiResponse<AppVersionData>> call = apiService.checkUpdate(request);
+            call.enqueue(new Callback<ApiResponse<AppVersionData>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<AppVersionData>> call, Response<ApiResponse<AppVersionData>> response) {
+                    Log.d("ApiClient", "Version check API response received");
+                    Log.d("ApiClient", "Response code: " + response.code());
+                    Log.d("ApiClient", "Response successful: " + response.isSuccessful());
+                    
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse<AppVersionData> apiResponse = response.body();
+                        Log.d("ApiClient", "API response success: " + apiResponse.isSuccess());
+                        Log.d("ApiClient", "API response message: " + apiResponse.getMessage());
+                        
+                        if (apiResponse.isSuccess()) {
+                            Log.d("ApiClient", "Calling success callback");
+                            callback.onSuccess(apiResponse);
+                        } else {
+                            Log.e("ApiClient", "API returned error: " + apiResponse.getMessage());
+                            callback.onError(apiResponse.getMessage());
+                        }
+                    } else {
+                        String errorMsg = "Failed to check app version: " + response.message();
+                        Log.e("ApiClient", errorMsg);
+                        callback.onError(errorMsg);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<AppVersionData>> call, Throwable t) {
+                    Log.e("ApiClient", "Version check network error", t);
+                    callback.onError("Network error: " + t.getMessage());
+                }
+            });
+            
+        } catch (Exception e) {
+            Log.e("ApiClient", "Error in checkAppVersion", e);
+            callback.onError("Error checking version: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Get latest version info using the new API
+     * @param callback Callback to handle the response
+     */
+    public void getLatestVersion(final ApiCallback<ApiResponse<AppVersionData>> callback) {
+        try {
+            // Get current app version info
+            int currentVersionCode = getCurrentVersionCode();
+            
+            // Create query parameters
+            Map<String, String> params = new HashMap<>();
+            params.put("platform", "android");
+            params.put("current_version_code", String.valueOf(currentVersionCode));
+            
+            // Use the new latest version endpoint
+            Call<ApiResponse<AppVersionData>> call = apiService.getLatestVersion(params);
+            call.enqueue(new Callback<ApiResponse<AppVersionData>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<AppVersionData>> call, Response<ApiResponse<AppVersionData>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse<AppVersionData> apiResponse = response.body();
+                        if (apiResponse.isSuccess()) {
+                            callback.onSuccess(apiResponse);
+                        } else {
+                            callback.onError(apiResponse.getMessage());
+                        }
+                    } else {
+                        callback.onError("Failed to get latest version: " + response.message());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<AppVersionData>> call, Throwable t) {
+                    Log.e("ApiClient", "Latest version network error", t);
+                    callback.onError("Network error: " + t.getMessage());
+                }
+            });
+            
+        } catch (Exception e) {
+            Log.e("ApiClient", "Error in getLatestVersion", e);
+            callback.onError("Error getting latest version: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Get current app version code
+     */
+    private int getCurrentVersionCode() {
+        try {
+            return context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+        } catch (Exception e) {
+            return 1;
+        }
+    }
+    
+    /**
+     * Get current app version name
+     */
+    private String getCurrentVersionName() {
+        try {
+            String versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+            return versionName != null ? versionName : "1.0";
+        } catch (Exception e) {
+            return "1.0";
+        }
     }
 }
 

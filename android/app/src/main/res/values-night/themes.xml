@@ -20,6 +20,27 @@
         <!-- Better card appearance in dark mode -->
         <item name="cardViewStyle">@style/CardView.Dark</item>
     </style>
+
+    <style name="Theme.JobPortal.NoActionBar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryVariant">@color/accent_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        
+        <!-- Dark theme specific colors -->
+        <item name="android:colorBackground">@color/dark_background_primary</item>
+        <item name="colorSurface">@color/dark_background_card</item>
+        <item name="colorOnSurface">@color/dark_text_primary</item>
+        <item name="colorOnBackground">@color/dark_text_primary</item>
+        
+        <!-- Better card appearance in dark mode -->
+        <item name="cardViewStyle">@style/CardView.Dark</item>
+    </style>
     
     <style name="CardView.Dark" parent="CardView">
         <item name="cardBackgroundColor">@color/background_card</item>

@@ -11,6 +11,7 @@ use App\Http\Controllers\API\ContactsController;
 use App\Http\Controllers\API\FCMController;
 use App\Http\Controllers\API\ExperienceController;
 use App\Http\Controllers\API\FeaturedJobController;
+use App\Http\Controllers\API\AppVersionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +23,20 @@ use App\Http\Controllers\API\FeaturedJobController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
+// App Version Routes (Public)
+Route::get('/app-versions/latest', [AppVersionController::class, 'getLatestVersion']);
+Route::post('/app-versions/check-update', [AppVersionController::class, 'checkUpdate']);
+
+// App Version Management (Admin routes)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/app-versions', [AppVersionController::class, 'index']);
+    Route::post('/app-versions', [AppVersionController::class, 'store']);
+    Route::get('/app-versions/{id}', [AppVersionController::class, 'show']);
+    Route::put('/app-versions/{id}', [AppVersionController::class, 'update']);
+    Route::delete('/app-versions/{id}', [AppVersionController::class, 'destroy']);
+    Route::post('/app-versions/{id}/toggle-status', [AppVersionController::class, 'toggleStatus']);
+});
 
 // Authentication
 Route::post('/login', [AuthController::class, 'login']);

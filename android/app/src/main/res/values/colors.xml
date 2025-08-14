@@ -162,5 +162,10 @@
 
     <color name="green_success">#4CAF50</color>
     <color name="red_error">#F44336</color>
+    
+    <!-- Additional colors for update screen -->
+    <color name="primary_color">@color/primary</color>
+    <color name="light_gray">#F5F5F5</color>
+    <color name="red">#F44336</color>
 
 </resources>

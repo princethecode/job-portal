@@ -11,6 +11,7 @@ import androidx.multidex.MultiDex;
 import androidx.multidex.MultiDexApplication;
 
 import com.example.jobportal.network.ApiClient;
+import com.example.jobportal.utils.AppUpdateManager;
 
 public class JobPortalApplication extends MultiDexApplication {
     private static final String CHANNEL_ID = "job_portal_notifications";
@@ -18,6 +19,8 @@ public class JobPortalApplication extends MultiDexApplication {
     private static final String CHANNEL_DESCRIPTION = "Notifications for job updates and applications";
     private static final String PREFS_NAME = "JobPortalPrefs";
     private static final String PREF_THEME = "theme_mode";
+    
+    private AppUpdateManager appUpdateManager;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -37,6 +40,12 @@ public class JobPortalApplication extends MultiDexApplication {
         
         // Create notification channel for Android O and above
         createNotificationChannel();
+        
+        // Initialize app update manager
+        appUpdateManager = new AppUpdateManager(this);
+        
+        // Check for updates when app starts
+        checkForUpdates();
     }
     
     private void initializeTheme() {
@@ -57,5 +66,23 @@ public class JobPortalApplication extends MultiDexApplication {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+    
+    private void checkForUpdates() {
+        // Check for updates with callback to handle force updates
+        appUpdateManager.checkForUpdates(new com.example.jobportal.utils.AppUpdateManager.UpdateCallback() {
+            @Override
+            public void onUpdateRequired(boolean isForceUpdate) {
+                if (isForceUpdate) {
+                    // Handle force update - you can add additional logic here
+                    // For example, disable certain app features until update
+                    android.util.Log.d("JobPortalApp", "Force update required!");
+                }
+            }
+        });
+    }
+    
+    public AppUpdateManager getUpdateManager() {
+        return appUpdateManager;
     }
 } 

@@ -8,6 +8,9 @@ import com.example.jobportal.models.User;
 import com.example.jobportal.models.Notification;
 import com.example.jobportal.models.LoginResponse;
 import com.example.jobportal.models.FeaturedJob;
+import com.example.jobportal.data.model.AppVersionResponse;
+import com.example.jobportal.data.model.AppVersionData;
+import com.example.jobportal.data.api.VersionCheckRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -151,4 +154,11 @@ public interface ApiService {
     
     @GET("featured-jobs/{id}")
     Call<ApiResponse<FeaturedJob>> getFeaturedJobDetails(@Path("id") int jobId);
+    
+    // App Version Check endpoints
+    @GET("app-versions/latest")
+    Call<ApiResponse<AppVersionData>> getLatestVersion(@QueryMap Map<String, String> params);
+    
+    @POST("app-versions/check-update")
+    Call<ApiResponse<AppVersionData>> checkUpdate(@Body VersionCheckRequest request);
 }
