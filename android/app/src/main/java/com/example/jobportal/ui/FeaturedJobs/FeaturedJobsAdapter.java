@@ -216,10 +216,24 @@ public class FeaturedJobsAdapter extends RecyclerView.Adapter<FeaturedJobsAdapte
             }
 
             try {
-                // Parse the input date string
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-                Date postedDate = sdf.parse(dateString);
+                Date postedDate = null;
                 Date currentDate = new Date();
+                
+                // Try parsing with ISO 8601 format first (with microseconds)
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", Locale.getDefault());
+                    postedDate = sdf.parse(dateString);
+                } catch (ParseException e1) {
+                    // Fallback: try without microseconds
+                    try {
+                        SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault());
+                        postedDate = sdf2.parse(dateString);
+                    } catch (ParseException e2) {
+                        // Fallback: try the old format
+                        SimpleDateFormat sdf3 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                        postedDate = sdf3.parse(dateString);
+                    }
+                }
 
                 // Calculate the difference in milliseconds
                 long diffInMillis = currentDate.getTime() - postedDate.getTime();

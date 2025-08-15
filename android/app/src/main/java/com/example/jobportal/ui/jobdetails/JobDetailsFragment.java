@@ -36,6 +36,11 @@ import com.example.jobportal.models.FeaturedJob;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 public class JobDetailsFragment extends Fragment {
     private static final String ARG_JOB_ID = "job_id";
@@ -235,6 +240,27 @@ public class JobDetailsFragment extends Fragment {
         String formattedSalary = formatSalaryWithCurrency(job.getSalary());
         salaryTextView.setText(formattedSalary);
         
+        // Set job type
+        if (typeTextView != null) {
+            String jobType = job.getJobType();
+            if (jobType != null && !jobType.isEmpty()) {
+                typeTextView.setText(jobType);
+            } else {
+                typeTextView.setText("Not specified");
+            }
+        }
+        
+        // Set posted date
+        if (dateTextView != null) {
+            String postedDate = job.getPostingDate();
+            if (postedDate != null && !postedDate.isEmpty()) {
+                String formattedDate = "Posted: " + getRelativeDateString(postedDate);
+                dateTextView.setText(formattedDate);
+            } else {
+                dateTextView.setText("Posted: Recently");
+            }
+        }
+        
         // Load company logo if available
         if (companyLogoView != null && job.getCompanyLogo() != null && !job.getCompanyLogo().isEmpty()) {
             String logoUrl = job.getCompanyLogo();
@@ -426,5 +452,69 @@ public class JobDetailsFragment extends Fragment {
     
     private void showError(String message) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+    }
+    
+    /**
+     * Convert date string to relative time format (e.g., "2 days ago")
+     */
+    private String getRelativeDateString(String dateString) {
+        if (dateString == null || dateString.isEmpty()) {
+            return "recently";
+        }
+
+        try {
+            java.text.SimpleDateFormat sdf;
+            java.util.Date postedDate = null;
+            java.util.Date currentDate = new java.util.Date();
+            
+            // Try parsing with ISO 8601 format first (with microseconds)
+            try {
+                sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'", java.util.Locale.getDefault());
+                postedDate = sdf.parse(dateString);
+            } catch (java.text.ParseException e1) {
+                // Fallback: try without microseconds
+                try {
+                    sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.getDefault());
+                    postedDate = sdf.parse(dateString);
+                } catch (java.text.ParseException e2) {
+                    // Fallback: try the old format
+                    try {
+                        sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault());
+                        postedDate = sdf.parse(dateString);
+                    } catch (java.text.ParseException e3) {
+                        // Final fallback: try simple date format
+                        sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault());
+                        postedDate = sdf.parse(dateString);
+                    }
+                }
+            }
+
+            if (postedDate != null) {
+                // Calculate the difference in milliseconds
+                long diffInMillis = currentDate.getTime() - postedDate.getTime();
+                long diffInDays = java.util.concurrent.TimeUnit.MILLISECONDS.toDays(diffInMillis);
+                long diffInHours = java.util.concurrent.TimeUnit.MILLISECONDS.toHours(diffInMillis);
+                long diffInMinutes = java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(diffInMillis);
+
+                // Return a human-readable string
+                if (diffInDays > 30) {
+                    // If more than a month, show the actual date
+                    java.text.SimpleDateFormat monthFormat = new java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault());
+                    return monthFormat.format(postedDate);
+                } else if (diffInDays > 0) {
+                    return diffInDays + (diffInDays == 1 ? " day ago" : " days ago");
+                } else if (diffInHours > 0) {
+                    return diffInHours + (diffInHours == 1 ? " hour ago" : " hours ago");
+                } else if (diffInMinutes > 0) {
+                    return diffInMinutes + (diffInMinutes == 1 ? " minute ago" : " minutes ago");
+                } else {
+                    return "just now";
+                }
+            }
+        } catch (java.text.ParseException e) {
+            Log.e("JobDetailsFragment", "Error parsing date: " + e.getMessage());
+        }
+        
+        return "recently"; // Fallback
     }
 }
