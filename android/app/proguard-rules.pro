@@ -79,6 +79,32 @@
 -keepattributes *Annotation*
 -keepattributes EnclosingMethod
 -keepattributes InnerClasses
+-keep class com.google.firebase.** { *; }
+-dontwarn com.google.firebase.**
+
+# Google Play Services and Google Sign-In
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
+-keep class com.google.android.gms.auth.api.signin.** { *; }
+-keep class com.google.android.gms.common.** { *; }
+-keep class com.google.android.gms.tasks.** { *; }
+
+# Google Auth
+-keep class com.google.api.client.** { *; }
+-dontwarn com.google.api.client.**
+-keep class com.google.auth.** { *; }
+-dontwarn com.google.auth.**
+
+# Keep Google Services generated resources
+-keep class **.R$string { *; }
+-keepclassmembers class **.R$* {
+    public static <fields>;
+}
+
+# Additional Google Sign-In specific rules
+-keep class com.google.android.gms.auth.api.signin.internal.** { *; }
+-keep class com.google.android.gms.common.internal.** { *; }
+-keep class com.google.android.gms.common.api.internal.** { *; }
 
 # PDF Viewer
 -keep class com.shockwave.**

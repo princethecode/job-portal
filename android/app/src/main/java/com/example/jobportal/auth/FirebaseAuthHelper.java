@@ -38,19 +38,22 @@ public class FirebaseAuthHelper {
         this.context = context;
         mAuth = FirebaseAuth.getInstance();
         
+        String webClientId = getWebClientId();
+        Log.d(TAG, "Using web client ID: " + webClientId);
+        
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getWebClientId())
+                .requestIdToken(webClientId)
                 .requestEmail()
                 .build();
         
         mGoogleSignInClient = GoogleSignIn.getClient(context, gso);
+        Log.d(TAG, "GoogleSignInClient initialized successfully");
     }
     
     private String getWebClientId() {
-        // You need to get this from your google-services.json file
-        // For now, we'll use a placeholder - you'll need to replace this with your actual web client ID
-        return context.getString(com.example.jobportal.R.string.default_web_client_id);
+        // Web client ID from google-services.json - this is the client_type: 3 entry
+        return "838981324108-pu5ktscdqbpmq3d3kiprm1jb204uup9i.apps.googleusercontent.com";
     }
     
     public Intent getGoogleSignInIntent() {

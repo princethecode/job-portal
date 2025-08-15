@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "838981324108-caa894mdffek6tt1b3m182fk5fecccbb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.jobportal",
+            "certificate_hash": "d2d99b6c945aca6c31e571ed8b2993664d6c44a5"
+          }
+        },
+        {
           "client_id": "838981324108-it0d2m654l7u45aqhuhjhfc2u66arc23.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
