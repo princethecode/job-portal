@@ -1305,6 +1305,73 @@ public class ApiClient {
             }
         });
     }
+
+    /**
+     * Increment share count for a job (public endpoint, no auth required)
+     * 
+     * @param jobId The ID of the job to increment share count for
+     * @param callback Callback to handle the response
+     */
+    public void incrementShareCount(String jobId, final ApiCallback<ApiResponse<Map<String, Object>>> callback) {
+        Log.d("ApiClient", "🚀 Incrementing share count for job ID: " + jobId);
+        
+        // Create a simple HTTP client without authentication for this public endpoint
+        OkHttpClient httpClient = new OkHttpClient.Builder()
+                .connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .writeTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .addInterceptor(new HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
+                .build();
+
+        // Create Retrofit instance for this specific call
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BuildConfig.API_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .client(httpClient)
+                .build();
+
+        // Create API service
+        ApiService shareApiService = retrofit.create(ApiService.class);
+        
+        // Make the API call
+        Call<ApiResponse<Map<String, Object>>> call = shareApiService.incrementShareCount(jobId);
+        
+        Log.d("ApiClient", "🌐 Making request to: " + call.request().url());
+        
+        call.enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Map<String, Object>>> call, Response<ApiResponse<Map<String, Object>>> response) {
+                Log.d("ApiClient", "📡 Share count API response - Code: " + response.code() + ", Success: " + response.isSuccessful());
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<Map<String, Object>> apiResponse = response.body();
+                    Log.d("ApiClient", "📦 Response success: " + apiResponse.isSuccess() + ", Message: " + apiResponse.getMessage());
+                    
+                    if (apiResponse.isSuccess()) {
+                        callback.onSuccess(apiResponse);
+                    } else {
+                        callback.onError(apiResponse.getMessage());
+                    }
+                } else {
+                    try {
+                        String errorBody = response.errorBody() != null ? 
+                            response.errorBody().string() : "Unknown error";
+                        Log.e("ApiClient", "❌ Share count API failed: " + errorBody);
+                        callback.onError("Failed to increment share count: " + errorBody);
+                    } catch (IOException e) {
+                        Log.e("ApiClient", "Error reading error body", e);
+                        callback.onError("Failed to increment share count: " + response.code());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
+                Log.e("ApiClient", "💥 Share count network error: " + t.getMessage(), t);
+                callback.onError("Network error: " + t.getMessage());
+            }
+        });
+    }
 }
 
 

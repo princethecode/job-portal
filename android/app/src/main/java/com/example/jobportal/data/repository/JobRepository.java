@@ -11,6 +11,7 @@ import com.example.jobportal.models.JobsListResponse;
 import com.example.jobportal.network.ApiService;
 import com.example.jobportal.network.ApiCallback;
 import com.example.jobportal.network.ApiResponse;
+import com.example.jobportal.network.ApiClient;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -24,12 +25,14 @@ public class JobRepository {
     private final JobDao jobDao;
     private final ApiService apiService;
     private final ExecutorService executorService;
+    private final Context context;
 
     public JobRepository(Context context, ApiService apiService) {
         AppDatabase db = AppDatabase.getInstance(context);
         this.jobDao = db.jobDao();
         this.apiService = apiService;
         this.executorService = Executors.newSingleThreadExecutor();
+        this.context = context;
     }
 
     public LiveData<List<Job>> getAllJobs() {
@@ -88,6 +91,44 @@ public class JobRepository {
                     // Handle error
                 }
             });
+        });
+    }
+
+    public void incrementShareCount(String jobId, ApiCallback<Void> callback) {
+        android.util.Log.d("JobRepository", "🚀 Starting API call to increment share count for job ID: " + jobId);
+        
+        // Use ApiClient method instead of direct ApiService call
+        ApiClient apiClient = ApiClient.getInstance(context);
+        apiClient.incrementShareCount(jobId, new ApiCallback<ApiResponse<java.util.Map<String, Object>>>() {
+            @Override
+            public void onSuccess(ApiResponse<java.util.Map<String, Object>> response) {
+                android.util.Log.d("JobRepository", "✅ Share count API call successful");
+                
+                // Update local database with new share count
+                executorService.execute(() -> {
+                    Job job = jobDao.getJobByIdSync(jobId);
+                    if (job != null) {
+                        int oldCount = job.getShareCount();
+                        job.setShareCount(oldCount + 1);
+                        jobDao.insert(job);
+                        android.util.Log.d("JobRepository", "💾 Local database updated - Old count: " + oldCount + ", New count: " + job.getShareCount());
+                    } else {
+                        android.util.Log.w("JobRepository", "⚠️ Job not found in local database for ID: " + jobId);
+                    }
+                });
+                
+                if (callback != null) {
+                    callback.onSuccess(null);
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                android.util.Log.e("JobRepository", "❌ Share count API call failed: " + error);
+                if (callback != null) {
+                    callback.onError(error);
+                }
+            }
         });
     }
 } 

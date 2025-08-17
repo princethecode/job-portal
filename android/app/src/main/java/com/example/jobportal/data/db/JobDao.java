@@ -24,6 +24,9 @@ public interface JobDao {
     @Query("SELECT * FROM jobs WHERE id = :jobId")
     LiveData<Job> getJobById(String jobId);
 
+    @Query("SELECT * FROM jobs WHERE id = :jobId")
+    Job getJobByIdSync(String jobId);
+
     @Query("DELETE FROM jobs")
     void deleteAllJobs();
 

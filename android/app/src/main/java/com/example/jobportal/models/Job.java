@@ -72,6 +72,10 @@ public class Job {
     @SerializedName("image")
     private String image;
 
+    @ColumnInfo(name = "share_count")
+    @SerializedName("share_count")
+    private int shareCount = 0;
+
     
     // Default constructor required by Room
     public Job() {
@@ -230,6 +234,14 @@ public class Job {
     
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    
+    public int getShareCount() {
+        return shareCount;
+    }
+    
+    public void setShareCount(int shareCount) {
+        this.shareCount = shareCount;
     }
     
 

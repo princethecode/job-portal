@@ -213,4 +213,34 @@ $job = Job::create($data);
             'message' => 'Job deleted successfully'
         ]);
     }
+
+    /**
+     * Increment the share count for a job
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function incrementShareCount($id)
+    {
+        $job = Job::find($id);
+
+        if (!$job) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Job not found'
+            ], 404);
+        }
+
+        // Increment the share count
+        $job->increment('share_count');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Share count incremented successfully',
+            'data' => [
+                'job_id' => $job->id,
+                'share_count' => $job->share_count
+            ]
+        ]);
+    }
 }

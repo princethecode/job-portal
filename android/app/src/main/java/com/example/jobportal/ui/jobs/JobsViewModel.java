@@ -22,6 +22,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import com.example.jobportal.data.repository.JobRepository;
+import com.example.jobportal.network.ApiCallback;
 
 public class JobsViewModel extends AndroidViewModel {
     private final JobRepository repository;
@@ -68,5 +69,9 @@ public class JobsViewModel extends AndroidViewModel {
 
     public void setError(String errorMessage) {
         error.setValue(errorMessage);
+    }
+
+    public void incrementShareCount(String jobId, ApiCallback<Void> callback) {
+        repository.incrementShareCount(jobId, callback);
     }
 }

@@ -18,7 +18,10 @@ import com.example.jobportal.models.JobsListResponse;
 import com.example.jobportal.network.ApiClient;
 import com.example.jobportal.models.Job;
 import com.example.jobportal.ui.jobs.JobAdapter;
+import com.example.jobportal.ui.jobs.JobsViewModel;
 import com.example.jobportal.ui.jobdetails.JobDetailsFragment;
+import com.example.jobportal.network.ApiCallback;
+import androidx.lifecycle.ViewModelProvider;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -31,6 +34,7 @@ public class SearchFragment extends Fragment implements JobAdapter.OnJobClickLis
     private SearchView searchView;
     private View progressBar;
     private View emptyView;
+    private JobsViewModel viewModel;
 
     @Nullable
     @Override
@@ -41,6 +45,10 @@ public class SearchFragment extends Fragment implements JobAdapter.OnJobClickLis
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this, new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication()))
+                .get(JobsViewModel.class);
         
         // Initialize views
         recyclerView = view.findViewById(R.id.search_recycler_view);
@@ -178,6 +186,11 @@ public class SearchFragment extends Fragment implements JobAdapter.OnJobClickLis
     }
 
     private void shareJobOnWhatsApp(Job job) {
+        Log.d("SearchFragment", "📱 Starting WhatsApp share for job: " + job.getTitle() + " (ID: " + job.getId() + ")");
+        
+        // Increment share count immediately when user clicks share
+        incrementShareCount(job);
+        
         try {
             String shareText = "🔥 *Job Opportunity* 🔥\n\n" +
                     "📋 *Position:* " + job.getTitle() + "\n" +
@@ -195,17 +208,74 @@ public class SearchFragment extends Fragment implements JobAdapter.OnJobClickLis
             
             try {
                 startActivity(whatsappIntent);
+                Log.d("SearchFragment", "✅ WhatsApp intent started successfully");
             } catch (android.content.ActivityNotFoundException ex) {
+                Log.d("SearchFragment", "⚠️ WhatsApp not found, trying general share");
                 // WhatsApp not installed, try with general share
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setType("text/plain");
                 shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
                 shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Job Opportunity: " + job.getTitle());
+                
                 startActivity(Intent.createChooser(shareIntent, "Share Job"));
+                Log.d("SearchFragment", "✅ General share intent started successfully");
             }
         } catch (Exception e) {
             Toast.makeText(requireContext(), "Unable to share job", Toast.LENGTH_SHORT).show();
-            Log.e("SearchFragment", "Error sharing job", e);
+            Log.e("SearchFragment", "❌ Error sharing job: " + e.getMessage(), e);
         }
     }
+
+    private void incrementShareCount(Job job) {
+        Log.d("SearchFragment", "🚀 INCREMENT SHARE COUNT CALLED for job: " + job.getTitle() + " (ID: " + job.getId() + ")");
+        
+       
+        // Simple direct API call with share_count parameter
+        Thread apiThread = new Thread(() -> {
+            Log.d("SearchFragment", "🧵 API Thread started");
+            try {
+                String apiUrl = "https://emps.co.in/api/jobs/" + job.getId() + "/share?share_count=1";
+                Log.d("SearchFragment", "🌐 Calling API: " + apiUrl);
+                
+                java.net.URL url = new java.net.URL(apiUrl);
+                java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setConnectTimeout(10000); // 10 seconds
+                connection.setReadTimeout(10000); // 10 seconds
+                
+                Log.d("SearchFragment", "📡 Making HTTP request...");
+                int responseCode = connection.getResponseCode();
+                Log.d("SearchFragment", "📡 API Response Code: " + responseCode);
+                
+                if (responseCode == 200) {
+                    // Success - show toast on main thread
+                    requireActivity().runOnUiThread(() -> {
+                        Log.d("SearchFragment", "✅ Share count incremented successfully!");
+                    });
+                } else {
+                    // Error - show error on main thread
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(), "Share count failed ❌ Code: " + responseCode, Toast.LENGTH_LONG).show();
+                        Log.e("SearchFragment", "❌ API call failed with code: " + responseCode);
+                    });
+                }
+                
+                connection.disconnect();
+                Log.d("SearchFragment", "🔌 Connection closed");
+                
+            } catch (Exception e) {
+                Log.e("SearchFragment", "💥 Error calling share API: " + e.getMessage(), e);
+                e.printStackTrace();
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(requireContext(), "Network error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+        
+        apiThread.start();
+        Log.d("SearchFragment", "🧵 API Thread started successfully");
+    }
+
 }

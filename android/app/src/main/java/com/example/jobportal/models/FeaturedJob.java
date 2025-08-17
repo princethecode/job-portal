@@ -34,6 +34,9 @@ public class FeaturedJob {
     @SerializedName("updated_at")
     private String updatedAt; // Or use a Date object
 
+    @SerializedName("share_count")
+    private int shareCount = 0;
+
     // Add getters and setters for all fields
     public int getId() {
         return id;

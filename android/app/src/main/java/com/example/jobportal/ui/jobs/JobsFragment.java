@@ -20,6 +20,7 @@ import com.example.jobportal.ui.jobdetails.JobDetailsFragment;
 import com.example.jobportal.R;
 import com.example.jobportal.models.Job;
 import com.example.jobportal.databinding.FragmentJobsBinding;
+import com.example.jobportal.network.ApiCallback;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -201,11 +202,16 @@ public class JobsFragment extends Fragment implements JobAdapter.OnJobClickListe
 
     @Override
     public void onWhatsAppShareClick(Job job) {
-        Log.d("JobsFragment", "WhatsApp share clicked for job: " + job.getTitle());
+        Log.d("JobsFragment", "WhatsApp share clicked for job: " + job.getTitle() + " (ID: " + job.getId() + ")");
         shareJobOnWhatsApp(job);
     }
 
     private void shareJobOnWhatsApp(Job job) {
+        Log.d("JobsFragment", "📱 Starting WhatsApp share for job: " + job.getTitle() + " (ID: " + job.getId() + ")");
+        
+        // Increment share count immediately when user clicks share
+        incrementShareCount(job);
+        
         try {
             String shareText = "🔥 *Job Opportunity* 🔥\n\n" +
                     "📋 *Position:* " + job.getTitle() + "\n" +
@@ -223,18 +229,74 @@ public class JobsFragment extends Fragment implements JobAdapter.OnJobClickListe
             
             try {
                 startActivity(whatsappIntent);
+                Log.d("JobsFragment", "✅ WhatsApp intent started successfully");
             } catch (android.content.ActivityNotFoundException ex) {
+                Log.d("JobsFragment", "⚠️ WhatsApp not found, trying general share");
                 // WhatsApp not installed, try with general share
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setType("text/plain");
                 shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
                 shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Job Opportunity: " + job.getTitle());
+                
                 startActivity(Intent.createChooser(shareIntent, "Share Job"));
+                Log.d("JobsFragment", "✅ General share intent started successfully");
             }
         } catch (Exception e) {
             Toast.makeText(requireContext(), "Unable to share job", Toast.LENGTH_SHORT).show();
-            Log.e("JobsFragment", "Error sharing job", e);
+            Log.e("JobsFragment", "❌ Error sharing job: " + e.getMessage(), e);
         }
+    }
+
+    private void incrementShareCount(Job job) {
+        Log.d("JobsFragment", "�  INCREMENT SHARE COUNT CALLED for job: " + job.getTitle() + " (ID: " + job.getId() + ")");
+        
+
+        // Simple direct API call with share_count parameter
+        Thread apiThread = new Thread(() -> {
+            Log.d("JobsFragment", "🧵 API Thread started");
+            try {
+                String apiUrl = "https://emps.co.in/api/jobs/" + job.getId() + "/share?share_count=1";
+                Log.d("JobsFragment", "🌐 Calling API: " + apiUrl);
+                
+                java.net.URL url = new java.net.URL(apiUrl);
+                java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setConnectTimeout(10000); // 10 seconds
+                connection.setReadTimeout(10000); // 10 seconds
+                
+                Log.d("JobsFragment", "📡 Making HTTP request...");
+                int responseCode = connection.getResponseCode();
+                Log.d("JobsFragment", "📡 API Response Code: " + responseCode);
+                
+                if (responseCode == 200) {
+                    // Success - show toast on main thread
+                    requireActivity().runOnUiThread(() -> {
+                        Log.d("JobsFragment", "✅ Share count incremented successfully!");
+                    });
+                } else {
+                    // Error - show error on main thread
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(), "Share count failed ❌ Code: " + responseCode, Toast.LENGTH_LONG).show();
+                        Log.e("JobsFragment", "❌ API call failed with code: " + responseCode);
+                    });
+                }
+                
+                connection.disconnect();
+                Log.d("JobsFragment", "🔌 Connection closed");
+                
+            } catch (Exception e) {
+                Log.e("JobsFragment", "💥 Error calling share API: " + e.getMessage(), e);
+                e.printStackTrace();
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(requireContext(), "Network error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+        
+        apiThread.start();
+        Log.d("JobsFragment", "🧵 API Thread started successfully");
     }
 
     @Override

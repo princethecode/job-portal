@@ -98,8 +98,8 @@ public class    JobAdapter extends ListAdapter<Job, JobAdapter.JobViewHolder> {
                 postingDateTextView.setText("Posted on: N/A");
             }
             
-            // Set share count (you can implement this based on your backend)
-            shareCountTextView.setText("0");
+            // Set share count from job data
+            shareCountTextView.setText(String.valueOf(job.getShareCount()));
             
             // Set click listeners for buttons
             whatsappShareButton.setOnClickListener(v -> {

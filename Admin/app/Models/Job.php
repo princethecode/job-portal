@@ -21,7 +21,8 @@ class Job extends Model
         'posting_date',
         'expiry_date',
         'is_active',
-        'image'
+        'image',
+        'share_count'
     ];
 
     protected $casts = [
@@ -29,6 +30,7 @@ class Job extends Model
         'expiry_date' => 'date',
         'salary' => 'decimal:2',
         'is_active' => 'boolean',
+        'share_count' => 'integer',
     ];
 
     /**

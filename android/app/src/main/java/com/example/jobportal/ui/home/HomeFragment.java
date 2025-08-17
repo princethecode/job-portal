@@ -283,6 +283,11 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
     }
 
     private void shareJobOnWhatsApp(Job job) {
+        Log.d(TAG, "📱 Starting WhatsApp share for job: " + job.getTitle() + " (ID: " + job.getId() + ")");
+        
+        // Increment share count immediately when user clicks share
+        incrementShareCount(job);
+        
         try {
             String shareText = "🔥 *Job Opportunity* 🔥\n\n" +
                     "📋 *Position:* " + job.getTitle() + "\n" +
@@ -300,18 +305,72 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
             
             try {
                 startActivity(whatsappIntent);
+                Log.d(TAG, "✅ WhatsApp intent started successfully");
             } catch (android.content.ActivityNotFoundException ex) {
+                Log.d(TAG, "⚠️ WhatsApp not found, trying general share");
                 // WhatsApp not installed, try with general share
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setType("text/plain");
                 shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
                 shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Job Opportunity: " + job.getTitle());
                 startActivity(Intent.createChooser(shareIntent, "Share Job"));
+                Log.d(TAG, "✅ General share intent started successfully");
             }
         } catch (Exception e) {
             Toast.makeText(requireContext(), "Unable to share job", Toast.LENGTH_SHORT).show();
-            Log.e(TAG, "Error sharing job", e);
+            Log.e(TAG, "❌ Error sharing job: " + e.getMessage(), e);
         }
+    }
+
+    private void incrementShareCount(Job job) {
+        Log.d(TAG, "🚀 INCREMENT SHARE COUNT CALLED for job: " + job.getTitle() + " (ID: " + job.getId() + ")");
+     
+        // Simple direct API call with share_count parameter
+        Thread apiThread = new Thread(() -> {
+            Log.d(TAG, "🧵 API Thread started");
+            try {
+                String apiUrl = "https://emps.co.in/api/jobs/" + job.getId() + "/share?share_count=1";
+                Log.d(TAG, "🌐 Calling API: " + apiUrl);
+                
+                java.net.URL url = new java.net.URL(apiUrl);
+                java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setConnectTimeout(10000); // 10 seconds
+                connection.setReadTimeout(10000); // 10 seconds
+                
+                Log.d(TAG, "📡 Making HTTP request...");
+                int responseCode = connection.getResponseCode();
+                Log.d(TAG, "📡 API Response Code: " + responseCode);
+                
+                if (responseCode == 200) {
+                    // Success - show toast on main thread
+                    requireActivity().runOnUiThread(() -> {
+                        Log.d(TAG, "✅ Share count incremented successfully!");
+                    });
+                } else {
+                    // Error - show error on main thread
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(), "Share count failed ❌ Code: " + responseCode, Toast.LENGTH_LONG).show();
+                        Log.e(TAG, "❌ API call failed with code: " + responseCode);
+                    });
+                }
+                
+                connection.disconnect();
+                Log.d(TAG, "🔌 Connection closed");
+                
+            } catch (Exception e) {
+                Log.e(TAG, "💥 Error calling share API: " + e.getMessage(), e);
+                e.printStackTrace();
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(requireContext(), "Network error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+        
+        apiThread.start();
+        Log.d(TAG, "🧵 API Thread started successfully");
     }
 
     @Override

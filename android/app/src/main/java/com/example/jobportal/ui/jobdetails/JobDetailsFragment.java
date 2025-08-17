@@ -328,7 +328,7 @@ public class JobDetailsFragment extends Fragment {
      */
     private String formatSalaryWithCurrency(String salaryText) {
         if (salaryText == null || salaryText.isEmpty()) {
-            return "$0";
+            return "0";
         }
         
         // Remove any existing currency symbols or formatting
@@ -336,7 +336,7 @@ public class JobDetailsFragment extends Fragment {
         
         // If empty after cleaning, return default
         if (cleanSalary.isEmpty()) {
-            return "$0";
+            return "0";
         }
         
         // Handle different formats - K notation, ranges, etc.
@@ -346,15 +346,15 @@ public class JobDetailsFragment extends Fragment {
             if (parts.length == 2) {
                 String start = parts[0].trim();
                 String end = parts[1].trim();
-                return "$" + start + " - $" + end;
+                return "" + start + " - " + end;
             }
         } else if (cleanSalary.toLowerCase().contains("k")) {
             // Handle K notation (thousands)
-            return "$" + cleanSalary;
+            return "" + cleanSalary;
         }
         
         // Default formatting with dollar sign
-        return "$" + cleanSalary;
+        return "" + cleanSalary;
     }
     
     private void applyForJob() {

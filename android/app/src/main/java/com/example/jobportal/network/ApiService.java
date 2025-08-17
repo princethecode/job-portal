@@ -89,6 +89,10 @@ public interface ApiService {
     @GET("jobs/{id}")
     Call<ApiResponse<Job>> getJobDetails(@Path("id") int jobId);
 
+    // Share count endpoint
+    @POST("jobs/{id}/share")
+    Call<ApiResponse<Map<String, Object>>> incrementShareCount(@Path("id") String jobId);
+
     // Application endpoints
     @Multipart
     @POST("jobs/{id}/apply")
