@@ -36,6 +36,14 @@ Route::get('/privacy-policy', function() {
     return file_get_contents(public_path('privacy-policy.html'));
 })->name('app.privacy-policy');
 
+Route::get('/terms-of-service', function() {
+    return file_get_contents(public_path('terms-of-service.html'));
+})->name('app.terms-of-service');
+
+Route::get('/account-remove', function() {
+    return file_get_contents(public_path('account-remove.html'));
+})->name('app.account-remove');
+
 // Reset Password Route
 Route::get('/reset-password', function() {
     return view('auth.reset-password');

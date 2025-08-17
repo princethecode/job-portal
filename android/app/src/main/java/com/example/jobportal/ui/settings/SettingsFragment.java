@@ -83,6 +83,10 @@ public class SettingsFragment extends Fragment {
         View termsConditionsItem = requireView().findViewById(R.id.termsConditionsItem);
         termsConditionsItem.setOnClickListener(v -> openTermsConditions());
         
+        // Account Deletion
+        View accountDeletionItem = requireView().findViewById(R.id.accountDeletionItem);
+        accountDeletionItem.setOnClickListener(v -> showAccountDeletionDialog());
+        
         // App Version (show additional info)
         View appVersionItem = requireView().findViewById(R.id.appVersionItem);
         appVersionItem.setOnClickListener(v -> showAppInfo());
@@ -195,7 +199,27 @@ public class SettingsFragment extends Fragment {
     private void openTermsConditions() {
         try {
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("https://emps.co.in/terms-conditions"));
+            intent.setData(Uri.parse("https://emps.co.in/terms-of-service"));
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), getString(R.string.error_opening_link), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showAccountDeletionDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.delete_account))
+                .setMessage(getString(R.string.delete_account_warning))
+                .setIcon(R.drawable.ic_warning)
+                .setPositiveButton(getString(R.string.proceed), (dialog, which) -> openAccountDeletionPage())
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show();
+    }
+
+    private void openAccountDeletionPage() {
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("https://emps.co.in/account-remove"));
             startActivity(intent);
         } catch (Exception e) {
             Toast.makeText(requireContext(), getString(R.string.error_opening_link), Toast.LENGTH_SHORT).show();

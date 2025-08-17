@@ -228,4 +228,9 @@
     
     <!-- Firebase Google Sign-In -->
     <string name="default_web_client_id">838981324108-pu5ktscdqbpmq3d3kiprm1jb204uup9i.apps.googleusercontent.com</string>
+
+    <string name="delete_account_warning">This action will permanently delete your account and all associated data. This cannot be undone. Do you want to proceed?</string>
+    <string name="proceed">Proceed</string>
+
+
 </resources>
