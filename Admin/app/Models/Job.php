@@ -22,7 +22,13 @@ class Job extends Model
         'expiry_date',
         'is_active',
         'image',
-        'share_count'
+        'share_count',
+        'recruiter_id',
+        'requirements',
+        'benefits',
+        'experience_required',
+        'skills_required',
+        'views_count'
     ];
 
     protected $casts = [
@@ -49,5 +55,21 @@ class Job extends Model
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class);
+    }
+
+    /**
+     * Get the recruiter who posted this job
+     */
+    public function recruiter()
+    {
+        return $this->belongsTo(Recruiter::class);
+    }
+
+    /**
+     * Get interviews for this job
+     */
+    public function interviews()
+    {
+        return $this->hasMany(Interview::class);
     }
 } 

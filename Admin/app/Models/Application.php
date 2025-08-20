@@ -18,6 +18,7 @@ class Application extends Model
         'resume_path',
         'posting_date',
         'applied_date',
+        'notes',
     ];
 
     protected $casts = [
@@ -33,5 +34,13 @@ class Application extends Model
     public function job(): BelongsTo
     {
         return $this->belongsTo(Job::class);
+    }
+
+    /**
+     * Get interviews for this application
+     */
+    public function interviews()
+    {
+        return $this->hasMany(Interview::class);
     }
 } 

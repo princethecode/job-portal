@@ -155,6 +155,17 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
         Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('admin.notifications.destroy');
     });
 
+    // Recruiter Management
+    Route::prefix('recruiters')->group(function () {
+        Route::get('/', [App\Http\Controllers\AdminRecruiterController::class, 'index'])->name('admin.recruiters.index');
+        Route::get('/export', [App\Http\Controllers\AdminRecruiterController::class, 'export'])->name('admin.recruiters.export');
+        Route::get('/{recruiter}', [App\Http\Controllers\AdminRecruiterController::class, 'show'])->name('admin.recruiters.show');
+        Route::put('/{recruiter}/status', [App\Http\Controllers\AdminRecruiterController::class, 'updateStatus'])->name('admin.recruiters.update-status');
+        Route::put('/{recruiter}/verification', [App\Http\Controllers\AdminRecruiterController::class, 'updateVerification'])->name('admin.recruiters.update-verification');
+        Route::delete('/{recruiter}', [App\Http\Controllers\AdminRecruiterController::class, 'destroy'])->name('admin.recruiters.destroy');
+        Route::post('/bulk-action', [App\Http\Controllers\AdminRecruiterController::class, 'bulkAction'])->name('admin.recruiters.bulk-action');
+    });
+
     // Contact Management Routes
     Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
     Route::post('/contacts/upload', [ContactController::class, 'upload'])->name('contacts.upload');
@@ -249,3 +260,76 @@ Route::get('/company_logos/{filename}', function ($filename) {
     return response()->file($path);
 });
 
+
+// Recruiter Routes
+Route::prefix('recruiter')->name('recruiter.')->group(function () {
+    // Authentication Routes
+    Route::get('/login', [App\Http\Controllers\RecruiterAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [App\Http\Controllers\RecruiterAuthController::class, 'login'])->name('login.submit');
+    Route::get('/register', [App\Http\Controllers\RecruiterAuthController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [App\Http\Controllers\RecruiterAuthController::class, 'register'])->name('register.submit');
+    Route::post('/logout', [App\Http\Controllers\RecruiterAuthController::class, 'logout'])->name('logout');
+    
+    // Protected Recruiter Routes
+    Route::middleware('recruiter.auth')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [App\Http\Controllers\RecruiterDashboardController::class, 'index'])->name('dashboard');
+        
+        // Job Management
+        Route::resource('jobs', App\Http\Controllers\RecruiterJobController::class);
+        Route::post('/jobs/{job}/toggle-status', [App\Http\Controllers\RecruiterJobController::class, 'toggleStatus'])->name('jobs.toggle-status');
+        
+        // Application Management
+        Route::prefix('applications')->name('applications.')->group(function () {
+            Route::get('/', [App\Http\Controllers\RecruiterApplicationController::class, 'index'])->name('index');
+            Route::get('/{application}', [App\Http\Controllers\RecruiterApplicationController::class, 'show'])->name('show');
+            Route::put('/{application}/status', [App\Http\Controllers\RecruiterApplicationController::class, 'updateStatus'])->name('update-status');
+            Route::get('/{application}/download-resume', [App\Http\Controllers\RecruiterApplicationController::class, 'downloadResume'])->name('download-resume');
+            Route::post('/{application}/schedule-interview', [App\Http\Controllers\RecruiterApplicationController::class, 'scheduleInterview'])->name('schedule-interview');
+            Route::post('/bulk-update-status', [App\Http\Controllers\RecruiterApplicationController::class, 'bulkUpdateStatus'])->name('bulk-update-status');
+        });
+        
+        // Interview Management
+        Route::prefix('interviews')->name('interviews.')->group(function () {
+            Route::get('/', [App\Http\Controllers\RecruiterInterviewController::class, 'index'])->name('index');
+            Route::get('/calendar', [App\Http\Controllers\RecruiterInterviewController::class, 'calendar'])->name('calendar');
+            Route::get('/calendar-simple', function() {
+                $recruiter = Auth::guard('recruiter')->user();
+                $interviews = $recruiter->interviews()
+                    ->with(['user', 'job'])
+                    ->whereMonth('interview_date', now()->month)
+                    ->whereYear('interview_date', now()->year)
+                    ->orderBy('interview_date')
+                    ->get();
+                return view('recruiter.interviews.calendar-simple', compact('interviews'));
+            })->name('calendar-simple');
+            Route::get('/{interview}', [App\Http\Controllers\RecruiterInterviewController::class, 'show'])->name('show');
+            Route::put('/{interview}', [App\Http\Controllers\RecruiterInterviewController::class, 'update'])->name('update');
+            Route::put('/{interview}/status', [App\Http\Controllers\RecruiterInterviewController::class, 'updateStatus'])->name('update-status');
+            Route::post('/{interview}/cancel', [App\Http\Controllers\RecruiterInterviewController::class, 'cancel'])->name('cancel');
+        });
+        
+        // Candidate Management
+        Route::prefix('candidates')->name('candidates.')->group(function () {
+            Route::get('/', [App\Http\Controllers\RecruiterCandidateController::class, 'index'])->name('index');
+            Route::get('/saved', [App\Http\Controllers\RecruiterCandidateController::class, 'saved'])->name('saved');
+            Route::get('/{candidate}', [App\Http\Controllers\RecruiterCandidateController::class, 'show'])->name('show');
+            Route::post('/{candidate}/toggle-save', [App\Http\Controllers\RecruiterCandidateController::class, 'toggleSave'])->name('toggle-save');
+            Route::put('/{candidate}/notes', [App\Http\Controllers\RecruiterCandidateController::class, 'updateNotes'])->name('update-notes');
+            Route::post('/{candidate}/invite-to-job', [App\Http\Controllers\RecruiterCandidateController::class, 'inviteToJob'])->name('invite-to-job');
+            Route::get('/{candidate}/download-resume', [App\Http\Controllers\RecruiterCandidateController::class, 'downloadResume'])->name('download-resume');
+        });
+        
+        // Analytics Routes
+        Route::prefix('analytics')->name('analytics.')->group(function () {
+            Route::get('/', [App\Http\Controllers\RecruiterAnalyticsController::class, 'index'])->name('index');
+            Route::get('/export', [App\Http\Controllers\RecruiterAnalyticsController::class, 'export'])->name('export');
+        });
+        
+        // API Routes for AJAX calls
+        Route::prefix('api')->name('api.')->group(function () {
+            Route::get('/jobs/active', [App\Http\Controllers\API\RecruiterJobAPIController::class, 'getActiveJobs'])->name('jobs.active');
+            Route::get('/jobs/stats', [App\Http\Controllers\API\RecruiterJobAPIController::class, 'getJobStats'])->name('jobs.stats');
+        });
+    });
+});

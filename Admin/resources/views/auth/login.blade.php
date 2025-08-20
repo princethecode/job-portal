@@ -51,7 +51,7 @@
     </div>
 </div>
 <div class="text-center mt-3">
-    <p>Don't have an account? <a href="{{ route('admin.register') }}">Register here</a></p>
+    <p>Are you an Recruiter ? <a href="{{ route('recruiter.login') }}"> Click here</a></p>
 </div>
 @endsection
 

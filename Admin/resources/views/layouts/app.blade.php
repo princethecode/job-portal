@@ -59,6 +59,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
+            @auth
             <div class="col-md-2 sidebar p-0">
                 <div class="p-3 text-center">
                     <h4>Job Portal Admin</h4>
@@ -91,6 +92,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.recruiters.*') ? 'active' : '' }}" href="{{ route('admin.recruiters.index') }}">
+                            <i class="fas fa-user-tie me-2"></i> Recruiters
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}" href="{{ route('admin.notifications.index') }}">
                             <i class="fas fa-bell me-2"></i> Notifications
                         </a>
@@ -107,10 +113,12 @@
                     </li>
                 </ul>
             </div>
+            @endauth
             
             <!-- Main Content -->
-            <div class="col-md-10 p-0">
+            <div class="{{ Auth::check() ? 'col-md-10' : 'col-12' }} p-0">
                 <!-- Top Navbar -->
+                @auth
                 <nav class="navbar navbar-expand-lg navbar-dark">
                     <div class="container-fluid">
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -140,6 +148,7 @@
                         </div>
                     </div>
                 </nav>
+                @endauth
                 
                 <!-- Content Area -->
                 <div class="main-content">
