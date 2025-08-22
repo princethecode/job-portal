@@ -13,6 +13,8 @@ import com.example.jobportal.utils.SessionManager;
 import com.example.jobportal.data.model.AppVersionResponse;
 import com.example.jobportal.data.model.AppVersionData;
 import com.example.jobportal.data.api.VersionCheckRequest;
+import com.example.jobportal.network.RecruiterApiService;
+import com.example.jobportal.auth.RecruiterAuthHelper;
 import java.io.IOException;
 
 import java.io.File;
@@ -39,6 +41,7 @@ public class ApiClient {
     private static Retrofit retrofit = null;
     private static final int REQUEST_TIMEOUT = 60;
     private static ApiService apiService;
+    private static RecruiterApiService recruiterApiService;
     private static SessionManager sessionManager;
     private static Context context;
     private static ApiClient instance;
@@ -47,6 +50,7 @@ public class ApiClient {
         ApiClient.context = context.getApplicationContext();
         sessionManager = SessionManager.getInstance(ApiClient.context);
         apiService = getClient(ApiClient.context).create(ApiService.class);
+        recruiterApiService = getRecruiterClient(ApiClient.context).create(RecruiterApiService.class);
     }
 
     public static synchronized ApiClient getInstance(Context context) {
@@ -60,6 +64,7 @@ public class ApiClient {
         ApiClient.context = context.getApplicationContext();
         sessionManager = SessionManager.getInstance(ApiClient.context);
         apiService = getClient(ApiClient.context).create(ApiService.class);
+        recruiterApiService = getRecruiterClient(ApiClient.context).create(RecruiterApiService.class);
     }
 
     public static Retrofit getClient(Context context) {
@@ -81,43 +86,51 @@ public class ApiClient {
 
             // Add auth token to requests if available
             SessionManager sessionManager = SessionManager.getInstance(context);
-            if (sessionManager.hasToken()) {
-                httpClient.addInterceptor(chain -> {
-                    Request original = chain.request();
-                    String token = sessionManager.getToken();
-                    Log.d("ApiClient", "Making API request: " + original.url() + 
-                                "\nMethod: " + original.method() +
-                                "\nToken exists: " + (token != null && !token.isEmpty()) +
-                                "\nToken length: " + (token != null ? token.length() : 0));
-                    
-                    Request.Builder requestBuilder = original.newBuilder()
-                            .header("Authorization", "Bearer " + token)
-                            .header("Accept", "application/json")
-                            .method(original.method(), original.body());
+            httpClient.addInterceptor(chain -> {
+                Request original = chain.request();
+                String token = sessionManager.getToken();
+                
+                Log.d("ApiClient", "Making API request: " + original.url() + 
+                            "\nMethod: " + original.method() +
+                            "\nHas token: " + sessionManager.hasToken() +
+                            "\nToken exists: " + (token != null && !token.isEmpty()) +
+                            "\nToken length: " + (token != null ? token.length() : 0) +
+                            "\nIs logged in: " + sessionManager.isLoggedIn());
+                
+                Request.Builder requestBuilder = original.newBuilder()
+                        .header("Accept", "application/json")
+                        .method(original.method(), original.body());
+                
+                // Add Authorization header only if token exists
+                if (token != null && !token.isEmpty()) {
+                    requestBuilder.header("Authorization", "Bearer " + token);
+                    Log.d("ApiClient", "Added Authorization header with token: " + 
+                              token.substring(0, Math.min(20, token.length())) + "...");
+                } else {
+                    Log.w("ApiClient", "No valid token available for request to: " + original.url());
+                }
 
-                    Request request = requestBuilder.build();
-                    okhttp3.Response response = chain.proceed(request);
-                    
-                    // Log detailed response information
-                    Log.d("ApiClient", "API Response for " + original.url() + 
+                Request request = requestBuilder.build();
+                okhttp3.Response response = chain.proceed(request);
+                
+                // Log detailed response information
+                Log.d("ApiClient", "API Response for " + original.url() + 
+                            "\nStatus: " + response.code() +
+                            "\nMessage: " + response.message() +
+                            "\nContent-Type: " + response.header("Content-Type"));
+                
+                // Check for auth errors
+                if (response.code() == 401 || response.code() == 403) {
+                    Log.e("ApiClient", "Authentication error detected:" +
+                                "\nURL: " + original.url() +
                                 "\nStatus: " + response.code() +
                                 "\nMessage: " + response.message() +
-                                "\nHeaders: " + response.headers().toString());
-                    
-                    // Check for auth errors
-                    if (response.code() == 401 || response.code() == 403) {
-                        Log.e("ApiClient", "Authentication error detected:" +
-                                    "\nURL: " + original.url() +
-                                    "\nStatus: " + response.code() +
-                                    "\nMessage: " + response.message() +
-                                    "\nToken was: " + (token != null ? "present" : "null") +
-                                    "\nStack trace: " + Log.getStackTraceString(new Exception()));
-                        sessionManager.clearToken();
-                    }
-                    
-                    return response;
-                });
-            }
+                                "\nToken was: " + (token != null ? "present (" + token.length() + " chars)" : "null"));
+                    sessionManager.clearToken();
+                }
+                
+                return response;
+            });
 
             // Create a Gson instance with lenient parsing enabled
             Gson gson = new GsonBuilder()
@@ -142,6 +155,86 @@ public class ApiClient {
             apiService = getClient(context).create(ApiService.class);
         }
         return apiService;
+    }
+    
+    public static RecruiterApiService getRecruiterApiService() {
+        if (recruiterApiService == null) {
+            recruiterApiService = getRecruiterClient(context).create(RecruiterApiService.class);
+        }
+        return recruiterApiService;
+    }
+    
+    public static Retrofit getRecruiterClient(Context context) {
+        OkHttpClient.Builder httpClient = new OkHttpClient.Builder()
+                .connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .writeTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS);
+
+        // Add logging interceptor in debug mode
+        if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+            httpClient.addInterceptor(logging);
+        }
+        
+        // Add response interceptor to handle non-JSON responses
+        httpClient.addInterceptor(new ResponseInterceptor());
+
+        // Add recruiter auth token to requests if available
+        RecruiterAuthHelper recruiterAuthHelper = RecruiterAuthHelper.getInstance(context);
+        httpClient.addInterceptor(chain -> {
+            Request original = chain.request();
+            String token = recruiterAuthHelper.getRecruiterToken();
+            
+            Log.d("ApiClient", "Making Recruiter API request: " + original.url() + 
+                        "\nMethod: " + original.method() +
+                        "\nToken exists: " + (token != null && !token.isEmpty()) +
+                        "\nToken: " + (token != null ? token.substring(0, Math.min(20, token.length())) + "..." : "null"));
+            
+            Request.Builder requestBuilder = original.newBuilder()
+                    .header("Accept", "application/json")
+                    .header("Content-Type", "application/json")
+                    .method(original.method(), original.body());
+            
+            if (token != null && !token.isEmpty()) {
+                requestBuilder.header("Authorization", "Bearer " + token);
+                Log.d("ApiClient", "Added Authorization header: Bearer " + token.substring(0, Math.min(20, token.length())) + "...");
+            } else {
+                Log.w("ApiClient", "No token available for request to: " + original.url());
+            }
+            
+            Request request = requestBuilder.build();
+            okhttp3.Response response = chain.proceed(request);
+            
+            // Log response details
+            Log.d("ApiClient", "Response for " + original.url() + 
+                        "\nStatus: " + response.code() +
+                        "\nMessage: " + response.message() +
+                        "\nContent-Type: " + response.header("Content-Type"));
+            
+            // Check for auth errors
+            if (response.code() == 401 || response.code() == 403) {
+                Log.e("ApiClient", "Authentication error detected for recruiter:" +
+                            "\nURL: " + original.url() +
+                            "\nStatus: " + response.code() +
+                            "\nMessage: " + response.message() +
+                            "\nToken was: " + (token != null ? "present (" + token.length() + " chars)" : "null"));
+                recruiterAuthHelper.logout();
+            }
+            
+            return response;
+        });
+
+        // Create a Gson instance with lenient parsing enabled
+        Gson gson = new GsonBuilder()
+                .setLenient()
+                .create();
+
+        return new Retrofit.Builder()
+                .baseUrl(BuildConfig.API_BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .client(httpClient.build())
+                .build();
     }
 
     public static void saveAuthToken(String token) {
@@ -587,11 +680,20 @@ public class ApiClient {
             
             Log.d("ApiClient", "Updating profile with data: " + profileData);
             
+            // Add detailed auth logging
+            String token = sessionManager.getToken();
+            Log.d("ApiClient", "Making profile update request:" +
+                        "\nToken exists: " + (token != null && !token.isEmpty()) +
+                        "\nToken length: " + (token != null ? token.length() : 0) +
+                        "\nIs logged in: " + sessionManager.isLoggedIn() +
+                        "\nUser ID: " + sessionManager.getUserId());
+            
             Call<ApiResponse<User>> call = apiService.updateUserProfile(profileData);
             call.enqueue(new Callback<ApiResponse<User>>() {
                 @Override
                 public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
                     Log.d("ApiClient", "Profile update response code: " + response.code());
+                    Log.d("ApiClient", "Response headers: " + response.headers().toString());
                     
                     if (response.isSuccessful() && response.body() != null) {
                         ApiResponse<User> apiResponse = response.body();
@@ -606,8 +708,18 @@ public class ApiClient {
                         try {
                             String errorBody = response.errorBody() != null ? 
                                 response.errorBody().string() : "Unknown error";
-                            Log.e("ApiClient", "Profile update failed with error: " + errorBody);
-                            callback.onError("Profile update failed: " + errorBody);
+                            
+                            // Check if we're getting HTML (login redirect)
+                            if (errorBody.trim().startsWith("<!DOCTYPE html>") || 
+                                errorBody.trim().startsWith("<html")) {
+                                Log.e("ApiClient", "Received HTML login page instead of JSON - authentication failed");
+                                Log.e("ApiClient", "This indicates the user token is invalid or expired");
+                                sessionManager.clearToken(); // Clear invalid token
+                                callback.onError("Session expired. Please log in again.");
+                            } else {
+                                Log.e("ApiClient", "Profile update failed with error: " + errorBody);
+                                callback.onError("Profile update failed: " + errorBody);
+                            }
                         } catch (IOException e) {
                             Log.e("ApiClient", "Error reading response body", e);
                             Log.e("ApiClient", Log.getStackTraceString(e));
@@ -620,8 +732,7 @@ public class ApiClient {
                 public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
                     Log.e("ApiClient", "Profile update network error", t);
                     Log.e("ApiClient", Log.getStackTraceString(t));
-                    Log.e("ApiClient", "Network error", t);
-            callback.onError("Network error: " + t.getMessage());
+                    callback.onError("Network error: " + t.getMessage());
                 }
             });
         }

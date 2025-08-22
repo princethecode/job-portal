@@ -4,25 +4,31 @@ import com.google.gson.annotations.SerializedName;
 
 public class Application {
     @SerializedName("id")
-    private String id;
+    private int id;
     
-    @SerializedName("job_title")
-    private String jobTitle;
+    @SerializedName("user_id")
+    private int userId;
     
-    @SerializedName("company")
-    private String company;
+    @SerializedName("job_id")
+    private int jobId;
     
     @SerializedName("status")
     private String status;
     
-    @SerializedName("application_date")
-    private String applicationDate;
-    
     @SerializedName("cover_letter")
     private String coverLetter;
     
-    @SerializedName("resume_url")
-    private String resumeUrl;
+    @SerializedName("resume_path")
+    private String resumePath;
+    
+    @SerializedName("posting_date")
+    private String postingDate;
+    
+    @SerializedName("applied_date")
+    private String appliedDate;
+    
+    @SerializedName("notes")
+    private String notes;
     
     @SerializedName("created_at")
     private String createdAt;
@@ -39,39 +45,44 @@ public class Application {
     public Application() {
     }
 
-    public Application(String id, String jobTitle, String company, String status, 
-                      String applicationDate, String coverLetter, String resumeUrl) {
+    public Application(int id, String status, String coverLetter, String resumePath) {
         this.id = id;
-        this.jobTitle = jobTitle;
-        this.company = company;
         this.status = status;
-        this.applicationDate = applicationDate;
         this.coverLetter = coverLetter;
-        this.resumeUrl = resumeUrl;
+        this.resumePath = resumePath;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
-
-    public String getJobTitle() {
-        return jobTitle;
+    
+    // Backward compatibility method for String ID
+    public void setId(String id) {
+        try {
+            this.id = Integer.parseInt(id);
+        } catch (NumberFormatException e) {
+            this.id = 0; // Default value
+        }
     }
 
-    public void setJobTitle(String jobTitle) {
-        this.jobTitle = jobTitle;
+    public int getUserId() {
+        return userId;
     }
 
-    public String getCompany() {
-        return company;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
-    public void setCompany(String company) {
-        this.company = company;
+    public int getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(int jobId) {
+        this.jobId = jobId;
     }
 
     public String getStatus() {
@@ -82,14 +93,6 @@ public class Application {
         this.status = status;
     }
 
-    public String getApplicationDate() {
-        return applicationDate;
-    }
-
-    public void setApplicationDate(String applicationDate) {
-        this.applicationDate = applicationDate;
-    }
-
     public String getCoverLetter() {
         return coverLetter;
     }
@@ -98,12 +101,36 @@ public class Application {
         this.coverLetter = coverLetter;
     }
 
-    public String getResumeUrl() {
-        return resumeUrl;
+    public String getResumePath() {
+        return resumePath;
     }
 
-    public void setResumeUrl(String resumeUrl) {
-        this.resumeUrl = resumeUrl;
+    public void setResumePath(String resumePath) {
+        this.resumePath = resumePath;
+    }
+
+    public String getPostingDate() {
+        return postingDate;
+    }
+
+    public void setPostingDate(String postingDate) {
+        this.postingDate = postingDate;
+    }
+
+    public String getAppliedDate() {
+        return appliedDate;
+    }
+
+    public void setAppliedDate(String appliedDate) {
+        this.appliedDate = appliedDate;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public String getCreatedAt() {
@@ -138,7 +165,54 @@ public class Application {
         this.user = user;
     }
     
-    // Helper methods
+    // Helper methods to get job information from nested job object
+    public String getJobTitle() {
+        return job != null ? job.getTitle() : "Unknown Job";
+    }
+    
+    // Backward compatibility setter for job title
+    public void setJobTitle(String jobTitle) {
+        // For backward compatibility, create job object if it doesn't exist
+        if (job == null) {
+            job = new Job();
+        }
+        job.setTitle(jobTitle);
+    }
+    
+    public String getCompany() {
+        // Try to get company name from different possible fields in job
+        if (job != null) {
+            if (job.getCompanyName() != null && !job.getCompanyName().isEmpty()) {
+                return job.getCompanyName();
+            } else if (job.getCompany() != null && !job.getCompany().isEmpty()) {
+                return job.getCompany();
+            }
+        }
+        return "Unknown Company";
+    }
+    
+    // Backward compatibility setter for company
+    public void setCompany(String company) {
+        // For backward compatibility, create job object if it doesn't exist
+        if (job == null) {
+            job = new Job();
+        }
+        job.setCompany(company);
+    }
+    
+    public String getApplicationDate() {
+        return appliedDate != null ? appliedDate : createdAt;
+    }
+    
+    // Backward compatibility setter for application date
+    public void setApplicationDate(String applicationDate) {
+        this.appliedDate = applicationDate;
+    }
+    
+    public String getResumeUrl() {
+        return resumePath;
+    }
+    
     public boolean isPending() {
         return "Applied".equalsIgnoreCase(status) || "Pending".equalsIgnoreCase(status);
     }

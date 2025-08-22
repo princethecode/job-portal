@@ -113,6 +113,27 @@
             android:exported="false"
             android:theme="@style/Theme.JobPortal.NoActionBar" />
 
+        <!-- Recruiter Activities -->
+        <activity
+            android:name=".auth.RecruiterLoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.JobPortal.NoActionBar" />
+
+        <activity
+            android:name=".auth.RecruiterRegisterActivity"
+            android:exported="false"
+            android:theme="@style/Theme.JobPortal.NoActionBar" />
+
+        <activity
+            android:name=".recruiter.RecruiterMainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.JobPortal.NoActionBar" />
+
+        <activity
+            android:name=".recruiter.RecruiterProfileActivity"
+            android:exported="false"
+            android:theme="@style/Theme.JobPortal" />
+
         <!-- Firebase Messaging Service -->
         <service
             android:name=".services.JobPortalFirebaseMessagingService"

@@ -76,6 +76,22 @@ public class Job {
     @SerializedName("share_count")
     private int shareCount = 0;
 
+    @ColumnInfo(name = "applications_count")
+    @SerializedName("applications_count")
+    private int applicationsCount = 0;
+
+    @ColumnInfo(name = "status")
+    @SerializedName("status")
+    private String status = "active";
+    
+    @ColumnInfo(name = "posted_date")
+    @SerializedName("posted_date")
+    private String postedDate;
+    
+    @ColumnInfo(name = "company_name")
+    @SerializedName("company_name")
+    private String companyName;
+
     
     // Default constructor required by Room
     public Job() {
@@ -124,6 +140,11 @@ public class Job {
         this.id = id;
     }
     
+    // Overloaded setter for int id (converts to String)
+    public void setId(int id) {
+        this.id = String.valueOf(id);
+    }
+    
     public String getTitle() {
         return title != null ? title : "";
     }
@@ -146,6 +167,16 @@ public class Job {
     
     public void setCompany(String company) {
         this.company = company;
+    }
+    
+    // Alternative setter for companyName (maps to companyName field)
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+    
+    // Alternative getter for companyName (returns the actual companyName field)
+    public String getCompanyName() {
+        return companyName != null ? companyName : "";
     }
     
     public String getCompanyLogo() {
@@ -242,6 +273,30 @@ public class Job {
     
     public void setShareCount(int shareCount) {
         this.shareCount = shareCount;
+    }
+    
+    public int getApplicationsCount() {
+        return applicationsCount;
+    }
+    
+    public void setApplicationsCount(int applicationsCount) {
+        this.applicationsCount = applicationsCount;
+    }
+    
+    public String getStatus() {
+        return status != null ? status : "active";
+    }
+    
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    
+    public String getPostedDate() {
+        return postedDate != null ? postedDate : "";
+    }
+    
+    public void setPostedDate(String postedDate) {
+        this.postedDate = postedDate;
     }
     
 

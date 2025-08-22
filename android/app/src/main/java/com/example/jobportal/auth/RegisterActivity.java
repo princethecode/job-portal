@@ -28,6 +28,7 @@ public class RegisterActivity extends AppCompatActivity {
     private TextInputEditText etFullName, etEmail, etMobile, etPassword, etConfirmPassword;
     private Button btnUploadResume, btnRegister, btnGoogleSignIn;
     private TextView tvResumeStatus, tvLogin;
+    private TextView recruiterRegisterLink;
     
     private Uri resumeUri = null;
     
@@ -111,6 +112,7 @@ public class RegisterActivity extends AppCompatActivity {
         
         tvResumeStatus = binding.resumeFormats; // This TextView serves dual purpose as status
         tvLogin = binding.signInLink;
+        recruiterRegisterLink = findViewById(R.id.recruiterRegisterLink);
     }
 
     private void setupClickListeners() {
@@ -134,6 +136,13 @@ public class RegisterActivity extends AppCompatActivity {
             // Navigate back to login screen
             finish();
         });
+
+        if (recruiterRegisterLink != null) {
+            recruiterRegisterLink.setOnClickListener(v -> {
+                Intent intent = new Intent(RegisterActivity.this, RecruiterRegisterActivity.class);
+                startActivity(intent);
+            });
+        }
     }
 
     private boolean validateInputs() {

@@ -16,9 +16,9 @@ class RecruiterJobAPIController extends Controller
     /**
      * Get active jobs for the authenticated recruiter
      */
-    public function getActiveJobs()
+    public function getActiveJobs(Request $request)
     {
-        $recruiter = Auth::guard('recruiter')->user();
+        $recruiter = $request->user();
         
         $jobs = $recruiter->jobs()
             ->where('is_active', true)
@@ -36,9 +36,9 @@ class RecruiterJobAPIController extends Controller
     /**
      * Get job statistics for dashboard
      */
-    public function getJobStats()
+    public function getJobStats(Request $request)
     {
-        $recruiter = Auth::guard('recruiter')->user();
+        $recruiter = $request->user();
         
         $stats = [
             'total_jobs' => $recruiter->jobs()->count(),

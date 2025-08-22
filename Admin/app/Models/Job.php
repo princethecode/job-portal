@@ -17,6 +17,7 @@ class Job extends Model
         'location',
         'job_type',
         'category',
+        'category_id',
         'salary',
         'posting_date',
         'expiry_date',
@@ -28,7 +29,11 @@ class Job extends Model
         'benefits',
         'experience_required',
         'skills_required',
-        'views_count'
+        'views_count',
+        'experience_level',
+        'company_name',
+        'company_website',
+        'company_description'
     ];
 
     protected $casts = [
@@ -71,5 +76,13 @@ class Job extends Model
     public function interviews()
     {
         return $this->hasMany(Interview::class);
+    }
+
+    /**
+     * Get the category for this job
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 } 

@@ -84,6 +84,7 @@
     <color name="icon_primary">#1F2937</color>
     <color name="icon_secondary">#4B5563</color>
     <color name="icon_tertiary">#9CA3AF</color>
+    <color name="icon_tint">@color/icon_secondary</color>
     <color name="icon_success">#22C55E</color>
     <color name="icon_warning">#FACC15</color>
     <color name="icon_error">#EF4444</color>
@@ -167,6 +168,7 @@
     <color name="primary_color">@color/primary</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="red">#F44336</color>
+    <color name="orange">#FF9800</color>
 
     <!-- Google Brand Colors -->
     <color name="google_blue">#4285F4</color>
@@ -176,5 +178,11 @@
     <color name="google_button_background">#FFFFFF</color>
     <color name="google_button_border">#DADCE0</color>
     <color name="google_button_pressed">#F8F9FA</color>
+
+    <!-- Additional aliases for adapter compatibility -->
+    <color name="gray">@color/gray_500</color>
+    <color name="dark_gray">@color/gray_700</color>
+    <color name="blue">@color/info</color>
+    <color name="green">@color/success</color>
 
 </resources>

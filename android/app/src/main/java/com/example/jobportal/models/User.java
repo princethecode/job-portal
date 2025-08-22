@@ -98,6 +98,15 @@ public class User {
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
+    
+    // Alias method for getName() to match Application adapter requirements
+    public String getName() {
+        return fullName;
+    }
+    
+    public void setName(String name) {
+        this.fullName = name;
+    }
 
     public String getEmail() {
         return email;

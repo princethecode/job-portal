@@ -178,14 +178,22 @@ public class SessionManager {
      * Get authentication token
      */
     public String getToken() {
-        return pref.getString(KEY_TOKEN, null);
+        String token = pref.getString(KEY_TOKEN, null);
+        Log.d(TAG, "Getting token - exists: " + (token != null) + 
+                  ", length: " + (token != null ? token.length() : 0) + 
+                  ", caller: " + Log.getStackTraceString(new Exception()).split("\\n")[3]);
+        return token;
     }
     
     /**
      * Check if token exists
      */
     public boolean hasToken() {
-        return getToken() != null;
+        String token = getToken();
+        boolean hasToken = (token != null && !token.trim().isEmpty());
+        Log.d(TAG, "Checking hasToken - result: " + hasToken + ", token: " + 
+                  (token != null ? token.substring(0, Math.min(20, token.length())) + "..." : "null"));
+        return hasToken;
     }
     
     /**

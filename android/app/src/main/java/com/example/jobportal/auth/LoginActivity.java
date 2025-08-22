@@ -45,6 +45,8 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
 import okhttp3.ResponseBody;
+import com.example.jobportal.recruiter.RecruiterMainActivity;
+import com.example.jobportal.recruiter.fragments.RecruiterDashboardFragment;
 
 public class LoginActivity extends AppCompatActivity {
     
@@ -53,6 +55,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputEditText etMobile, etPassword;
     private Button btnLogin, btnGoogleSignIn;
     private TextView tvForgotPassword, tvRegister;
+    private TextView recruiterLoginLink;
     private View progressBar;
     private ActivityLoginBinding binding;
     private boolean isCheckingSession = false;
@@ -196,6 +199,7 @@ public class LoginActivity extends AppCompatActivity {
         btnGoogleSignIn = binding.googleSignInButton;
         tvForgotPassword = binding.forgotPassword;
         tvRegister = binding.registerLink;
+        recruiterLoginLink = findViewById(R.id.recruiterLoginLink);
         progressBar = findViewById(R.id.progress_bar); // Make sure to add this to your layout
     }
 
@@ -219,6 +223,13 @@ public class LoginActivity extends AppCompatActivity {
             // Navigate to registration screen
             navigateToRegister();
         });
+
+        if (recruiterLoginLink != null) {
+            recruiterLoginLink.setOnClickListener(v -> {
+                Intent intent = new Intent(LoginActivity.this, RecruiterLoginActivity.class);
+                startActivity(intent);
+            });
+        }
     }
 
     private boolean validateInputs() {

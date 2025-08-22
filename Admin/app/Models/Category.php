@@ -28,6 +28,6 @@ class Category extends Model
      */
     public function jobs()
     {
-        return $this->hasMany(Job::class, 'category', 'name');
+        return $this->hasMany(Job::class, 'category_id');
     }
 }

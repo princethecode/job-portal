@@ -138,3 +138,61 @@ Route::get('resumes/{filename}', function ($filename) {
         'Content-Disposition' => 'attachment; filename="' . $filename . '"'
     ]);
 });
+
+// ========================================
+// RECRUITER API ROUTES
+// ========================================
+
+// Recruiter Authentication (Public)
+Route::post('/recruiter/login', [App\Http\Controllers\API\RecruiterAuthController::class, 'login']);
+Route::post('/recruiter/register', [App\Http\Controllers\API\RecruiterAuthController::class, 'register']);
+
+// Protected Recruiter Routes
+Route::middleware('recruiter.sanctum')->group(function () {
+    // Recruiter Profile
+    Route::get('/recruiter/profile', [App\Http\Controllers\API\RecruiterController::class, 'profile']);
+    Route::post('/recruiter/profile', [App\Http\Controllers\API\RecruiterController::class, 'updateProfile']);
+    Route::post('/recruiter/logout', [App\Http\Controllers\API\RecruiterAuthController::class, 'logout']);
+    
+    // Dashboard
+    Route::get('/recruiter/dashboard', [App\Http\Controllers\API\RecruiterDashboardController::class, 'index']);
+    
+    // Jobs Management
+    Route::prefix('recruiter/jobs')->group(function () {
+        Route::get('/', [App\Http\Controllers\API\RecruiterJobController::class, 'index']);
+        Route::post('/', [App\Http\Controllers\API\RecruiterJobController::class, 'store']);
+        Route::get('/{id}', [App\Http\Controllers\API\RecruiterJobController::class, 'show']);
+        Route::put('/{id}', [App\Http\Controllers\API\RecruiterJobController::class, 'update']);
+        Route::delete('/{id}', [App\Http\Controllers\API\RecruiterJobController::class, 'destroy']);
+        Route::patch('/{id}/toggle-status', [App\Http\Controllers\API\RecruiterJobController::class, 'toggleStatus']);
+    });
+    
+    // Applications Management
+    Route::prefix('recruiter/applications')->group(function () {
+        Route::get('/', [App\Http\Controllers\API\RecruiterApplicationController::class, 'index']);
+        Route::get('/{id}', [App\Http\Controllers\API\RecruiterApplicationController::class, 'show']);
+        Route::patch('/{id}/status', [App\Http\Controllers\API\RecruiterApplicationController::class, 'updateStatus']);
+        Route::post('/{id}/schedule-interview', [App\Http\Controllers\API\RecruiterApplicationController::class, 'scheduleInterview']);
+        Route::get('/{id}/download-resume', [App\Http\Controllers\API\RecruiterApplicationController::class, 'downloadResume']);
+    });
+    
+    // Candidates Management
+    Route::prefix('recruiter/candidates')->group(function () {
+        Route::get('/', [App\Http\Controllers\API\RecruiterCandidateController::class, 'index']);
+        Route::get('/{id}', [App\Http\Controllers\API\RecruiterCandidateController::class, 'show']);
+        Route::patch('/{id}/toggle-save', [App\Http\Controllers\API\RecruiterCandidateController::class, 'toggleSave']);
+        Route::get('/{id}/download-resume', [App\Http\Controllers\API\RecruiterCandidateController::class, 'downloadResume']);
+    });
+    
+    // Interviews Management
+    Route::prefix('recruiter/interviews')->group(function () {
+        Route::get('/', [App\Http\Controllers\API\RecruiterInterviewController::class, 'index']);
+        Route::get('/{id}', [App\Http\Controllers\API\RecruiterInterviewController::class, 'show']);
+        Route::put('/{id}', [App\Http\Controllers\API\RecruiterInterviewController::class, 'update']);
+        Route::patch('/{id}/status', [App\Http\Controllers\API\RecruiterInterviewController::class, 'updateStatus']);
+        Route::post('/{id}/cancel', [App\Http\Controllers\API\RecruiterInterviewController::class, 'cancel']);
+    });
+    
+    // Analytics
+    Route::get('/recruiter/analytics', [App\Http\Controllers\API\RecruiterAnalyticsController::class, 'index']);
+});
