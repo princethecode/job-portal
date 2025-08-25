@@ -147,4 +147,26 @@ class FirebaseNotificationService
             ]
         );
     }
+
+    /**
+     * Send a job approval notification to recruiter
+     *
+     * @param string $fcmToken
+     * @param string $title
+     * @param string $body
+     * @param int $jobId
+     * @return bool
+     */
+    public function sendJobApprovalNotification($fcmToken, $title, $body, $jobId)
+    {
+        return $this->sendNotification(
+            $fcmToken,
+            $title,
+            $body,
+            [
+                'type' => 'job_approval',
+                'job_id' => $jobId
+            ]
+        );
+    }
 } 

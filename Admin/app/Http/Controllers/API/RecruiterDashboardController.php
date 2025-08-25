@@ -24,6 +24,10 @@ class RecruiterDashboardController extends Controller
             'scheduled_interviews' => $recruiter->interviews()->where('status', 'scheduled')->count(),
             'pending_applications' => $recruiter->applications()->where('status', 'Applied')->count(),
             'hired_candidates' => $recruiter->applications()->where('status', 'Hired')->count(),
+            // Job approval status
+            'pending_approval_jobs' => $recruiter->jobs()->where('approval_status', 'pending')->count(),
+            'approved_jobs' => $recruiter->jobs()->where('approval_status', 'approved')->count(),
+            'declined_jobs' => $recruiter->jobs()->where('approval_status', 'declined')->count(),
         ];
 
         // Get recent jobs with application counts
@@ -41,6 +45,7 @@ class RecruiterDashboardController extends Controller
                     'job_type' => $job->job_type,
                     'salary' => $job->salary,
                     'is_active' => $job->is_active,
+                    'approval_status' => $job->approval_status,
                     'applications_count' => $job->applications_count,
                     'created_at' => $job->created_at,
                     'posted_date' => $job->created_at->diffForHumans(),

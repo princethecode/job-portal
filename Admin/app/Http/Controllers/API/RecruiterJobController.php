@@ -36,6 +36,11 @@ class RecruiterJobController extends Controller
             }
         }
 
+        // Add approval status filter
+        if ($request->has('approval_status')) {
+            $query->where('approval_status', $request->approval_status);
+        }
+
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -58,6 +63,7 @@ class RecruiterJobController extends Controller
                 'salary' => $job->salary,
                 'category' => $job->category ?? 'General', // Use string category or default
                 'is_active' => $job->is_active,
+                'approval_status' => $job->approval_status,
                 'expiry_date' => $job->expiry_date,
                 'company_name' => $job->company_name ?? $recruiter->company_name, // Fallback to recruiter's company
                 'applications_count' => $job->applications->count(),
@@ -137,11 +143,13 @@ class RecruiterJobController extends Controller
                 'company_name' => $recruiter->company_name,
                 'company_website' => $recruiter->company_website,
                 'company_description' => $recruiter->company_description,
+                'approval_status' => 'pending', // Set as pending by default for recruiter posts
+                'posting_date' => now(), // Set posting date to current time
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Job created successfully',
+                'message' => 'Job created successfully and submitted for admin approval',
                 'data' => [
                     'job' => [
                         'id' => $job->id,
@@ -155,6 +163,7 @@ class RecruiterJobController extends Controller
                         'category' => $category->name,
                         'expiry_date' => $job->expiry_date,
                         'is_active' => $job->is_active,
+                        'approval_status' => $job->approval_status,
                         'company_name' => $job->company_name,
                         'created_at' => $job->created_at,
                         'updated_at' => $job->updated_at,

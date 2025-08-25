@@ -27,7 +27,8 @@ class JobController extends Controller
     public function index(Request $request)
     {
         $query = Job::where('is_active', true)
-                    ->where('expiry_date', '>=', now());
+                    ->where('expiry_date', '>=', now())
+                    ->where('approval_status', 'approved'); // Only show approved jobs
 
         // Apply location filter
         if ($request->has('location') && !empty($request->location)) {
@@ -70,12 +71,14 @@ class JobController extends Controller
      */
     public function show($id)
     {
-        $job = Job::find($id);
+        $job = Job::where('id', $id)
+                  ->where('approval_status', 'approved')
+                  ->first();
 
         if (!$job) {
             return response()->json([
                 'success' => false,
-                'message' => 'Job not found'
+                'message' => 'Job not found or not available'
             ], 404);
         }
 
@@ -119,6 +122,11 @@ if ($request->hasFile('image')) {
     $imagePath = $request->file('image')->store('job_images', 'public');
     $data['image'] = $imagePath;
 }
+
+// Set admin-created jobs as approved by default
+$data['approval_status'] = 'approved';
+$data['approved_by'] = $request->user() ? $request->user()->id : null;
+$data['approved_at'] = now();
 
 $job = Job::create($data);
 

@@ -61,8 +61,38 @@
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="category" class="form-label">Category</label>
-                        <input type="text" class="form-control" id="category" name="category" value="{{ old('category') }}" required>
+                        <label for="category" class="form-label">
+                            Category
+                            <i class="fas fa-info-circle text-muted ms-1" 
+                               data-bs-toggle="tooltip" 
+                               title="Choose from predefined categories or create your own custom category"></i>
+                        </label>
+                        <select class="form-select @error('category') is-invalid @enderror" id="category_select" onchange="toggleCustomCategory()" required>
+                            <option value="">Select Category</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->name }}" {{ old('category') === $category->name ? 'selected' : '' }}>
+                                    {{ $category->name }}{{ $category->sort_order >= 999 ? ' (Custom)' : '' }}
+                                </option>
+                            @endforeach
+                            <option value="custom" {{ old('category_type') === 'custom' ? 'selected' : '' }}>
+                                ➕ Add Custom Category
+                            </option>
+                        </select>
+                        
+                        <!-- Hidden input for the actual category value -->
+                        <input type="hidden" name="category" id="category_value" value="{{ old('category') }}">
+                        
+                        <!-- Custom category input (hidden by default) -->
+                        <div id="custom_category_input" class="mt-2" style="display: none;">
+                            <input type="text" class="form-control" id="custom_category" 
+                                   placeholder="Enter custom category name" 
+                                   value="{{ old('category_type') === 'custom' ? old('category') : '' }}">
+                            <small class="text-muted">Enter a new category name (e.g., "Construction", "Healthcare", "Logistics")</small>
+                        </div>
+                        
+                        @error('category')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="posting_date" class="form-label">Posting Date</label>
@@ -104,3 +134,80 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function toggleCustomCategory() {
+    console.log('toggleCustomCategory called');
+    const select = document.getElementById('category_select');
+    const customInput = document.getElementById('custom_category_input');
+    const categoryValue = document.getElementById('category_value');
+    const customCategoryField = document.getElementById('custom_category');
+    
+    console.log('Elements found:', {
+        select: !!select,
+        customInput: !!customInput,
+        categoryValue: !!categoryValue,
+        customCategoryField: !!customCategoryField
+    });
+    
+    console.log('Selected value:', select ? select.value : 'select not found');
+    
+    if (select && select.value === 'custom') {
+        console.log('Showing custom input');
+        if (customInput) {
+            customInput.style.display = 'block';
+            console.log('Custom input display set to block');
+        }
+        if (categoryValue) categoryValue.value = '';
+        if (customCategoryField) {
+            customCategoryField.focus();
+            customCategoryField.oninput = function() {
+                if (categoryValue) categoryValue.value = this.value;
+            };
+        }
+    } else {
+        console.log('Hiding custom input');
+        if (customInput) {
+            customInput.style.display = 'none';
+            console.log('Custom input display set to none');
+        }
+        if (categoryValue && select) categoryValue.value = select.value;
+        if (customCategoryField) customCategoryField.value = '';
+    }
+}
+
+// Initialize category on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded - admin job create');
+    const select = document.getElementById('category_select');
+    const categoryValue = document.getElementById('category_value');
+    
+    console.log('Initial elements check:', {
+        select: !!select,
+        categoryValue: !!categoryValue
+    });
+    
+    // Initialize Bootstrap tooltips if available
+    if (typeof bootstrap !== 'undefined') {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+    
+    // Set initial value
+    if (select && select.value && select.value !== 'custom') {
+        if (categoryValue) categoryValue.value = select.value;
+    }
+    
+    // Check if we need to show custom input on page load (for validation errors)
+    if (select && select.value === 'custom') {
+        console.log('Custom selected on page load, calling toggle');
+        toggleCustomCategory();
+    }
+    
+    console.log('Initialization complete');
+});
+</script>
+@endpush

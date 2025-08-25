@@ -13,80 +13,105 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
+            // Standard job categories as requested
             [
-                'name' => 'Technology',
-                'slug' => 'technology',
-                'description' => 'Software development, IT, and tech-related jobs',
-                'icon' => 'fas fa-laptop-code',
+                'name' => 'Delivery',
+                'slug' => 'delivery',
+                'description' => 'Delivery and courier services',
+                'icon' => 'fas fa-truck',
                 'sort_order' => 1,
             ],
             [
-                'name' => 'Marketing',
-                'slug' => 'marketing',
-                'description' => 'Digital marketing, advertising, and promotion roles',
-                'icon' => 'fas fa-bullhorn',
+                'name' => 'Housekeeping',
+                'slug' => 'housekeeping',
+                'description' => 'Cleaning and housekeeping services',
+                'icon' => 'fas fa-broom',
                 'sort_order' => 2,
             ],
             [
-                'name' => 'Sales',
-                'slug' => 'sales',
-                'description' => 'Sales representatives, account managers, and business development',
-                'icon' => 'fas fa-chart-line',
+                'name' => 'Welder',
+                'slug' => 'welder',
+                'description' => 'Welding and metal fabrication jobs',
+                'icon' => 'fas fa-fire',
                 'sort_order' => 3,
             ],
             [
-                'name' => 'Design',
-                'slug' => 'design',
-                'description' => 'UI/UX design, graphic design, and creative roles',
-                'icon' => 'fas fa-palette',
+                'name' => 'Labor/Helper',
+                'slug' => 'labor-helper',
+                'description' => 'General labor and helper positions',
+                'icon' => 'fas fa-hand-rock',
                 'sort_order' => 4,
             ],
             [
-                'name' => 'Finance',
-                'slug' => 'finance',
-                'description' => 'Accounting, financial analysis, and banking jobs',
-                'icon' => 'fas fa-dollar-sign',
+                'name' => 'Carpenter',
+                'slug' => 'carpenter',
+                'description' => 'Carpentry and woodworking jobs',
+                'icon' => 'fas fa-hammer',
                 'sort_order' => 5,
             ],
             [
-                'name' => 'Healthcare',
-                'slug' => 'healthcare',
-                'description' => 'Medical, nursing, and healthcare administration',
-                'icon' => 'fas fa-heartbeat',
+                'name' => 'Driver',
+                'slug' => 'driver',
+                'description' => 'Driving and transportation jobs',
+                'icon' => 'fas fa-car',
                 'sort_order' => 6,
             ],
             [
-                'name' => 'Education',
-                'slug' => 'education',
-                'description' => 'Teaching, training, and educational roles',
-                'icon' => 'fas fa-graduation-cap',
+                'name' => 'Mason',
+                'slug' => 'mason',
+                'description' => 'Masonry and stonework jobs',
+                'icon' => 'fas fa-building',
                 'sort_order' => 7,
             ],
             [
-                'name' => 'Human Resources',
-                'slug' => 'human-resources',
-                'description' => 'HR management, recruitment, and people operations',
-                'icon' => 'fas fa-users',
+                'name' => 'Electrician',
+                'slug' => 'electrician',
+                'description' => 'Electrical work and maintenance',
+                'icon' => 'fas fa-bolt',
                 'sort_order' => 8,
             ],
             [
-                'name' => 'Customer Service',
-                'slug' => 'customer-service',
-                'description' => 'Customer support, service, and relations',
-                'icon' => 'fas fa-headset',
+                'name' => 'Designer',
+                'slug' => 'designer',
+                'description' => 'Design and creative positions',
+                'icon' => 'fas fa-palette',
                 'sort_order' => 9,
             ],
             [
-                'name' => 'Operations',
-                'slug' => 'operations',
-                'description' => 'Operations management, logistics, and supply chain',
-                'icon' => 'fas fa-cogs',
+                'name' => 'Scaffolding',
+                'slug' => 'scaffolding',
+                'description' => 'Scaffolding installation and maintenance',
+                'icon' => 'fas fa-project-diagram',
                 'sort_order' => 10,
+            ],
+            [
+                'name' => 'Technician',
+                'slug' => 'technician',
+                'description' => 'Technical support and maintenance jobs',
+                'icon' => 'fas fa-tools',
+                'sort_order' => 11,
+            ],
+            [
+                'name' => 'Warehouse',
+                'slug' => 'warehouse',
+                'description' => 'Warehouse and storage operations',
+                'icon' => 'fas fa-warehouse',
+                'sort_order' => 12,
+            ],
+            [
+                'name' => 'Wind blade',
+                'slug' => 'wind-blade',
+                'description' => 'Wind turbine blade manufacturing and maintenance',
+                'icon' => 'fas fa-wind',
+                'sort_order' => 13,
             ],
         ];
 
         foreach ($categories as $category) {
-            \App\Models\Category::create($category);
+            \App\Models\Category::updateOrCreate(
+                ['slug' => $category['slug']], // Match by slug
+                $category // Update or create with these values
+            );
         }
     }
 }

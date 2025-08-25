@@ -31,6 +31,14 @@
                     </select>
                 </div>
                 <div class="col-md-3">
+                    <select class="form-select" name="approval_status">
+                        <option value="">All Approval Status</option>
+                        <option value="pending" {{ request('approval_status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="approved" {{ request('approval_status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                        <option value="declined" {{ request('approval_status') === 'declined' ? 'selected' : '' }}>Declined</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <select class="form-select" name="job_type">
                         <option value="">All Types</option>
                         <option value="Full-time" {{ request('job_type') === 'Full-time' ? 'selected' : '' }}>Full-time</option>
@@ -57,9 +65,18 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-2">
                     <h5 class="card-title">{{ $job->title }}</h5>
-                    <span class="badge bg-{{ $job->is_active ? 'success' : 'secondary' }}">
-                        {{ $job->is_active ? 'Active' : 'Inactive' }}
-                    </span>
+                    <div>
+                        <span class="badge bg-{{ $job->is_active ? 'success' : 'secondary' }} me-1">
+                            {{ $job->is_active ? 'Active' : 'Inactive' }}
+                        </span>
+                        @if($job->approval_status === 'pending')
+                            <span class="badge bg-warning text-dark">Pending Approval</span>
+                        @elseif($job->approval_status === 'approved')
+                            <span class="badge bg-success">Approved</span>
+                        @elseif($job->approval_status === 'declined')
+                            <span class="badge bg-danger">Declined</span>
+                        @endif
+                    </div>
                 </div>
                 
                 <p class="card-text text-muted">

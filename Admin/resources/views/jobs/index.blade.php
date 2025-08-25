@@ -10,6 +10,9 @@
             <a href="{{ route('admin.jobs.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus me-1"></i> Add New Job
             </a>
+            <a href="{{ route('admin.jobs.pending-approval') }}" class="btn btn-warning ms-2">
+                <i class="fas fa-clock me-1"></i> Pending Approvals
+            </a>
             <a href="{{ route('admin.jobs.import') }}" class="btn btn-success ms-2">
                 <i class="fas fa-file-upload me-1"></i> Bulk Import
             </a>
@@ -47,6 +50,15 @@
                     <div class="col-md-3 mb-3">
                         <label for="category" class="form-label">Category</label>
                         <input type="text" class="form-control" id="category" name="category" value="{{ $filters['category'] ?? '' }}" placeholder="IT, Finance...">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="approval_status" class="form-label">Approval Status</label>
+                        <select class="form-select" id="approval_status" name="approval_status">
+                            <option value="">All Statuses</option>
+                            <option value="pending" {{ isset($filters['approval_status']) && $filters['approval_status'] == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="approved" {{ isset($filters['approval_status']) && $filters['approval_status'] == 'approved' ? 'selected' : '' }}>Approved</option>
+                            <option value="declined" {{ isset($filters['approval_status']) && $filters['approval_status'] == 'declined' ? 'selected' : '' }}>Declined</option>
+                        </select>
                     </div>
                 </div>
                 <div class="d-flex justify-content-end">
@@ -92,6 +104,7 @@
                                     <th>Location</th>
                                     <th>Job Type</th>
                                     <th>Category</th>
+                                    <th>Approval Status</th>
                                     <th>Posting Date</th>
                                     <th>Expiry Date</th>
                                     <th>Status</th>
@@ -110,7 +123,16 @@
                                         <td>{{ $job->location }}</td>
                                         <td>{{ $job->job_type }}</td>
                                         <td>{{ $job->category }}</td>
-                                        <td>{{ $job->posting_date->format('M d, Y') }}</td>
+                                        <td>
+                                            @if($job->approval_status === 'pending')
+                                                <span class="badge bg-warning text-dark">Pending</span>
+                                            @elseif($job->approval_status === 'approved')
+                                                <span class="badge bg-success">Approved</span>
+                                            @elseif($job->approval_status === 'declined')
+                                                <span class="badge bg-danger">Declined</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $job->posting_date ? $job->posting_date->format('M d, Y') : ($job->created_at ? $job->created_at->format('M d, Y') : 'N/A') }}</td>
                                         <td>{{ $job->expiry_date->format('M d, Y') }}</td>
                                         <td>
                                             @if($job->is_active)
@@ -170,7 +192,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="11" class="text-center">No jobs found</td>
+                                        <td colspan="12" class="text-center">No jobs found</td>
                                     </tr>
                                 @endforelse
                             </tbody>

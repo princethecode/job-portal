@@ -84,6 +84,11 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
         Route::post('/', [AdminJobController::class, 'store'])->name('admin.jobs.store');
         Route::delete('/bulk-delete', [AdminJobController::class, 'bulkDestroy'])->name('admin.jobs.bulk-destroy');
         
+        // Job Approval Routes
+        Route::get('/pending-approval', [AdminJobController::class, 'pendingApproval'])->name('admin.jobs.pending-approval');
+        Route::post('/{id}/approve', [AdminJobController::class, 'approve'])->name('admin.jobs.approve');
+        Route::post('/{id}/decline', [AdminJobController::class, 'decline'])->name('admin.jobs.decline');
+        
         // Bulk import routes
         Route::get('/import', [AdminJobController::class, 'import'])->name('admin.jobs.import');
         Route::get('/download-template', [AdminJobController::class, 'downloadTemplate'])->name('admin.jobs.downloadTemplate');

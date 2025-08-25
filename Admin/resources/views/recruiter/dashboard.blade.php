@@ -30,12 +30,30 @@
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Active Jobs
+                            Approved Jobs
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $activeJobs }}</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $approvedJobs }}</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Pending Approval
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $pendingApprovalJobs }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -59,25 +77,40 @@
             </div>
         </div>
     </div>
+</div>
 
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Pending Applications
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $pendingApplications }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-clock fa-2x text-gray-300"></i>
-                    </div>
+<!-- Job Approval Status Row -->
+@if($pendingApprovalJobs > 0 || $declinedJobs > 0)
+<div class="row mb-4">
+    @if($pendingApprovalJobs > 0)
+    <div class="col-md-6 mb-3">
+        <div class="alert alert-warning">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-clock fa-2x me-3"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">{{ $pendingApprovalJobs }} Job(s) Pending Approval</h5>
+                    <p class="mb-0">Your job postings are being reviewed by admin. You'll receive an email notification once they're approved.</p>
                 </div>
             </div>
         </div>
     </div>
+    @endif
+    
+    @if($declinedJobs > 0)
+    <div class="col-md-6 mb-3">
+        <div class="alert alert-danger">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-times-circle fa-2x me-3"></i>
+                <div>
+                    <h5 class="alert-heading mb-1">{{ $declinedJobs }} Job(s) Declined</h5>
+                    <p class="mb-0">Some of your job postings were declined. Please check your email for feedback and resubmit.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
+@endif
 
 <div class="row">
     <!-- Recent Applications -->

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Job;
+use App\Models\Category;
 use App\Models\Application;
 use Illuminate\Http\Request;
 use Exception;
@@ -21,7 +22,12 @@ class AdminJobController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Job::query();
+            $query = Job::with(['recruiter', 'approvedBy']);
+            
+            // Add approval status filter
+            if ($request->has('approval_status') && !empty($request->approval_status)) {
+                $query->where('approval_status', $request->approval_status);
+            }
             
             // Add filters if provided
             if ($request->has('search') && !empty($request->search)) {
@@ -65,7 +71,13 @@ class AdminJobController extends Controller
      */
     public function create()
     {
-        return view('jobs.create');
+        // Get all active categories, ordered by sort_order
+        $categories = Category::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+            
+        return view('jobs.create', compact('categories'));
     }
 
     /**
@@ -90,6 +102,24 @@ class AdminJobController extends Controller
         ]);
 
         try {
+            // Handle custom category creation
+            $categoryName = trim($request->category);
+            $isNewCategory = false;
+            if (!empty($categoryName)) {
+                // Check if category exists, if not create it
+                $existingCategory = Category::where('name', $categoryName)->first();
+                if (!$existingCategory) {
+                    Category::create([
+                        'name' => $categoryName,
+                        'slug' => \Illuminate\Support\Str::slug($categoryName),
+                        'description' => 'Custom category created by admin',
+                        'is_active' => true,
+                        'sort_order' => 999, // Put custom categories at the end
+                    ]);
+                    $isNewCategory = true;
+                }
+            }
+            
             $data = $request->all();
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('job_images', 'public');
@@ -97,8 +127,13 @@ class AdminJobController extends Controller
             }
             $job = Job::create($data);
 
+            $successMessage = 'Job created successfully';
+            if ($isNewCategory) {
+                $successMessage .= ". New category '{$categoryName}' has been created and will be available for future job postings.";
+            }
+
             return redirect()->route('admin.jobs.index')
-                ->with('success', 'Job created successfully');
+                ->with('success', $successMessage);
         } catch (Exception $e) {
             return back()->withInput()->withErrors([
                 'error' => 'Failed to create job. ' . $e->getMessage()
@@ -138,8 +173,15 @@ class AdminJobController extends Controller
         try {
             $job = Job::findOrFail($id);
             
+            // Get all active categories, ordered by sort_order
+            $categories = Category::where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get();
+            
             return view('jobs.edit', [
-                'job' => $job
+                'job' => $job,
+                'categories' => $categories
             ]);
         } catch (Exception $e) {
             return redirect()->route('admin.jobs.index')
@@ -170,11 +212,34 @@ class AdminJobController extends Controller
         ]);
 
         try {
+            // Handle custom category creation
+            $categoryName = trim($request->category);
+            $isNewCategory = false;
+            if (!empty($categoryName)) {
+                // Check if category exists, if not create it
+                $existingCategory = Category::where('name', $categoryName)->first();
+                if (!$existingCategory) {
+                    Category::create([
+                        'name' => $categoryName,
+                        'slug' => \Illuminate\Support\Str::slug($categoryName),
+                        'description' => 'Custom category created by admin',
+                        'is_active' => true,
+                        'sort_order' => 999, // Put custom categories at the end
+                    ]);
+                    $isNewCategory = true;
+                }
+            }
+            
             $job = Job::findOrFail($id);
             $job->update($request->all());
 
+            $successMessage = 'Job updated successfully';
+            if ($isNewCategory) {
+                $successMessage .= ". New category '{$categoryName}' has been created and will be available for future job postings.";
+            }
+
             return redirect()->route('admin.jobs.index')
-                ->with('success', 'Job updated successfully');
+                ->with('success', $successMessage);
         } catch (Exception $e) {
             return back()->withInput()->withErrors([
                 'error' => 'Failed to update job. ' . $e->getMessage()
@@ -192,6 +257,10 @@ class AdminJobController extends Controller
     {
         try {
             $job = Job::findOrFail($id);
+            
+            // Use authorization policy for consistency
+            $this->authorize('delete', $job);
+            
             $job->delete();
 
             return redirect()->route('admin.jobs.index')
@@ -358,6 +427,110 @@ class AdminJobController extends Controller
         } catch (Exception $e) {
             return redirect()->route('admin.jobs.import')
                 ->with('error', 'Failed to import jobs: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Approve a job posting
+     *
+     * @param Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function approve(Request $request, $id)
+    {
+        try {
+            $job = Job::findOrFail($id);
+            
+            if (!$job->isPending()) {
+                return redirect()->back()
+                    ->with('error', 'Job is not pending approval');
+            }
+
+            $job->update([
+                'approval_status' => 'approved',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+                'decline_reason' => null
+            ]);
+
+            return redirect()->back()
+                ->with('success', 'Job approved successfully');
+
+        } catch (Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to approve job: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Decline a job posting
+     *
+     * @param Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function decline(Request $request, $id)
+    {
+        $request->validate([
+            'decline_reason' => 'required|string|max:1000'
+        ]);
+
+        try {
+            $job = Job::findOrFail($id);
+            
+            if (!$job->isPending()) {
+                return redirect()->back()
+                    ->with('error', 'Job is not pending approval');
+            }
+
+            $job->update([
+                'approval_status' => 'declined',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+                'decline_reason' => $request->decline_reason
+            ]);
+
+            return redirect()->back()
+                ->with('success', 'Job declined successfully');
+
+        } catch (Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to decline job: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Show pending jobs for approval
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
+    public function pendingApproval(Request $request)
+    {
+        try {
+            $query = Job::with(['recruiter'])->pending();
+            
+            // Add search filter if provided
+            if ($request->has('search') && !empty($request->search)) {
+                $query->where(function($q) use ($request) {
+                    $q->where('title', 'like', '%' . $request->search . '%')
+                      ->orWhere('company_name', 'like', '%' . $request->search . '%')
+                      ->orWhere('description', 'like', '%' . $request->search . '%');
+                });
+            }
+            
+            $jobs = $query->orderBy('created_at', 'desc')->paginate(10);
+
+            return view('jobs.pending-approval', [
+                'jobs' => $jobs,
+                'filters' => $request->all()
+            ]);
+        } catch (Exception $e) {
+            return view('jobs.pending-approval', [
+                'error' => 'Unable to fetch pending jobs. ' . $e->getMessage(),
+                'filters' => $request->all()
+            ]);
         }
     }
 }

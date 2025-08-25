@@ -57,6 +57,15 @@ Route::put('/jobs/{id}', [JobController::class, 'update']);
 Route::delete('/jobs/{id}', [JobController::class, 'destroy']);
 Route::post('/jobs/{id}/share', [JobController::class, 'incrementShareCount']);
 
+// Admin Job Approval Routes (require admin authentication)
+Route::middleware('auth:sanctum')->prefix('admin/jobs')->group(function () {
+    Route::get('/pending', [App\Http\Controllers\API\AdminJobApprovalController::class, 'pendingJobs']);
+    Route::get('/all-with-status', [App\Http\Controllers\API\AdminJobApprovalController::class, 'allJobsWithStatus']);
+    Route::post('/{id}/approve', [App\Http\Controllers\API\AdminJobApprovalController::class, 'approveJob']);
+    Route::post('/{id}/decline', [App\Http\Controllers\API\AdminJobApprovalController::class, 'declineJob']);
+    Route::get('/approval-stats', [App\Http\Controllers\API\AdminJobApprovalController::class, 'getApprovalStats']);
+});
+
 // Public Featured Jobs
 Route::get('/featured-jobs', [FeaturedJobController::class, 'index']);
 Route::get('/featured-jobs/{id}', [FeaturedJobController::class, 'show']);
