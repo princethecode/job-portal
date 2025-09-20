@@ -7,6 +7,7 @@ use App\Models\Job;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -97,10 +98,12 @@ class RecruiterJobController extends Controller
             'requirements' => 'required|string',
             'location' => 'required|string|max:255',
             'job_type' => 'required|in:Full-time,Part-time,Contract,Freelance,Internship',
-            'salary' => 'required|string|max:255',
+            'salary' => 'sometimes|nullable|string|max:255',
             'experience_level' => 'required|in:Entry,Intermediate,Senior,Executive',
             'category' => 'required|string|max:255',
             'expiry_date' => 'required|date|after:today',
+            'benefits' => 'sometimes|nullable|string',
+            'skills_required' => 'sometimes|nullable|string',
             'is_active' => 'boolean',
         ]);
 
@@ -115,7 +118,7 @@ class RecruiterJobController extends Controller
         try {
             $recruiter = $request->user();
 
-            // Handle category
+            // Handle category - create category record if it doesn't exist, but store as string in jobs table
             $category = Category::where('name', $request->category)->first();
             if (!$category) {
                 $category = Category::create([
@@ -127,25 +130,34 @@ class RecruiterJobController extends Controller
                 ]);
             }
 
-            $job = Job::create([
+            // Prepare job data with required fields
+            $jobData = [
                 'recruiter_id' => $recruiter->id,
                 'title' => $request->title,
                 'description' => $request->description,
                 'requirements' => $request->requirements,
                 'location' => $request->location,
                 'job_type' => $request->job_type,
-                'salary' => $request->salary,
-                'experience_level' => $request->experience_level,
-                'category' => $request->category, // String category for backward compatibility
-                'category_id' => $category->id,
+                'salary' => $request->salary ?? 'Negotiable',
+                'experience_required' => $request->experience_level,
+                'category' => $request->category, // Store category as string
+                'company' => $recruiter->company_name ?? 'Company', // Required field from original schema
                 'expiry_date' => $request->expiry_date,
+                'benefits' => $request->benefits,
+                'skills_required' => $request->skills_required ? explode(',', $request->skills_required) : null,
                 'is_active' => $request->is_active ?? true,
-                'company_name' => $recruiter->company_name,
-                'company_website' => $recruiter->company_website,
-                'company_description' => $recruiter->company_description,
                 'approval_status' => 'pending', // Set as pending by default for recruiter posts
                 'posting_date' => now(), // Set posting date to current time
-            ]);
+            ];
+
+            // Add company fields only if they exist (after migration)
+            if (Schema::hasColumn('jobs', 'company_name')) {
+                $jobData['company_name'] = $recruiter->company_name;
+                $jobData['company_website'] = $recruiter->company_website;
+                $jobData['company_description'] = $recruiter->company_description;
+            }
+
+            $job = Job::create($jobData);
 
             return response()->json([
                 'success' => true,
@@ -159,12 +171,14 @@ class RecruiterJobController extends Controller
                         'location' => $job->location,
                         'job_type' => $job->job_type,
                         'salary' => $job->salary,
-                        'experience_level' => $job->experience_level,
-                        'category' => $category->name,
+                        'experience_level' => $job->experience_required,
+                        'category' => $job->category,
                         'expiry_date' => $job->expiry_date,
+                        'benefits' => $job->benefits,
+                        'skills_required' => is_array($job->skills_required) ? implode(', ', $job->skills_required) : $job->skills_required,
                         'is_active' => $job->is_active,
                         'approval_status' => $job->approval_status,
-                        'company_name' => $job->company_name,
+                        'company_name' => $job->company_name ?? $job->company,
                         'created_at' => $job->created_at,
                         'updated_at' => $job->updated_at,
                     ]
@@ -266,8 +280,7 @@ class RecruiterJobController extends Controller
                         'sort_order' => 999,
                     ]);
                 }
-                $updateData['category'] = $request->category; // String for backward compatibility
-                $updateData['category_id'] = $category->id; // Foreign key
+                $updateData['category'] = $request->category; // Store category as string
             }
 
             $job->update($updateData);

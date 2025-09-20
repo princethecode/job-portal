@@ -15,14 +15,17 @@ import com.example.jobportal.models.User;
 import com.example.jobportal.network.ApiResponse;
 import java.util.List;
 import java.util.Map;
+import okhttp3.MultipartBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
@@ -34,6 +37,10 @@ public interface RecruiterApiService {
     
     @POST("recruiter/register")
     Call<ApiResponse<Recruiter>> recruiterRegister(@Body RecruiterRegisterRequest registerRequest);
+    
+    @Multipart
+    @POST("recruiter/company-license")
+    Call<ApiResponse<Map<String, Object>>> uploadCompanyLicense(@Part MultipartBody.Part license);
     
     // Profile Management
     @GET("recruiter/profile")
@@ -58,7 +65,7 @@ public interface RecruiterApiService {
     Call<JobListResponse> getMyJobs();
     
     @POST("recruiter/jobs")
-    Call<ApiResponse<Job>> createJob(@Body Job job);
+    Call<ApiResponse<Job>> createJob(@Body Map<String, Object> jobData);
     
     @PUT("recruiter/jobs/{id}")
     Call<ApiResponse<Job>> updateJob(@Path("id") int jobId, @Body Job job);

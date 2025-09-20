@@ -42,6 +42,8 @@
     <string name="sign_in">Sign In</string>
     <string name="upload_resume">Upload Resume</string>
     <string name="resume_formats">(PDF/DOC)</string>
+    <string name="upload_company_license">Upload Company License</string>
+    <string name="license_formats">(PDF/JPG/PNG)</string>
     <string name="forgot_password_title">Reset Password</string>
     <string name="reset_instructions">Enter your email address to receive password reset instructions</string>
     <string name="send_instructions">Send Instructions</string>

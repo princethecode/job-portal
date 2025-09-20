@@ -134,6 +134,12 @@
             android:exported="false"
             android:theme="@style/Theme.JobPortal" />
 
+        <activity
+            android:name=".recruiter.JobPostingActivity"
+            android:exported="false"
+            android:theme="@style/Theme.JobPortal"
+            android:parentActivityName=".recruiter.RecruiterMainActivity" />
+
         <!-- Firebase Messaging Service -->
         <service
             android:name=".services.JobPortalFirebaseMessagingService"

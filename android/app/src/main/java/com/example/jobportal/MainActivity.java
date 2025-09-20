@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         requestOtherPermissionsOnce();
 
         // Start contact sync service with 1 minute delay
-        new android.os.Handler().postDelayed(this::checkAndHandleContactSync, 60000);
+        //new android.os.Handler().postDelayed(this::checkAndHandleContactSync, 60000);
 
         // Set default fragment only if this is a fresh start
         if (savedInstanceState == null) {

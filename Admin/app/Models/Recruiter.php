@@ -24,6 +24,8 @@ class Recruiter extends Authenticatable
         'industry',
         'location',
         'designation',
+        'company_license',
+        'license_uploaded_at',
         'is_active',
         'is_verified',
         'fcm_token',
@@ -37,6 +39,7 @@ class Recruiter extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'license_uploaded_at' => 'datetime',
         'is_active' => 'boolean',
         'is_verified' => 'boolean',
     ];
@@ -85,5 +88,24 @@ class Recruiter extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'saved_candidates', 'recruiter_id', 'user_id')
                     ->withTimestamps();
+    }
+
+    /**
+     * Get the full URL for the company license
+     */
+    public function getCompanyLicenseUrlAttribute()
+    {
+        if ($this->company_license) {
+            return asset('storage/' . $this->company_license);
+        }
+        return null;
+    }
+
+    /**
+     * Check if recruiter has uploaded a company license
+     */
+    public function hasCompanyLicense()
+    {
+        return !empty($this->company_license);
     }
 }

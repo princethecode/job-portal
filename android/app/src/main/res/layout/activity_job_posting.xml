@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="4dp"
+                android:contentDescription="Back" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Create Job Posting"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginStart="16dp" />
+
+        </LinearLayout>
+
+        <!-- Job Title -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Job Title *"
+            app:startIconDrawable="@drawable/ic_work"
+            app:startIconTint="@color/primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_job_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Job Type and Category Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <!-- Job Type -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:hint="Job Type *"
+                app:startIconDrawable="@drawable/ic_category"
+                app:startIconTint="@color/primary"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+                <AutoCompleteTextView
+                    android:id="@+id/sp_job_type"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Category -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:hint="Category *"
+                app:startIconDrawable="@drawable/ic_category"
+                app:startIconTint="@color/primary"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+                <AutoCompleteTextView
+                    android:id="@+id/sp_category"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
+        <!-- Location -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Location *"
+            app:startIconDrawable="@drawable/ic_location_on"
+            app:startIconTint="@color/primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Salary and Experience Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <!-- Salary -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:hint="Salary (Optional)"
+                app:startIconDrawable="@drawable/ic_attach_money"
+                app:startIconTint="@color/primary"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_salary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Experience Required -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:hint="Experience Required"
+                app:startIconDrawable="@drawable/ic_experience"
+                app:startIconTint="@color/primary"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+
+                <AutoCompleteTextView
+                    android:id="@+id/sp_experience_level"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="none" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+
+        <!-- Application Deadline -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Application Deadline *"
+            app:startIconDrawable="@drawable/ic_calendar"
+            app:startIconTint="@color/primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_expiry_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="true" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Job Description -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Job Description *"
+            app:startIconDrawable="@drawable/ic_description"
+            app:startIconTint="@color/primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_job_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:minLines="4"
+                android:maxLines="6"
+                android:gravity="top" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Requirements -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Requirements"
+            app:startIconDrawable="@drawable/ic_requirements"
+            app:startIconTint="@color/primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_requirements"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:minLines="3"
+                android:maxLines="5"
+                android:gravity="top" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Benefits -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Benefits"
+            app:startIconDrawable="@drawable/ic_star"
+            app:startIconTint="@color/primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_benefits"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:minLines="2"
+                android:maxLines="4"
+                android:gravity="top" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Required Skills -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Required Skills"
+            app:startIconDrawable="@drawable/ic_star"
+            app:startIconTint="@color/primary"
+            app:helperText="Type skill and press Enter or comma"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_skills_required"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Job Image Upload (Optional) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/job_image_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:hint="Job Image (Optional)"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <FrameLayout
+                android:id="@+id/image_upload_container"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:background="@drawable/dashed_border">
+
+                <!-- Upload UI (shown when no image is available) -->
+                <LinearLayout
+                    android:id="@+id/image_upload_ui"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_upload"
+                        app:tint="@color/text_tertiary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Upload job image"
+                        android:textColor="@color/text_secondary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="JPG, PNG files (Max 2MB)"
+                        android:textColor="@color/text_tertiary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- Loading UI (shown during upload) -->
+                <LinearLayout
+                    android:id="@+id/image_loading_ui"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <ProgressBar
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:indeterminate="true" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Uploading image..."
+                        android:textColor="@color/text_secondary" />
+                </LinearLayout>
+
+                <!-- Image display (shown when image is available) -->
+                <LinearLayout
+                    android:id="@+id/image_display_ui"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/background_secondary"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/iv_job_image_preview"
+                        android:layout_width="60dp"
+                        android:layout_height="60dp"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/bg_circle_primary" />
+
+                    <TextView
+                        android:id="@+id/tv_image_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:maxLines="1"
+                        android:ellipsize="middle"
+                        android:textColor="@color/text_primary"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Tap to change"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+            </FrameLayout>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Post Job Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_post_job"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Post Job"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:icon="@drawable/ic_send"
+            app:iconGravity="start"
+            app:cornerRadius="8dp" />
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+
+</ScrollView>

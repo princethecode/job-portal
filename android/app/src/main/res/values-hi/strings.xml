@@ -42,6 +42,8 @@
     <string name="sign_in">साइन इन</string>
     <string name="upload_resume">रिज्यूमे अपलोड करें</string>
     <string name="resume_formats">(PDF/DOC)</string>
+    <string name="upload_company_license">कंपनी लाइसेंस अपलोड करें</string>
+    <string name="license_formats">(PDF/JPG/PNG)</string>
     <string name="forgot_password_title">पासवर्ड रीसेट करें</string>
     <string name="reset_instructions">पासवर्ड रीसेट निर्देश प्राप्त करने के लिए अपना ईमेल पता दर्ज करें</string>
     <string name="send_instructions">निर्देश भेजें</string>

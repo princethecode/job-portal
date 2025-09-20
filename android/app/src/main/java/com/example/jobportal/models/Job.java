@@ -92,6 +92,26 @@ public class Job {
     @SerializedName("company_name")
     private String companyName;
 
+    @ColumnInfo(name = "requirements")
+    @SerializedName("requirements")
+    private String requirements;
+
+    @ColumnInfo(name = "benefits")
+    @SerializedName("benefits")
+    private String benefits;
+
+    @ColumnInfo(name = "experience_level")
+    @SerializedName("experience_level")
+    private String experienceLevel;
+
+    @ColumnInfo(name = "skills_required")
+    @SerializedName("skills_required")
+    private String skillsRequired;
+
+    @ColumnInfo(name = "approval_status")
+    @SerializedName("approval_status")
+    private String approvalStatus;
+
     
     // Default constructor required by Room
     public Job() {
@@ -298,7 +318,46 @@ public class Job {
     public void setPostedDate(String postedDate) {
         this.postedDate = postedDate;
     }
-    
+
+    public String getRequirements() {
+        return requirements != null ? requirements : "";
+    }
+
+    public void setRequirements(String requirements) {
+        this.requirements = requirements;
+    }
+
+    public String getBenefits() {
+        return benefits != null ? benefits : "";
+    }
+
+    public void setBenefits(String benefits) {
+        this.benefits = benefits;
+    }
+
+    public String getExperienceLevel() {
+        return experienceLevel != null ? experienceLevel : "";
+    }
+
+    public void setExperienceLevel(String experienceLevel) {
+        this.experienceLevel = experienceLevel;
+    }
+
+    public String getSkillsRequired() {
+        return skillsRequired != null ? skillsRequired : "";
+    }
+
+    public void setSkillsRequired(String skillsRequired) {
+        this.skillsRequired = skillsRequired;
+    }
+
+    public String getApprovalStatus() {
+        return approvalStatus != null ? approvalStatus : "pending";
+    }
+
+    public void setApprovalStatus(String approvalStatus) {
+        this.approvalStatus = approvalStatus;
+    }
 
     public String toString() {
         return "Job{" +

@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('jobs', function (Blueprint $table) {
-            // This migration was intended to add category_id but the system uses string categories
-            // No changes needed as the system works with string categories
+            $table->string('company_name')->nullable()->after('company');
+            $table->string('company_website')->nullable()->after('company_name');
+            $table->text('company_description')->nullable()->after('company_website');
         });
     }
 
@@ -23,7 +24,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('jobs', function (Blueprint $table) {
-            // No changes to revert
+            $table->dropColumn([
+                'company_name',
+                'company_website',
+                'company_description'
+            ]);
         });
     }
 };

@@ -211,6 +211,24 @@
                                 <br>{{ $recruiter->company_description }}
                             </div>
                             @endif
+                            @if($recruiter->company_license)
+                            <div class="mb-3">
+                                <strong>Company License:</strong>
+                                <br>
+                                <a href="{{ asset('storage/' . $recruiter->company_license) }}" 
+                                   target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-file-alt me-1"></i>View License
+                                </a>
+                                @if($recruiter->license_uploaded_at)
+                                <br><small class="text-muted">Uploaded: {{ $recruiter->license_uploaded_at->format('M d, Y H:i A') }}</small>
+                                @endif
+                            </div>
+                            @else
+                            <div class="mb-3">
+                                <strong>Company License:</strong>
+                                <br><span class="text-muted">Not uploaded</span>
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>

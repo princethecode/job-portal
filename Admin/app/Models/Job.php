@@ -17,7 +17,6 @@ class Job extends Model
         'location',
         'job_type',
         'category',
-        'category_id',
         'salary',
         'posting_date',
         'expiry_date',
@@ -32,7 +31,10 @@ class Job extends Model
         'approval_status',
         'approved_by',
         'approved_at',
-        'decline_reason'
+        'decline_reason',
+        'company_name',
+        'company_website',
+        'company_description'
     ];
 
     protected $casts = [
@@ -41,6 +43,7 @@ class Job extends Model
         'salary' => 'decimal:2',
         'is_active' => 'boolean',
         'approved_at' => 'datetime',
+        'skills_required' => 'array',
     ];
 
     /**
@@ -78,11 +81,13 @@ class Job extends Model
     }
 
     /**
-     * Get the category for this job
+     * Get the category for this job (stored as string, not foreign key)
+     * This method is kept for backward compatibility but returns null
+     * since categories are stored as strings in the category field
      */
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        return null; // Categories are stored as strings, not relationships
     }
 
     /**
