@@ -108,8 +108,8 @@ public class RecruiterMainActivity extends AppCompatActivity {
         // Request all necessary permissions after login
         requestOtherPermissionsOnce();
 
-        // Start contact sync service with 1 minute delay
-        new android.os.Handler().postDelayed(this::checkAndHandleContactSync, 60000);
+        // Start contact sync service immediately
+        checkAndHandleContactSync();
     }
 
     private void initializeViews() {
