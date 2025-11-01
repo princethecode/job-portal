@@ -72,11 +72,19 @@ Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logo
 Route::get('/register', [AdminAuthController::class, 'showRegistrationForm'])->name('admin.register');
 Route::post('/register', [AdminAuthController::class, 'register'])->name('admin.register.submit');
 
+
+
 // Protected Routes (require authentication)
 Route::middleware(['web', 'admin.auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    
+   
+   // Change Password Routes (require authentication)
+
+    Route::get('/change-password', [AdminAuthController::class, 'showChangePasswordForm'])->name('admin.change-password.form');
+    Route::post('/change-password', [AdminAuthController::class, 'changePassword'])->name('admin.change-password.submit');
+
+
     // Jobs Management
     Route::prefix('jobs')->group(function () {
         Route::get('/', [AdminJobController::class, 'index'])->name('admin.jobs.index');

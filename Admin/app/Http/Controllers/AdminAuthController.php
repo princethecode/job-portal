@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use App\Models\User; 
 class AdminAuthController extends Controller
 {
@@ -111,6 +113,59 @@ class AdminAuthController extends Controller
             Log::error('Registration error: ' . $e->getMessage());
             return back()->withErrors([
                 'email' => 'Unable to register. Error: ' . $e->getMessage(),
+            ])->withInput();
+        }
+    }
+
+    /**
+     * Show the change password form
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showChangePasswordForm()
+    {
+        return view('auth.change-password');
+    }
+
+    /**
+     * Handle change password request
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function changePassword(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'current_password' => 'required|string',
+                'new_password' => 'required|string|min:8|confirmed',
+            ]);
+
+            if ($validator->fails()) {
+                return back()->withErrors($validator)->withInput();
+            }
+
+            $user = Auth::user();
+
+            // Check current password
+            if (!Hash::check($request->current_password, $user->password)) {
+                return back()->withErrors([
+                    'current_password' => 'Current password is incorrect'
+                ])->withInput();
+            }
+
+            // Update password
+            $user->password = Hash::make($request->new_password);
+            $user->save();
+
+            Log::info('Password changed successfully for user: ' . $user->email);
+
+            return redirect()->route('admin.change-password.form')->with('success', 'Password changed successfully!');
+
+        } catch (\Exception $e) {
+            Log::error('Change password error: ' . $e->getMessage());
+            return back()->withErrors([
+                'error' => 'Unable to change password. Error: ' . $e->getMessage(),
             ])->withInput();
         }
     }

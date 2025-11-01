@@ -50,6 +50,12 @@ public class Recruiter {
     
     @SerializedName("updated_at")
     private String updatedAt;
+    
+    @SerializedName("contact")
+    private String contact;
+
+    @SerializedName("last_contact_sync")
+    private String lastContactSync;
 
     // Constructor
     public Recruiter() {}
@@ -109,4 +115,10 @@ public class Recruiter {
 
     public String getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
+    
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
+
+    public String getLastContactSync() { return lastContactSync; }
+    public void setLastContactSync(String lastContactSync) { this.lastContactSync = lastContactSync; }
 }

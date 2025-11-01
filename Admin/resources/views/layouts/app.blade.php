@@ -111,6 +111,12 @@
                             <i class="fas fa-mobile-alt me-2"></i> App Version
                         </a>
                     </li>
+                    <hr class="my-2">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.change-password.*') ? 'active' : '' }}" href="{{ route('admin.change-password.form') }}">
+                            <i class="fas fa-key me-2"></i> Change Password
+                        </a>
+                    </li>
                 </ul>
             </div>
             @endauth
@@ -132,6 +138,12 @@
                                         <i class="fas fa-user-circle me-1"></i> {{ Auth::user()->name }}
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('admin.change-password.form') }}">
+                                                <i class="fas fa-key me-1"></i> Change Password
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
                                         <li>
                                             <a class="dropdown-item" href="{{ route('admin.logout') }}" 
                                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

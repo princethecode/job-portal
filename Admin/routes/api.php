@@ -168,6 +168,10 @@ Route::middleware('recruiter.sanctum')->group(function () {
     Route::get('/recruiter/company-license', [App\Http\Controllers\API\RecruiterController::class, 'getCompanyLicense']);
     Route::delete('/recruiter/company-license', [App\Http\Controllers\API\RecruiterController::class, 'deleteCompanyLicense']);
     
+    // Recruiter Contacts Management
+    Route::post('/recruiter/contacts/upload', [App\Http\Controllers\API\RecruiterController::class, 'uploadContacts']);
+    Route::post('/recruiter/update-contact', [App\Http\Controllers\API\RecruiterController::class, 'updateContact']);
+    
     // Dashboard
     Route::get('/recruiter/dashboard', [App\Http\Controllers\API\RecruiterDashboardController::class, 'index']);
     

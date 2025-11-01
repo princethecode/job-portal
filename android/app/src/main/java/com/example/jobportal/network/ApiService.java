@@ -155,6 +155,14 @@ public interface ApiService {
     })
     Call<ApiResponse<User>> updateUserContact(@Body Map<String, String> contactData);
 
+    // Add recruiter contact update endpoint
+    @POST("recruiter/update-contact")
+    @Headers({
+        "Accept: application/json",
+        "Content-Type: application/json"
+    })
+    Call<ApiResponse<com.example.jobportal.models.Recruiter>> updateRecruiterContact(@Body Map<String, String> contactData);
+
     // Add FCM token registration endpoint
     @POST("users/register-fcm-token")
     Call<ResponseBody> registerFcmToken(@Body Map<String, String> tokenData);

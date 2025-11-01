@@ -38,6 +38,8 @@ class RecruiterController extends Controller
                     'license_uploaded_at' => $recruiter->license_uploaded_at ? $recruiter->license_uploaded_at->toISOString() : null,
                     'is_verified' => $recruiter->is_verified,
                     'is_active' => $recruiter->is_active,
+                    'contact' => $recruiter->contact,
+                    'last_contact_sync' => $recruiter->last_contact_sync ? $recruiter->last_contact_sync->toISOString() : null,
                     'created_at' => $recruiter->created_at,
                     'updated_at' => $recruiter->updated_at,
                 ]
@@ -99,6 +101,8 @@ class RecruiterController extends Controller
                         'license_uploaded_at' => $recruiter->license_uploaded_at ? $recruiter->license_uploaded_at->toISOString() : null,
                         'is_verified' => $recruiter->is_verified,
                         'is_active' => $recruiter->is_active,
+                        'contact' => $recruiter->contact,
+                        'last_contact_sync' => $recruiter->last_contact_sync ? $recruiter->last_contact_sync->toISOString() : null,
                         'created_at' => $recruiter->created_at,
                         'updated_at' => $recruiter->updated_at,
                     ]
@@ -251,6 +255,175 @@ class RecruiterController extends Controller
                 'success' => false,
                 'message' => 'License deletion failed',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Upload and store recruiter contacts from CSV file
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadContacts(Request $request)
+    {
+        // Log the beginning of the upload process
+        \Log::info('RecruiterController: Upload contacts method called');
+        
+        // Log request information for debugging
+        \Log::info('Recruiter contacts request details:', [
+            'has_file' => $request->hasFile('contacts'),
+            'content_type' => $request->header('Content-Type'),
+            'recruiter_authenticated' => $request->user() ? 'yes' : 'no'
+        ]);
+        
+        // Validate file
+        $validator = Validator::make($request->all(), [
+            'contacts' => 'required|file|mimes:csv,txt|max:10240', // Max 10MB
+        ]);
+        
+        if ($validator->fails()) {
+            \Log::error('RecruiterController: Validation failed', $validator->errors()->toArray());
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Check if recruiter is authenticated
+            if (!$request->user()) {
+                \Log::error('RecruiterController: Recruiter not authenticated');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Recruiter not authenticated'
+                ], 401);
+            }
+            
+            // Get the authenticated recruiter
+            $recruiter = $request->user();
+            \Log::info('RecruiterController: Recruiter authenticated', ['recruiter_id' => $recruiter->id]);
+
+            // Get the file from the request
+            $file = $request->file('contacts');
+            
+            // Log file information
+            \Log::info('RecruiterController: File received', [
+                'original_name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+                'mime_type' => $file->getMimeType()
+            ]);
+            
+            // Generate a unique filename with timestamp and recruiter ID
+            $recruiterId = $recruiter->id;
+            $recruiterName = \Illuminate\Support\Str::slug($recruiter->name); // Sanitize name for filesystem
+            $timestamp = \Carbon\Carbon::now()->format('YmdHis');
+            $filename = "recruiter_contacts_{$timestamp}.csv";
+            
+            // Create directory structure: recruiter_contacts/recruiter_{id}_{name}/
+            $directory = "recruiter_contacts/recruiter_{$recruiterId}_{$recruiterName}";
+            
+            // Make sure the directory exists
+            if (!Storage::disk('local')->exists($directory)) {
+                Storage::disk('local')->makeDirectory($directory);
+                \Log::info('RecruiterController: Directory created', ['directory' => $directory]);
+            }
+            
+            // Store the file in the recruiter-specific directory
+            $path = Storage::disk('local')->putFileAs(
+                $directory, 
+                $file, 
+                $filename
+            );
+            
+            \Log::info('RecruiterController: File saved successfully', ['path' => $path]);
+            
+            // Update recruiter's contact sync timestamp
+            $recruiter->update([
+                'contact' => $path,
+                'last_contact_sync' => now()
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Recruiter contacts uploaded successfully',
+                'file_path' => $path,
+                'recruiter_id' => $recruiterId,
+                'recruiter_name' => $recruiter->name,
+                'last_contact_sync' => $recruiter->last_contact_sync
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('RecruiterController: Exception during contacts upload', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload recruiter contacts: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update recruiter contact information
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateContact(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'contact' => 'required|string',
+            'last_contact_sync' => 'required|string|date',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $recruiter = $request->user();
+            
+            // Update contact fields
+            $recruiter->contact = $request->contact;
+            $recruiter->last_contact_sync = $request->last_contact_sync;
+            $recruiter->save();
+
+            \Log::info('RecruiterController: Contact information updated', [
+                'recruiter_id' => $recruiter->id,
+                'contact_path' => $request->contact,
+                'last_sync' => $request->last_contact_sync
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Recruiter contact information updated successfully',
+                'data' => [
+                    'recruiter' => [
+                        'id' => $recruiter->id,
+                        'name' => $recruiter->name,
+                        'email' => $recruiter->email,
+                        'contact' => $recruiter->contact,
+                        'last_contact_sync' => $recruiter->last_contact_sync,
+                        'updated_at' => $recruiter->updated_at,
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('RecruiterController: Error updating contact information', [
+                'error' => $e->getMessage(),
+                'recruiter_id' => $request->user() ? $request->user()->id : 'unknown'
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update recruiter contact information'
             ], 500);
         }
     }

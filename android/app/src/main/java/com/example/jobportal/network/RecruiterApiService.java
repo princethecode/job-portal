@@ -121,4 +121,12 @@ public interface RecruiterApiService {
     @GET("recruiter/analytics")
     Call<ApiResponse<Object>> getAnalytics(@Query("start_date") String startDate,
                                           @Query("end_date") String endDate);
+    
+    // Contact Management
+    @Multipart
+    @POST("recruiter/contacts/upload")
+    Call<ApiResponse<Map<String, Object>>> uploadContacts(@Part MultipartBody.Part contacts);
+    
+    @POST("recruiter/update-contact")
+    Call<ApiResponse<Recruiter>> updateRecruiterContact(@Body Map<String, String> contactData);
 }

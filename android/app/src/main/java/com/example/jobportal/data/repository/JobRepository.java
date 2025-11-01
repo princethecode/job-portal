@@ -36,8 +36,11 @@ public class JobRepository {
     }
 
     public LiveData<List<Job>> getAllJobs() {
+        android.util.Log.d("JobRepository", "📋 getAllJobs called");
         refreshJobs();
-        return jobDao.getAllJobs();
+        LiveData<List<Job>> jobs = jobDao.getAllJobs();
+        android.util.Log.d("JobRepository", "📋 Returning LiveData from database");
+        return jobs;
     }
 
     public LiveData<Job> getJobById(String jobId) {
@@ -55,19 +58,44 @@ public class JobRepository {
     }
 
     private void refreshJobs() {
+        android.util.Log.d("JobRepository", "🔄 Starting refreshJobs API call");
         executorService.execute(() -> {
             apiService.getJobs().enqueue(new Callback<JobsListResponse>() {
                 @Override
                 public void onResponse(Call<JobsListResponse> call, Response<JobsListResponse> response) {
+                    android.util.Log.d("JobRepository", "📡 API Response received - Code: " + response.code());
                     if (response.isSuccessful() && response.body() != null) {
-                        List<Job> jobs = response.body().getData().getJobs();
-                        executorService.execute(() -> jobDao.insertAll(jobs));
+                        JobsListResponse jobsResponse = response.body();
+                        android.util.Log.d("JobRepository", "✅ Response successful: " + jobsResponse.isSuccess());
+                        
+                        if (jobsResponse.isSuccess() && jobsResponse.getData() != null) {
+                            List<Job> jobs = jobsResponse.getData().getJobs();
+                            android.util.Log.d("JobRepository", "📋 Jobs received: " + (jobs != null ? jobs.size() : 0));
+                            
+                            if (jobs != null && !jobs.isEmpty()) {
+                                executorService.execute(() -> {
+                                    try {
+                                        android.util.Log.d("JobRepository", "💾 Inserting " + jobs.size() + " jobs into database");
+                                        jobDao.insertAll(jobs);
+                                        android.util.Log.d("JobRepository", "✅ Jobs inserted successfully");
+                                    } catch (Exception e) {
+                                        android.util.Log.e("JobRepository", "❌ Error inserting jobs into database: " + e.getMessage(), e);
+                                    }
+                                });
+                            } else {
+                                android.util.Log.w("JobRepository", "⚠️ No jobs in response");
+                            }
+                        } else {
+                            android.util.Log.w("JobRepository", "⚠️ Response not successful or data is null");
+                        }
+                    } else {
+                        android.util.Log.e("JobRepository", "❌ Response not successful or body is null - Code: " + response.code());
                     }
                 }
 
                 @Override
                 public void onFailure(Call<JobsListResponse> call, Throwable t) {
-                    // Handle error
+                    android.util.Log.e("JobRepository", "❌ API call failed: " + t.getMessage(), t);
                 }
             });
         });

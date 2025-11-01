@@ -29,6 +29,8 @@ class Recruiter extends Authenticatable
         'is_active',
         'is_verified',
         'fcm_token',
+        'contact',
+        'last_contact_sync',
     ];
 
     protected $hidden = [
@@ -40,6 +42,7 @@ class Recruiter extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'license_uploaded_at' => 'datetime',
+        'last_contact_sync' => 'datetime',
         'is_active' => 'boolean',
         'is_verified' => 'boolean',
     ];

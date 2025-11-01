@@ -6,6 +6,7 @@ import androidx.room.ColumnInfo;
 import androidx.annotation.NonNull;
 import androidx.room.Ignore;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.annotations.JsonAdapter;
 import java.util.Date;
 
 @Entity(tableName = "jobs")
@@ -106,6 +107,7 @@ public class Job {
 
     @ColumnInfo(name = "skills_required")
     @SerializedName("skills_required")
+    @JsonAdapter(SkillsDeserializer.class)
     private String skillsRequired;
 
     @ColumnInfo(name = "approval_status")

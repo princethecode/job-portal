@@ -3,25 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Job Portal App - Find Your Dream Job Today</title>
-    <meta name="description" content="Download the Job Portal Android app and discover thousands of job opportunities at your fingertips.">
+    <title>Find Your Dream Job Anywhere in the World - International Job Portal</title>
+    <meta name="description" content="Discover thousands of international job opportunities across 50+ countries. Connect with top employers worldwide and start your global career today.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #5B68DF;
-            --primary-dark: #4051DB;
-            --primary-light: #8C96E9;
-            --accent-color: #FF7043;
-            --accent-dark: #E56238;
-            --text-dark: #1F2937;
+            --primary-color: #4F46E5;
+            --primary-dark: #3730A3;
+            --primary-light: #6366F1;
+            --secondary-color: #F59E0B;
+            --accent-color: #10B981;
+            --text-dark: #111827;
             --text-medium: #4B5563;
             --text-light: #6B7280;
             --bg-light: #F9FAFB;
             --bg-white: #FFFFFF;
+            --bg-gray: #F3F4F6;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --border-radius: 12px;
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --border-radius: 16px;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-hero: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #EC4899 100%);
         }
         
         * {
@@ -31,10 +35,11 @@
         }
         
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
             line-height: 1.6;
             color: var(--text-dark);
-            background-color: var(--bg-light);
+            background-color: var(--bg-white);
+            overflow-x: hidden;
         }
         
         .container {
@@ -44,113 +49,418 @@
         }
         
         header {
-            background-color: var(--bg-white);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            position: sticky;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: fixed;
             top: 0;
-            z-index: 100;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
         }
         
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
+            padding: 16px 0;
         }
         
         .logo {
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 28px;
+            font-weight: 800;
             color: var(--primary-color);
             text-decoration: none;
+            letter-spacing: -0.5px;
         }
         
         .nav-links {
             display: flex;
-            gap: 30px;
+            gap: 32px;
+            align-items: center;
         }
         
         .nav-links a {
             text-decoration: none;
             color: var(--text-medium);
             font-weight: 500;
-            transition: color 0.3s ease;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            position: relative;
         }
         
         .nav-links a:hover {
             color: var(--primary-color);
         }
         
+        .nav-links a:not(.btn):hover::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-color);
+            border-radius: 1px;
+        }
+        
         .hero {
-            padding: 80px 0;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
+            background: var(--gradient-hero);
+            background-image: url('images/hero-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+            padding: 120px 0 100px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(79, 70, 229, 0.8);
+            z-index: 1;
         }
         
         .hero-content {
-            flex: 1;
-            min-width: 300px;
-            padding-right: 40px;
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
         }
         
-        .hero-image {
-            flex: 1;
-            min-width: 300px;
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            line-height: 1.1;
+            letter-spacing: -1px;
+        }
+        
+        .hero h1 .highlight {
+            color: #FDE047;
+            position: relative;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 400;
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            margin: 60px 0 40px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
             text-align: center;
         }
         
-        .hero-image img {
-            max-width: 100%;
-            height: auto;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #FDE047;
+            display: block;
+            line-height: 1;
         }
         
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            color: var(--text-dark);
-            line-height: 1.2;
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 8px;
+            font-weight: 500;
         }
         
-        h1 span {
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
             color: var(--primary-color);
-        }
-        
-        p.hero-text {
-            font-size: 1.2rem;
-            color: var(--text-medium);
-            margin-bottom: 30px;
-        }
-        
-        .download-btn {
-            display: inline-block;
-            background-color: var(--primary-color);
-            color: white;
             padding: 16px 32px;
             font-size: 1.1rem;
             font-weight: 600;
             border-radius: 50px;
             text-decoration: none;
-            transition: background-color 0.3s ease, transform 0.3s ease;
+            transition: all 0.3s ease;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(91, 104, 223, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border: none;
         }
         
-        .download-btn:hover {
-            background-color: var(--primary-dark);
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(91, 104, 223, 0.4);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+            color: var(--primary-dark);
         }
         
-        .download-btn .icon {
-            margin-right: 10px;
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: transparent;
+            color: white;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-left: 16px;
         }
         
-        .features {
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .brands-section {
+            padding: 80px 0;
+            background-color: var(--bg-light);
+        }
+        
+        .brands-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 40px;
+            margin-top: 60px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .brand-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .brand-item:hover {
+            transform: translateY(-5px);
+        }
+        
+        .brand-item i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+        
+        .brand-item span {
+            font-weight: 500;
+            color: var(--text-medium);
+            font-size: 0.85rem;
+        }
+        
+        .categories-section {
             padding: 80px 0;
             background-color: var(--bg-white);
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 60px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .category-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color);
+        }
+        
+        .category-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .category-icon.healthcare {
+            background-color: #FEF2F2;
+            color: #EF4444;
+        }
+        
+        .category-icon.technology {
+            background-color: #EFF6FF;
+            color: #3B82F6;
+        }
+        
+        .category-icon.hospitality {
+            background-color: #FEF3C7;
+            color: #F59E0B;
+        }
+        
+        .category-icon.logistics {
+            background-color: #ECFDF5;
+            color: #10B981;
+        }
+        
+        .category-icon.education {
+            background-color: #F3E8FF;
+            color: #8B5CF6;
+        }
+        
+        .category-icon.construction {
+            background-color: #FEF3C7;
+            color: #D97706;
+        }
+        
+        .category-icon.engineering {
+            background-color: #EFF6FF;
+            color: #6366F1;
+        }
+        
+        .category-icon.business {
+            background-color: #FCE7F3;
+            color: #EC4899;
+        }
+        
+        .category-icon i {
+            font-size: 20px;
+        }
+        
+        .category-content {
+            flex: 1;
+        }
+        
+        .category-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-dark);
+        }
+        
+        .category-count {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .destinations-section {
+            padding: 80px 0;
+            background-color: var(--bg-light);
+        }
+        
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 60px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .destination-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #E5E7EB;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .destination-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color);
+        }
+        
+        .destination-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .destination-flag {
+            width: 60px;
+            height: 36px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            border: 0px solid #E5E7EB;
+        }
+        
+        .destination-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .destination-description {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        
+        .destination-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .destination-jobs {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .destination-link {
+            color: var(--text-medium);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .destination-link:hover {
+            color: var(--primary-color);
         }
         
         .section-title {
@@ -277,43 +587,52 @@
             }
         }
         
-        .cta {
+        .cta-section {
             padding: 100px 0;
-            background-color: var(--primary-color);
+            background: var(--gradient-hero);
             color: white;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
         
-        .cta h2 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(79, 70, 229, 0.1);
+            z-index: 1;
         }
         
-        .cta p {
-            font-size: 1.1rem;
+        .cta-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .cta-section h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+        
+        .cta-section p {
+            font-size: 1.25rem;
             margin-bottom: 40px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            opacity: 0.9;
+            line-height: 1.6;
         }
         
-        .cta-btn {
-            display: inline-block;
-            background-color: white;
-            color: var(--primary-color);
-            padding: 16px 32px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 50px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .cta-btn:hover {
-            background-color: var(--bg-light);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
         
         .testimonials {
@@ -439,17 +758,20 @@
         
         @media (max-width: 768px) {
             .hero {
-                padding: 60px 0;
+                padding: 100px 0 80px;
             }
             
-            .hero-content {
-                padding-right: 0;
-                margin-bottom: 40px;
-                text-align: center;
-            }
-            
-            h1 {
+            .hero h1 {
                 font-size: 2.5rem;
+            }
+            
+            .hero-stats {
+                gap: 40px;
+                margin: 40px 0 30px;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
             }
             
             .nav-links {
@@ -460,405 +782,70 @@
                 font-size: 2rem;
             }
             
-            .cta h2 {
+            .cta-section h2 {
                 font-size: 2rem;
             }
             
-            .download-btn, .cta-btn {
-                width: 100%;
-                text-align: center;
-            }
-        }
-        
-        /* Pulse animation for download button */
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(91, 104, 223, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(91, 104, 223, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(91, 104, 223, 0);
-            }
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        /* App Carousel Styles */
-        .app-carousel {
-            position: relative;
-            width: 300px;
-            height: 600px;
-            margin: 0 auto;
-            overflow: hidden;
-            border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            background-color: #000;
-        }
-        
-        .carousel-item {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-        
-        .carousel-item.active {
-            opacity: 1;
-        }
-        
-        .screenshot {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .carousel-controls {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        
-        .carousel-control {
-            width: 40px;
-            height: 40px;
-            background-color: rgba(255, 255, 255, 0.7);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .carousel-control:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        @media (max-width: 768px) {
-            .app-carousel {
-                width: 280px;
-                height: 560px;
-            }
-        }
-        
-        /* Phone Mockup and Slider Styles */
-        .phone-mockup {
-            margin: 0 auto;
-            max-width: 320px;
-            padding: 20px 0;
-        }
-        
-        .phone-frame {
-            position: relative;
-            width: 280px;
-            height: 570px;
-            margin: 0 auto;
-            border-radius: 36px;
-            background-color: #1F2937;
-            padding: 10px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-            overflow: hidden;
-        }
-        
-        .app-slider {
-            position: relative;
-            width: 260px;
-            height: 550px;
-            margin: 0 auto;
-            border-radius: 26px;
-            overflow: hidden;
-            background-color: white;
-        }
-        
-        .slider-track {
-            position: relative;
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
-        
-        .slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 0.6s ease-in-out;
-            background-color: #f4f4f4;
-        }
-        
-        .slide.active {
-            opacity: 1;
-        }
-        
-        .slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            padding: 10px;
-            display: block;
-            max-height: 100%;
-        }
-        
-        .slider-controls {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            padding: 0 15px;
-        }
-        
-        .control-prev, .control-next {
-            background-color: rgba(255, 255, 255, 0.8);
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: var(--primary-color);
-        }
-        
-        .control-prev:hover, .control-next:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .slider-dots {
-            display: flex;
-            gap: 8px;
-            margin: 0 15px;
-        }
-        
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.5);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .dot.active {
-            background-color: var(--primary-color);
-            transform: scale(1.2);
-        }
-        
-        @media (max-width: 768px) {
-            .phone-frame {
-                width: 260px;
-                height: 530px;
-            }
-            
-            .app-slider {
-                width: 240px;
-                height: 510px;
-            }
-        }
-        
-        /* Simple Slider Styles */
-        .simple-slider {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px 0;
-        }
-        
-        .slider-container {
-            position: relative;
-            width: 100%;
-            height: 450px;
-            overflow: hidden;
-            margin-bottom: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-            background-color: white;
-        }
-        
-        .slide {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transition: opacity 0.6s ease-in-out;
-            background-color: #f4f4f4;
-        }
-        
-        .slide.active {
-            opacity: 1;
-        }
-        
-        .slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            padding: 10px;
-            display: block;
-            max-height: 100%;
-        }
-        
-        .slider-navigation {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .nav-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-        
-        .nav-btn:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        .slider-indicators {
-            display: flex;
-            gap: 8px;
-            margin: 0 15px;
-        }
-        
-        .indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: #ccc;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .indicator.active {
-            background-color: var(--primary-color);
-            transform: scale(1.2);
-        }
-        
-        @media (max-width: 768px) {
-            .slider-container {
-                height: 300px;
-            }
-        }
-        
-        /* Wind Blade Section Styles */
-        .wind-blade-section {
-            padding: 80px 0;
-            background-color: var(--bg-white);
-        }
-        
-        .wind-blade-content {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 40px;
-            margin-top: 40px;
-        }
-        
-        .wind-blade-info {
-            flex: 1;
-            min-width: 300px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-        }
-        
-        .info-card {
-            background: var(--bg-light);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
-        }
-        
-        .info-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .info-icon {
-            background-color: var(--primary-light);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .info-icon i {
-            font-size: 24px;
-            color: var(--primary-color);
-        }
-        
-        .info-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: var(--text-dark);
-        }
-        
-        .info-card p {
-            color: var(--text-medium);
-            line-height: 1.6;
-        }
-        
-        .wind-blade-slider {
-            flex: 1;
-            min-width: 300px;
-        }
-        
-        .wind-blade-slider .slider-container {
-            height: 400px;
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-        
-        .wind-blade-slider .slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        @media (max-width: 768px) {
-            .wind-blade-content {
+            .cta-buttons {
                 flex-direction: column;
+                align-items: center;
             }
             
-            .wind-blade-slider .slider-container {
-                height: 300px;
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+                margin: 0;
             }
+            
+            .btn-secondary {
+                margin-top: 16px;
+            }
+            
+            .brands-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+            }
+            
+            .categories-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+                max-width: none;
+            }
+            
+            .destinations-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -867,268 +854,303 @@
     <header>
         <div class="container">
             <nav class="navbar">
-                <a href="#" class="logo">Wind Blade Jobs</a>
+                <a href="#" class="logo">Abroad Jobs</a>
                 <div class="nav-links">
-                    <a href="#features">Features</a>
-                    <a href="#how-to">How to Download</a>
-                    <a href="#testimonials">Testimonials</a>
-                    <a href="jobportal.apk" class="download-btn">
-                        <i class="fa-solid fa-download icon"></i>Download for Android
+                    <a href="#brands">Companies</a>
+                    <a href="#categories">Job Categories</a>
+                    <a href="#destinations">Destinations</a>
+                    <a href="#testimonials">Reviews</a>
+                    <a href="jobportal.apk" class="btn-primary">
+                        <i class="fa-solid fa-download"></i>Download App
                     </a>
                 </div>
             </nav>
         </div>
     </header>
-    
-
-    
-    <!-- New Wind Blade Section -->
-    <section class="wind-blade-section" id="wind-blade">             
-                <div class="wind-blade-slider">
-                    <div class="slider-container">
-                        <div class="slide active">
-                            <img src="images/wind-blade-1.jpg" alt="Wind Blade Technology 1">
-                        </div>
-                        <div class="slide">
-                            <img src="images/wind-blade-2.jpg" alt="Wind Blade Technology 2">
-                        </div>
-                        <div class="slide">
-                            <img src="images/wind-blade-3.jpg" alt="Wind Blade Technology 3">
-                        </div>
-                        <div class="slide">
-                            <img src="images/wind-blade-4.jpg" alt="Wind Blade Technology 4">
-                        </div>
-                    </div>
-                    
-                    <div class="slider-navigation">
-                        <button class="nav-btn prev-btn"><i class="fa-solid fa-arrow-left"></i></button>
-                        <div class="slider-indicators">
-                            <span class="indicator active"></span>
-                            <span class="indicator"></span>
-                            <span class="indicator"></span>
-                            <span class="indicator"></span>
-                        </div>
-                        <button class="nav-btn next-btn"><i class="fa-solid fa-arrow-right"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section class="wind-blade-section" id="wind-blade">
-        <div class="container">
-            <div class="section-title">
-                <h2>About Wind Blade</h2>
-                <p>Discover the power of renewable energy with our innovative wind blade technology</p>
-            </div>
-            
-            <div class="wind-blade-content">
-                <div class="wind-blade-info">
-                    <div class="info-card">
-                        <div class="info-icon">
-                            <i class="fa-solid fa-wind"></i>
-                        </div>
-                        <h3>Innovative Design</h3>
-                        <p>Our wind blades are engineered with cutting-edge technology to maximize energy efficiency and durability.</p>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-icon">
-                            <i class="fa-solid fa-leaf"></i>
-                        </div>
-                        <h3>Sustainable Energy</h3>
-                        <p>Harness the power of wind to generate clean, renewable energy for a sustainable future.</p>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-icon">
-                            <i class="fa-solid fa-gear"></i>
-                        </div>
-                        <h3>Advanced Technology</h3>
-                        <p>State-of-the-art materials and manufacturing processes ensure optimal performance.</p>
-                    </div>
-                </div>
-    </section> 
-   
-    
     <section class="hero">
         <div class="container">
-            <div class="hero-content">
-                <h1>Find Your <span>Dream Job</span> With Our App</h1>
-                <p class="hero-text">Download the Job Portal app and access thousands of job opportunities from your phone. Apply, track applications, and get hired - all in one place.</p>
-                <a href="jobportal.apk" class="download-btn pulse">
-                    <i class="fa-solid fa-download icon"></i>Download for Android
-                </a>
-            </div>
-            <div class="hero-image">
-                <div class="simple-slider">
-                    <div class="slider-container">
-                        <div class="slide active">
-                            <img src="images/app-screenshot-1.png" alt="Job Portal App Screenshot 1">
-                        </div>
-                        <div class="slide">
-                            <img src="images/app-screenshot-2.png" alt="Job Portal App Screenshot 2">
-                        </div>
-                        <div class="slide">
-                            <img src="images/app-screenshot-3.png" alt="Job Portal App Screenshot 3">
-                        </div>
-                        <div class="slide">
-                            <img src="images/app-screenshot-4.png" alt="Job Portal App Screenshot 4">
-                        </div>
-                        <div class="slide">
-                            <img src="images/app-screenshot-5.png" alt="Job Portal App Screenshot 5">
-                        </div>
-                        <div class="slide">
-                            <img src="images/app-screenshot-6.png" alt="Job Portal App Screenshot 6">
-                        </div>
-                        <div class="slide">
-                            <img src="images/app-screenshot-7.png" alt="Job Portal App Screenshot 7">
-                        </div>
+            <div class="hero-content fade-in-up">
+                <h1>Find Your Dream Job <span class="highlight">Anywhere in the World</span></h1>
+                <p class="hero-subtitle">Discover thousands of international job opportunities across 50+ countries. Connect with top employers worldwide and start your global career today.</p>
+                
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">10,000+</span>
+                        <span class="stat-label">Active Jobs</span>
                     </div>
-                    
-                    <div class="slider-navigation">
-                        <button class="nav-btn prev-btn"><i class="fa-solid fa-arrow-left"></i></button>
-                        <div class="slider-indicators">
-                            <span class="indicator active"></span>
-                            <span class="indicator"></span>
-                            <span class="indicator"></span>
-                            <span class="indicator"></span>
-                            <span class="indicator"></span>
-                            <span class="indicator"></span>
-                            <span class="indicator"></span>
-                        </div>
-                        <button class="nav-btn next-btn"><i class="fa-solid fa-arrow-right"></i></button>
+                    <div class="stat-item">
+                        <span class="stat-number">50+</span>
+                        <span class="stat-label">Countries</span>
                     </div>
+                    <div class="stat-item">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Companies</span>
+                    </div>
+                </div>
+                
+                <div class="cta-buttons">
+                    <a href="jobportal.apk" class="btn-primary">
+                        <i class="fa-solid fa-download"></i>Download App
+                    </a>
+                    <a href="#categories" class="btn-secondary">
+                        <i class="fa-solid fa-search"></i>Browse Jobs
+                    </a>
                 </div>
             </div>
         </div>
     </section>
-    <section class="features" id="features">
+    <section class="brands-section" id="brands">
         <div class="container">
             <div class="section-title">
-                <h2>App Features</h2>
-                <p>Discover what makes our job portal app the best choice for job seekers</p>
+                <h2><span style="color: var(--primary-color);">Brands</span> That Hire Through Abroad Jobs</h2>
+                <p>Jobs posted by the best direct companies worldwide. Check jobs now!</p>
             </div>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </div>
-                    <h3 class="feature-title">Smart Job Search</h3>
-                    <p class="feature-desc">Find relevant jobs with our intelligent search algorithm that matches your skills and experience.</p>
+            <div class="brands-grid">
+                <div class="brand-item">
+                    <i class="fa-solid fa-building"></i>
+                    <span>Global Tech Solutions</span>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-paper-plane"></i>
-                    </div>
-                    <h3 class="feature-title">One-Click Apply</h3>
-                    <p class="feature-desc">Apply to jobs with just one click using your saved profile and resume.</p>
+                <div class="brand-item">
+                    <i class="fa-solid fa-briefcase-medical"></i>
+                    <span>International Healthcare</span>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-bell"></i>
-                    </div>
-                    <h3 class="feature-title">Job Alerts</h3>
-                    <p class="feature-desc">Get notified instantly when new jobs matching your preferences are posted.</p>
+                <div class="brand-item">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>WorldWide Industries</span>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-chart-line"></i>
-                    </div>
-                    <h3 class="feature-title">Application Tracking</h3>
-                    <p class="feature-desc">Track the status of your job applications in real-time.</p>
+                <div class="brand-item">
+                    <i class="fa-solid fa-building"></i>
+                    <span>Elite Construction</span>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-lock"></i>
-                    </div>
-                    <h3 class="feature-title">Secure Profile</h3>
-                    <p class="feature-desc">Keep your personal information and documents secure with our encrypted platform.</p>
+                <div class="brand-item">
+                    <i class="fa-solid fa-briefcase-medical"></i>
+                    <span>Premium Hospitality</span>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fa-solid fa-mobile-screen"></i>
-                    </div>
-                    <h3 class="feature-title">Offline Mode</h3>
-                    <p class="feature-desc">View saved jobs and applications even when you're offline.</p>
+                <div class="brand-item">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Tech Innovators</span>
                 </div>
             </div>
         </div>
     </section>
     
-    <section class="how-to-download" id="how-to">
+    <section class="categories-section" id="categories">
         <div class="container">
             <div class="section-title">
-                <h2>How to Download</h2>
-                <p>Follow these simple steps to get started with our app</p>
+                <h2>Popular Job Categories</h2>
+                <p>Explore opportunities across diverse industries and find your perfect match</p>
             </div>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <h3 class="step-title">Click Download</h3>
-                    <p class="step-desc">Click the download button to start downloading the APK file.</p>
-                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+            <div class="categories-grid">
+                <div class="category-card">
+                    <div class="category-icon healthcare">
+                        <i class="fa-solid fa-stethoscope"></i>
+                    </div>
+                    <div class="category-content">
+                        <h3 class="category-title">Healthcare</h3>
+                        <p class="category-count">1240 jobs available</p>
+                    </div>
                 </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <h3 class="step-title">Install App</h3>
-                    <p class="step-desc">Open the APK file and follow the installation instructions.</p>
-                    <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="category-card">
+                    <div class="category-icon technology">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <div class="category-content">
+                        <h3 class="category-title">IT & Technology</h3>
+                        <p class="category-count">2180 jobs available</p>
+                    </div>
                 </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <h3 class="step-title">Create Account</h3>
-                    <p class="step-desc">Sign up with your email or mobile number to get started.</p>
+                <div class="category-card">
+                    <div class="category-icon hospitality">
+                        <i class="fa-solid fa-utensils"></i>
+                    </div>
+                    <div class="category-content">
+                        <h3 class="category-title">Hospitality</h3>
+                        <p class="category-count">890 jobs available</p>
+                    </div>
+                </div>
+                <div class="category-card">
+                    <div class="category-icon logistics">
+                        <i class="fa-solid fa-truck"></i>
+                    </div>
+                    <div class="category-content">
+                        <h3 class="category-title">Logistics</h3>
+                        <p class="category-count">670 jobs available</p>
+                    </div>
+                </div>
+                <div class="category-card">
+                    <div class="category-icon education">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div class="category-content">
+                        <h3 class="category-title">Education</h3>
+                        <p class="category-count">540 jobs available</p>
+                    </div>
+                </div>
+                <div class="category-card">
+                    <div class="category-icon construction">
+                        <i class="fa-solid fa-hammer"></i>
+                    </div>
+                    <div class="category-content">
+                        <h3 class="category-title">Construction</h3>
+                        <p class="category-count">920 jobs available</p>
+                    </div>
+                </div>
+                <div class="category-card">
+                    <div class="category-icon engineering">
+                        <i class="fa-solid fa-cog"></i>
+                    </div>
+                    <div class="category-content">
+                        <h3 class="category-title">Engineering</h3>
+                        <p class="category-count">1100 jobs available</p>
+                    </div>
+                </div>
+                <div class="category-card">
+                    <div class="category-icon business">
+                        <i class="fa-solid fa-briefcase"></i>
+                    </div>
+                    <div class="category-content">
+                        <h3 class="category-title">Business</h3>
+                        <p class="category-count">1560 jobs available</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
     
-    <section class="cta">
+    <section class="destinations-section" id="destinations">
         <div class="container">
-            <h2>Ready to Find Your Next Job?</h2>
-            <p>Download our app now and start applying to thousands of jobs. Your dream career is just a few taps away.</p>
-            <a href="jobportal.apk" class="cta-btn">Download Now (15MB)</a>
+            <div class="section-title">
+                <h2>Top Destinations for International Jobs</h2>
+                <p>Discover career opportunities in the world's most sought-after countries</p>
+            </div>
+            <div class="destinations-grid">
+                <div class="destination-card">
+                    <div class="destination-header">
+                        <div class="destination-flag">🇦🇪</div>
+                        <h3 class="destination-name">United Arab Emirates</h3>
+                    </div>
+                    <p class="destination-description">Tax-free salaries and modern infrastructure</p>
+                    <div class="destination-footer">
+                        <span class="destination-jobs">3,240 jobs available</span>
+                        <a href="#" class="destination-link">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="destination-card">
+                    <div class="destination-header">
+                        <div class="destination-flag">🇬🇧</div>
+                        <h3 class="destination-name">United Kingdom</h3>
+                    </div>
+                    <p class="destination-description">Rich culture and career development</p>
+                    <div class="destination-footer">
+                        <span class="destination-jobs">2,800 jobs available</span>
+                        <a href="#" class="destination-link">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="destination-card">
+                    <div class="destination-header">
+                        <div class="destination-flag">🇨🇦</div>
+                        <h3 class="destination-name">Canada</h3>
+                    </div>
+                    <p class="destination-description">High quality of life and immigration pathways</p>
+                    <div class="destination-footer">
+                        <span class="destination-jobs">2,150 jobs available</span>
+                        <a href="#" class="destination-link">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="destination-card">
+                    <div class="destination-header">
+                        <div class="destination-flag">🇶🇦</div>
+                        <h3 class="destination-name">Qatar</h3>
+                    </div>
+                    <p class="destination-description">Tax-free income and world-class infrastructure</p>
+                    <div class="destination-footer">
+                        <span class="destination-jobs">1,920 jobs available</span>
+                        <a href="#" class="destination-link">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="destination-card">
+                    <div class="destination-header">
+                        <div class="destination-flag">🇸🇬</div>
+                        <h3 class="destination-name">Singapore</h3>
+                    </div>
+                    <p class="destination-description">Global business hub and innovation center</p>
+                    <div class="destination-footer">
+                        <span class="destination-jobs">1,680 jobs available</span>
+                        <a href="#" class="destination-link">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+                <div class="destination-card">
+                    <div class="destination-header">
+                        <div class="destination-flag">🇴🇲</div>
+                        <h3 class="destination-name">Oman</h3>
+                    </div>
+                    <p class="destination-description">Growing economy and cultural diversity</p>
+                    <div class="destination-footer">
+                        <span class="destination-jobs">1,540 jobs available</span>
+                        <a href="#" class="destination-link">Explore <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Start Your International Career?</h2>
+                <p>Join thousands of professionals who have found their dream jobs abroad. Download our app and take the first step towards your global career today.</p>
+                <div class="cta-buttons">
+                    <a href="jobportal.apk" class="btn-primary">
+                        <i class="fa-solid fa-download"></i>Download App Now
+                    </a>
+                    <a href="#categories" class="btn-secondary">
+                        <i class="fa-solid fa-search"></i>Browse Jobs
+                    </a>
+                </div>
+            </div>
         </div>
     </section>
     
     <section class="testimonials" id="testimonials">
         <div class="container">
             <div class="section-title">
-                <h2>What Our Users Say</h2>
-                <p>Thousands of job seekers have found success with our app</p>
+                <h2>What <span style="color: var(--primary-color);">People Say</span> About Us</h2>
+                <p>Thousands of job seekers have found success with our platform</p>
             </div>
             <div class="testimonial-grid">
                 <div class="testimonial-card">
-                    <p class="testimonial-text">"I found my dream job as a software developer within just 2 weeks of using this app. The interface is incredibly user-friendly and the job matching is spot on!"</p>
+                    <p class="testimonial-text">"I found my dream job as a software developer in Canada within just 3 weeks of using Abroad Jobs. The platform made the entire process seamless and stress-free."</p>
                     <div class="testimonial-author">
                         <div class="author-avatar">
-                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="John Doe">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="John Smith">
                         </div>
                         <div>
-                            <div class="author-name">John Doe</div>
-                            <div class="author-title">Software Developer</div>
+                            <div class="author-name">John Smith</div>
+                            <div class="author-title">Software Developer, Canada</div>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <p class="testimonial-text">"The job alerts feature saved me so much time. Instead of searching every day, I received notifications for relevant positions and landed a great marketing role."</p>
+                    <p class="testimonial-text">"The job alerts feature saved me so much time. I received notifications for relevant positions in the UK and landed a great marketing role with a top company."</p>
                     <div class="testimonial-author">
                         <div class="author-avatar">
                             <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Sarah Johnson">
                         </div>
                         <div>
                             <div class="author-name">Sarah Johnson</div>
-                            <div class="author-title">Marketing Specialist</div>
+                            <div class="author-title">Marketing Manager, UK</div>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <p class="testimonial-text">"As someone who was looking to switch careers, this app was a lifesaver. The variety of jobs and the ease of applying helped me transition to a new industry."</p>
+                    <p class="testimonial-text">"As someone looking to work in Australia, this platform was a lifesaver. The variety of jobs and ease of application helped me secure my dream position."</p>
                     <div class="testimonial-author">
                         <div class="author-avatar">
                             <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="Michael Chen">
                         </div>
                         <div>
                             <div class="author-name">Michael Chen</div>
-                            <div class="author-title">Financial Analyst</div>
+                            <div class="author-title">Financial Analyst, Australia</div>
                         </div>
                     </div>
                 </div>
@@ -1140,22 +1162,32 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-logo">
-                    <a href="#">Job Portal</a>
-                    <p>Your trusted partner in career advancement. Find jobs, build your career, and connect with employers worldwide.</p>
+                    <a href="#">Abroad Jobs</a>
+                    <p>Your gateway to international career opportunities. Connect with global employers and build your dream career anywhere in the world.</p>
                 </div>
                 <div class="footer-links">
                     <h3>Quick Links</h3>
                     <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#how-to">How to Download</a></li>
-                        <li><a href="#testimonials">Testimonials</a></li>
+                        <li><a href="#brands">Companies</a></li>
+                        <li><a href="#categories">Job Categories</a></li>
+                        <li><a href="#destinations">Destinations</a></li>
                         <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                        <li><a href="terms-of-service.html">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h3>For Job Seekers</h3>
+                    <ul>
+                        <li><a href="#">Browse Jobs</a></li>
+                        <li><a href="#">Career Advice</a></li>
+                        <li><a href="#">Resume Builder</a></li>
+                        <li><a href="#">Salary Guide</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
                     <h3>Contact Us</h3>
                     <ul>
-                        <li><a href="mailto:support@jobportal.com">support@jobportal.com</a></li>
+                        <li><a href="mailto:support@abroadjobs.com">support@emps.com</a></li>
                         <li><a href="tel:+123456789">+1 (234) 567-89</a></li>
                         <li><a href="#">FAQ</a></li>
                         <li><a href="#">Help Center</a></li>
@@ -1163,236 +1195,70 @@
                 </div>
             </div>
             <div class="copyright">
-                <p>&copy; 2025 Job Portal. All rights reserved.</p>
+                <p>&copy; 2025 Abroad Jobs. All rights reserved.</p>
             </div>
         </div>
     </footer>
     
     <script>
-        // Simple script to handle download tracking and carousel functionality
         document.addEventListener('DOMContentLoaded', function() {
             // Download tracking
             const downloadButtons = document.querySelectorAll('a[href="jobportal.apk"]');
             
             downloadButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
-                    // You can add analytics tracking here
                     console.log('App download initiated');
-                    
-                    // You can also show a thank you message
                     setTimeout(() => {
-                        alert('Thank you for downloading the Job Portal app! The download should start automatically.');
+                        alert('Thank you for downloading the Abroad Jobs app! The download should start automatically.');
                     }, 1000);
                 });
             });
             
-            // Carousel functionality
-            const carouselItems = document.querySelectorAll('.carousel-item');
-            const prevButton = document.querySelector('.carousel-control.prev');
-            const nextButton = document.querySelector('.carousel-control.next');
-            let currentIndex = 0;
-            
-            // Auto-rotate the carousel
-            let carouselInterval = setInterval(nextSlide, 3000);
-            
-            function showSlide(index) {
-                // Remove active class from all slides
-                carouselItems.forEach(item => item.classList.remove('active'));
-                
-                // Add active class to current slide
-                carouselItems[index].classList.add('active');
-                
-                // Reset the interval timer to prevent quick transitions
-                clearInterval(carouselInterval);
-                carouselInterval = setInterval(nextSlide, 3000);
-            }
-            
-            function nextSlide() {
-                currentIndex = (currentIndex + 1) % carouselItems.length;
-                showSlide(currentIndex);
-            }
-            
-            function prevSlide() {
-                currentIndex = (currentIndex - 1 + carouselItems.length) % carouselItems.length;
-                showSlide(currentIndex);
-            }
-            
-            // Add event listeners to controls
-            if (prevButton) prevButton.addEventListener('click', prevSlide);
-            if (nextButton) nextButton.addEventListener('click', nextSlide);
-            
-            // Pause rotation on hover
-            const carousel = document.querySelector('.app-carousel');
-            if (carousel) {
-                carousel.addEventListener('mouseenter', () => {
-                    clearInterval(carouselInterval);
-                });
-                
-                carousel.addEventListener('mouseleave', () => {
-                    carouselInterval = setInterval(nextSlide, 3000);
-                });
-            }
-        });
-
-        // Simple slider functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            // Simple script to handle download tracking
-            const downloadButtons = document.querySelectorAll('a[href="jobportal.apk"]');
-            
-            downloadButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    console.log('App download initiated');
-                    setTimeout(() => {
-                        alert('Thank you for downloading the Job Portal app! The download should start automatically.');
-                    }, 1000);
+            // Smooth scrolling for navigation links
+            const navLinks = document.querySelectorAll('a[href^="#"]');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
                 });
             });
             
-            // Debug: Check if images are loading
-            const slideImages = document.querySelectorAll('.slide img');
-            console.log(`Found ${slideImages.length} slide images`);
-            
-            slideImages.forEach((img, index) => {
-                console.log(`Image ${index+1} src: ${img.src}`);
-                img.onerror = function() {
-                    console.error(`Failed to load image: ${img.src}`);
-                };
-                img.onload = function() {
-                    console.log(`Successfully loaded image: ${img.src}`);
-                };
+            // Add scroll effect to header
+            const header = document.querySelector('header');
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 100) {
+                    header.style.background = 'rgba(255, 255, 255, 0.98)';
+                    header.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
+                } else {
+                    header.style.background = 'rgba(255, 255, 255, 0.95)';
+                    header.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                }
             });
             
-            // Simple slider functionality
-            const slides = document.querySelectorAll('.slide');
-            const indicators = document.querySelectorAll('.indicator');
-            const prevBtn = document.querySelector('.prev-btn');
-            const nextBtn = document.querySelector('.next-btn');
-            let currentIndex = 0;
+            // Add animation on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
             
-            console.log(`Found ${slides.length} slides and ${indicators.length} indicators`);
-            
-            // Auto-rotate the slider
-            let sliderInterval = setInterval(showNextSlide, 4000);
-            
-            function showSlide(index) {
-                // Remove active class from all slides and indicators
-                slides.forEach(slide => slide.classList.remove('active'));
-                indicators.forEach(indicator => indicator.classList.remove('active'));
-                
-                // Add active class to current slide and indicator
-                slides[index].classList.add('active');
-                indicators[index].classList.add('active');
-                
-                console.log(`Showing slide ${index+1}`);
-                
-                // Reset the interval timer
-                clearInterval(sliderInterval);
-                sliderInterval = setInterval(showNextSlide, 4000);
-            }
-            
-            function showNextSlide() {
-                currentIndex = (currentIndex + 1) % slides.length;
-                showSlide(currentIndex);
-            }
-            
-            function showPrevSlide() {
-                currentIndex = (currentIndex - 1 + slides.length) % slides.length;
-                showSlide(currentIndex);
-            }
-            
-            // Add event listeners
-            if (prevBtn) {
-                prevBtn.addEventListener('click', function() {
-                    console.log('Previous button clicked');
-                    showPrevSlide();
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in-up');
+                    }
                 });
-            }
+            }, observerOptions);
             
-            if (nextBtn) {
-                nextBtn.addEventListener('click', function() {
-                    console.log('Next button clicked');
-                    showNextSlide();
-                });
-            }
-            
-            // Add click events to indicators
-            indicators.forEach((indicator, index) => {
-                indicator.addEventListener('click', () => {
-                    console.log(`Indicator ${index+1} clicked`);
-                    currentIndex = index;
-                    showSlide(index);
-                });
-            });
-            
-            // Pause rotation on hover
-            const sliderContainer = document.querySelector('.slider-container');
-            if (sliderContainer) {
-                sliderContainer.addEventListener('mouseenter', () => {
-                    clearInterval(sliderInterval);
-                });
-                
-                sliderContainer.addEventListener('mouseleave', () => {
-                    sliderInterval = setInterval(showNextSlide, 4000);
-                });
-            }
-        });
-
-        // Add Wind Blade Slider functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const windBladeSlides = document.querySelectorAll('.wind-blade-slider .slide');
-            const windBladeIndicators = document.querySelectorAll('.wind-blade-slider .indicator');
-            const windBladePrevBtn = document.querySelector('.wind-blade-slider .prev-btn');
-            const windBladeNextBtn = document.querySelector('.wind-blade-slider .next-btn');
-            let windBladeCurrentIndex = 0;
-            
-            let windBladeInterval = setInterval(showNextWindBladeSlide, 4000);
-            
-            function showWindBladeSlide(index) {
-                windBladeSlides.forEach(slide => slide.classList.remove('active'));
-                windBladeIndicators.forEach(indicator => indicator.classList.remove('active'));
-                
-                windBladeSlides[index].classList.add('active');
-                windBladeIndicators[index].classList.add('active');
-                
-                clearInterval(windBladeInterval);
-                windBladeInterval = setInterval(showNextWindBladeSlide, 4000);
-            }
-            
-            function showNextWindBladeSlide() {
-                windBladeCurrentIndex = (windBladeCurrentIndex + 1) % windBladeSlides.length;
-                showWindBladeSlide(windBladeCurrentIndex);
-            }
-            
-            function showPrevWindBladeSlide() {
-                windBladeCurrentIndex = (windBladeCurrentIndex - 1 + windBladeSlides.length) % windBladeSlides.length;
-                showWindBladeSlide(windBladeCurrentIndex);
-            }
-            
-            if (windBladePrevBtn) {
-                windBladePrevBtn.addEventListener('click', showPrevWindBladeSlide);
-            }
-            
-            if (windBladeNextBtn) {
-                windBladeNextBtn.addEventListener('click', showNextWindBladeSlide);
-            }
-            
-            windBladeIndicators.forEach((indicator, index) => {
-                indicator.addEventListener('click', () => {
-                    windBladeCurrentIndex = index;
-                    showWindBladeSlide(index);
-                });
-            });
-            
-            const windBladeContainer = document.querySelector('.wind-blade-slider .slider-container');
-            if (windBladeContainer) {
-                windBladeContainer.addEventListener('mouseenter', () => {
-                    clearInterval(windBladeInterval);
-                });
-                
-                windBladeContainer.addEventListener('mouseleave', () => {
-                    windBladeInterval = setInterval(showNextWindBladeSlide, 4000);
-                });
-            }
+            // Observe elements for animation
+            const animateElements = document.querySelectorAll('.section-title, .category-card, .destination-card, .brand-item');
+            animateElements.forEach(el => observer.observe(el));
         });
     </script>
 </body>
