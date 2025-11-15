@@ -184,6 +184,7 @@ public class RecruiterProfileActivity extends AppCompatActivity {
         String email = etEmail.getText().toString().trim();
         String mobile = etMobile.getText().toString().trim();
         String companyName = etCompanyName.getText().toString().trim();
+        String companyWebsite = etCompanyWebsite.getText().toString().trim();
         
         if (TextUtils.isEmpty(name)) {
             tilName.setError("Name is required");
@@ -216,7 +217,33 @@ public class RecruiterProfileActivity extends AppCompatActivity {
             tilCompanyName.setError(null);
         }
         
+        // Validate company website if provided
+        if (!TextUtils.isEmpty(companyWebsite) && !isValidWebsite(companyWebsite)) {
+            tilCompanyWebsite.setError("Please enter a valid website (e.g., www.example.com or example.com)");
+            isValid = false;
+        } else {
+            tilCompanyWebsite.setError(null);
+        }
+        
         return isValid;
+    }
+    
+    private boolean isValidWebsite(String url) {
+        if (TextUtils.isEmpty(url)) {
+            return true; // Empty is valid (optional field)
+        }
+        
+        // Remove whitespace
+        url = url.trim().toLowerCase();
+        
+        // Pattern to match:
+        // - Optional http:// or https://
+        // - Optional www.
+        // - Domain name with at least one dot
+        // - Valid domain characters
+        String urlPattern = "^(https?://)?(www\\.)?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\\.[a-zA-Z]{2,}(/.*)?$";
+        
+        return url.matches(urlPattern);
     }
     
     private void updateProfile() {
@@ -233,6 +260,11 @@ public class RecruiterProfileActivity extends AppCompatActivity {
         String companyDescription = etCompanyDescription.getText().toString().trim();
         String location = etLocation.getText().toString().trim();
         String designation = etDesignation.getText().toString().trim();
+        
+        // Normalize website URL (add https:// if missing)
+        if (!TextUtils.isEmpty(companyWebsite) && !companyWebsite.startsWith("http://") && !companyWebsite.startsWith("https://")) {
+            companyWebsite = "https://" + companyWebsite;
+        }
         
         // Create updated recruiter object
         Recruiter updatedRecruiter = new Recruiter();

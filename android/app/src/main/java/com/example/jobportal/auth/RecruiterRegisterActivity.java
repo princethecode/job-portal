@@ -159,6 +159,11 @@ public class RecruiterRegisterActivity extends AppCompatActivity {
         // Show progress
         setLoading(true);
         
+        // Normalize website URL (add https:// if missing)
+        if (!TextUtils.isEmpty(companyWebsite) && !companyWebsite.startsWith("http://") && !companyWebsite.startsWith("https://")) {
+            companyWebsite = "https://" + companyWebsite;
+        }
+        
         // Create registration request
         RecruiterRegisterRequest registerRequest = new RecruiterRegisterRequest(
             name, email, mobile, password, confirmPassword, companyName, companyWebsite,
@@ -256,7 +261,32 @@ public class RecruiterRegisterActivity extends AppCompatActivity {
             return false;
         }
         
+        // Validate company website if provided
+        String companyWebsite = etCompanyWebsite.getText().toString().trim();
+        if (!TextUtils.isEmpty(companyWebsite) && !isValidWebsite(companyWebsite)) {
+            etCompanyWebsite.setError("Please enter a valid website (e.g., www.example.com or example.com)");
+            return false;
+        }
+        
         return true;
+    }
+    
+    private boolean isValidWebsite(String url) {
+        if (TextUtils.isEmpty(url)) {
+            return true; // Empty is valid (optional field)
+        }
+        
+        // Remove whitespace
+        url = url.trim().toLowerCase();
+        
+        // Pattern to match:
+        // - Optional http:// or https://
+        // - Optional www.
+        // - Domain name with at least one dot
+        // - Valid domain characters
+        String urlPattern = "^(https?://)?(www\\.)?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\\.[a-zA-Z]{2,}(/.*)?$";
+        
+        return url.matches(urlPattern);
     }
     
     private void setLoading(boolean isLoading) {

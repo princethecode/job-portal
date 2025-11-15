@@ -10,6 +10,9 @@
 -keep public class com.google.vending.licensing.ILicensingService
 -keep public class com.android.vending.licensing.ILicensingService
 
+# Keep Android Patterns for validation (used for email and phone)
+-keep class android.util.Patterns { *; }
+
 # For native methods
 -keepclasseswithmembernames class * {
     native <methods>;
