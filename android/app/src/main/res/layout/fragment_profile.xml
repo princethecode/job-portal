@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Header with Profile Title and Settings Button -->
+        <!-- Header with Profile Title -->
         <LinearLayout
             android:id="@+id/profile_header"
             android:layout_width="match_parent"
@@ -23,21 +23,12 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="Profile"
                 android:textColor="@color/text_primary"
                 android:textSize="20sp"
                 android:textStyle="bold" />
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Settings"
-                android:padding="8dp"
-                android:src="@android:drawable/ic_menu_preferences" />
         </LinearLayout>
 
         <ProgressBar
@@ -600,12 +591,29 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Settings Button -->
+        <Button
+            android:id="@+id/settings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@android:color/transparent"
+            android:text="@string/settings"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_settings"
+            android:drawablePadding="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/resume_card"
+            style="@style/Widget.MaterialComponents.Button.TextButton" />
+
         <!-- Logout Button -->
         <Button
             android:id="@+id/logout_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="24dp"
             android:background="@android:color/transparent"
             android:text="Logout"
@@ -613,7 +621,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/resume_card"
+            app:layout_constraintTop_toBottomOf="@id/settings_button"
             app:layout_constraintBottom_toBottomOf="parent" />
 
         <!-- Bottom Navigation Spacer -->

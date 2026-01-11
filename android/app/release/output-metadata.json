@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.example.jobportal",
+  "applicationId": "com.emps.abroadjobs",
   "variantName": "release",
   "elements": [
     {

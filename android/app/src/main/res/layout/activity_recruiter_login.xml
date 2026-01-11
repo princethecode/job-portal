@@ -21,10 +21,10 @@
             android:layout_marginBottom="32dp">
 
             <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@drawable/ic_business"
-                android:background="@drawable/bg_circle_primary"
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:layout_marginTop="32dp"
+                android:src="@mipmap/ic_launcher"
                 android:padding="16dp"
                 android:layout_marginBottom="16dp"
                 android:contentDescription="Recruiter Icon" />

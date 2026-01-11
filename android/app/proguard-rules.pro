@@ -34,35 +34,84 @@
 -keep public class * extends android.preference.Preference
 -keep public class * extends androidx.fragment.app.Fragment
 
-# Retrofit
+# Retrofit - Fixed for ProGuard obfuscation issues
 -keepattributes Signature, InnerClasses, EnclosingMethod
 -keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+
+# Keep Retrofit interfaces and their methods
+-keep interface retrofit2.Call
+-keep interface retrofit2.http.* { *; }
+-keep class retrofit2.** { *; }
+-dontwarn retrofit2.**
+
+# Keep API service interfaces completely - CRITICAL for preventing crashes
+-keep interface com.emps.abroadjobs.network.ApiService { *; }
+-keep interface com.emps.abroadjobs.network.RecruiterApiService { *; }
+
+# Keep all Retrofit method signatures and generic types
 -keepclassmembers,allowshrinking,allowobfuscation interface * {
     @retrofit2.http.* <methods>;
 }
+
+# Preserve generic signatures for Retrofit Call types
+-keep,allowobfuscation,allowshrinking interface retrofit2.Call
+-keep,allowobfuscation,allowshrinking class retrofit2.Response
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+
+# Keep specific model classes that are used as raw Call types
+-keep class com.emps.abroadjobs.models.User { *; }
+-keep class com.emps.abroadjobs.models.LoginResponse { *; }
+
+# Additional Retrofit rules
 -dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 -dontwarn javax.annotation.**
 -dontwarn kotlin.Unit
 -dontwarn retrofit2.KotlinExtensions
 -dontwarn retrofit2.KotlinExtensions$*
--if interface * { @retrofit2.http.* <methods>; }
--keep,allowobfuscation interface <1>
 
-# OkHttp
+# Keep generic type information for API responses
+-keepattributes *Annotation*,Signature,Exception
+
+# OkHttp - Enhanced rules for network security
 -dontwarn okhttp3.**
 -dontwarn okio.**
 -dontwarn javax.annotation.**
 -dontwarn org.conscrypt.**
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
 
-# Gson
+# Keep OkHttp interceptors
+-keep class com.emps.abroadjobs.network.ResponseInterceptor { *; }
+
+# Gson - Enhanced rules for model preservation and TypeToken safety
 -keepattributes Signature
 -keepattributes *Annotation*
 -dontwarn sun.misc.**
--keep class com.example.jobportal.models.** { *; }
+
+# Keep all model classes and their fields
+-keep class com.emps.abroadjobs.models.** { *; }
+-keep class com.emps.abroadjobs.data.model.** { *; }
+-keep class com.emps.abroadjobs.data.api.** { *; }
+-keep class com.emps.abroadjobs.network.ApiResponse { *; }
+-keep class com.emps.abroadjobs.network.SafeJsonParser { *; }
+
+# Keep Gson TypeAdapters
 -keep class * implements com.google.gson.TypeAdapter
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
+
+# Keep generic type information for Gson
+-keepclassmembers,allowobfuscation class * {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Prevent TypeToken issues by keeping reflection-based classes
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+-keepclassmembers class * extends com.google.gson.reflect.TypeToken {
+  <init>();
+}
 
 # Room Database
 -keep class * extends androidx.room.RoomDatabase
