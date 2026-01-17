@@ -860,7 +860,7 @@
                     <a href="#categories">Job Categories</a>
                     <a href="#destinations">Destinations</a>
                     <a href="#testimonials">Reviews</a>
-                    <a href="jobportal.apk" class="btn-primary">
+                    <a href="https://play.google.com/store/apps/details?id=com.emps.abroadjobs" target="_blank" class="btn-primary">
                         <i class="fa-solid fa-download"></i>Download App
                     </a>
                 </div>
@@ -889,7 +889,7 @@
                 </div>
                 
                 <div class="cta-buttons">
-                    <a href="jobportal.apk" class="btn-primary">
+                    <a href="https://play.google.com/store/apps/details?id=com.emps.abroadjobs" target="_blank" class="btn-primary">
                         <i class="fa-solid fa-download"></i>Download App
                     </a>
                     <a href="#categories" class="btn-secondary">
@@ -1100,7 +1100,7 @@
                 <h2>Ready to Start Your International Career?</h2>
                 <p>Join thousands of professionals who have found their dream jobs abroad. Download our app and take the first step towards your global career today.</p>
                 <div class="cta-buttons">
-                    <a href="jobportal.apk" class="btn-primary">
+                    <a href="https://play.google.com/store/apps/details?id=com.emps.abroadjobs" target="_blank" class="btn-primary">
                         <i class="fa-solid fa-download"></i>Download App Now
                     </a>
                     <a href="#categories" class="btn-secondary">
@@ -1202,15 +1202,14 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Download tracking
-            const downloadButtons = document.querySelectorAll('a[href="jobportal.apk"]');
+            // Play Store tracking
+            const playStoreButtons = document.querySelectorAll('a[href*="play.google.com"]');
             
-            downloadButtons.forEach(button => {
+            playStoreButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
-                    console.log('App download initiated');
-                    setTimeout(() => {
-                        alert('Thank you for downloading the Abroad Jobs app! The download should start automatically.');
-                    }, 1000);
+                    console.log('Play Store link clicked');
+                    // Optional: Add analytics tracking here
+                    // gtag('event', 'click', { 'event_category': 'app_download', 'event_label': 'play_store' });
                 });
             });
             
