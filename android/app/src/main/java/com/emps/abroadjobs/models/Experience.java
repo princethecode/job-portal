@@ -2,6 +2,7 @@ package com.emps.abroadjobs.models;
 
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.annotation.Nullable;
@@ -56,6 +57,7 @@ public class Experience implements Serializable {
     }
     
     // Constructor with parameters
+    @Ignore
     public Experience(String userId, String jobTitle, String companyName, 
                      String startDate, String endDate, boolean isCurrent, 
                      String description) {
