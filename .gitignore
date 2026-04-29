@@ -200,5 +200,8 @@ wheels/
 .installed.cfg
 *.egg
 
+# Large archive files
+*.zip
+
 # Markdown documents
 *.md
