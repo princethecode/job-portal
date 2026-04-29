@@ -211,29 +211,31 @@ Top Categories: {{ json_encode($topCategories) }}
                                 </thead>
                                 <tbody>
                                     @forelse($stats['recent_applications'] as $application)
-                                        <tr>
-                                            <td>{{ $application->user ? $application->user->name : 'Deleted User' }}</td>
-                                            <td>{{ $application->job ? $application->job->title : 'Deleted Job' }}</td>
-                                            <td>
-                                                @switch($application->status)
-                                                    @case('Applied')
-                                                        <span class="badge bg-primary">Applied</span>
-                                                        @break
-                                                    @case('Under Review')
-                                                        <span class="badge bg-info">Under Review</span>
-                                                        @break
-                                                    @case('Shortlisted')
-                                                        <span class="badge bg-success">Shortlisted</span>
-                                                        @break
-                                                    @case('Rejected')
-                                                        <span class="badge bg-danger">Rejected</span>
-                                                        @break
-                                                    @default
-                                                        <span class="badge bg-secondary">{{ $application->status }}</span>
-                                                @endswitch
-                                            </td>
-                                            <td>{{ $application->created_at->format('M d, Y') }}</td>
-                                        </tr>
+                                        @if($application->user && $application->job)
+                                            <tr>
+                                                <td>{{ $application->user->name }}</td>
+                                                <td>{{ $application->job->title }}</td>
+                                                <td>
+                                                    @switch($application->status)
+                                                        @case('Applied')
+                                                            <span class="badge bg-primary">Applied</span>
+                                                            @break
+                                                        @case('Under Review')
+                                                            <span class="badge bg-info">Under Review</span>
+                                                            @break
+                                                        @case('Shortlisted')
+                                                            <span class="badge bg-success">Shortlisted</span>
+                                                            @break
+                                                        @case('Rejected')
+                                                            <span class="badge bg-danger">Rejected</span>
+                                                            @break
+                                                        @default
+                                                            <span class="badge bg-secondary">{{ $application->status }}</span>
+                                                    @endswitch
+                                                </td>
+                                                <td>{{ $application->created_at->format('M d, Y') }}</td>
+                                            </tr>
+                                        @endif
                                     @empty
                                         <tr>
                                             <td colspan="4" class="text-center">No recent applications</td>

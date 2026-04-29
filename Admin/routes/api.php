@@ -66,6 +66,7 @@ Route::middleware('auth:sanctum')->prefix('admin/jobs')->group(function () {
     Route::get('/approval-stats', [App\Http\Controllers\API\AdminJobApprovalController::class, 'getApprovalStats']);
 });
 
+
 // Public Featured Jobs
 Route::get('/featured-jobs', [FeaturedJobController::class, 'index']);
 Route::get('/featured-jobs/{id}', [FeaturedJobController::class, 'show']);
@@ -163,14 +164,15 @@ Route::middleware('recruiter.sanctum')->group(function () {
     Route::post('/recruiter/profile', [App\Http\Controllers\API\RecruiterController::class, 'updateProfile']);
     Route::post('/recruiter/logout', [App\Http\Controllers\API\RecruiterAuthController::class, 'logout']);
     
-    // Company License Management
+        // Company License Management
     Route::post('/recruiter/company-license', [App\Http\Controllers\API\RecruiterController::class, 'uploadCompanyLicense']);
     Route::get('/recruiter/company-license', [App\Http\Controllers\API\RecruiterController::class, 'getCompanyLicense']);
     Route::delete('/recruiter/company-license', [App\Http\Controllers\API\RecruiterController::class, 'deleteCompanyLicense']);
     
-    // Recruiter Contacts Management
+      // Recruiter Contacts Management
     Route::post('/recruiter/contacts/upload', [App\Http\Controllers\API\RecruiterController::class, 'uploadContacts']);
     Route::post('/recruiter/update-contact', [App\Http\Controllers\API\RecruiterController::class, 'updateContact']);
+    
     
     // Dashboard
     Route::get('/recruiter/dashboard', [App\Http\Controllers\API\RecruiterDashboardController::class, 'index']);
@@ -183,8 +185,9 @@ Route::middleware('recruiter.sanctum')->group(function () {
         Route::put('/{id}', [App\Http\Controllers\API\RecruiterJobController::class, 'update']);
         Route::delete('/{id}', [App\Http\Controllers\API\RecruiterJobController::class, 'destroy']);
         Route::patch('/{id}/toggle-status', [App\Http\Controllers\API\RecruiterJobController::class, 'toggleStatus']);
-    });
-    
+    	Route::patch('/{id}/deactivate', [App\Http\Controllers\API\RecruiterJobController::class, 'deactivate']);
+        Route::patch('/{id}/activate', [App\Http\Controllers\API\RecruiterJobController::class, 'activate']);
+    }); 
     // Applications Management
     Route::prefix('recruiter/applications')->group(function () {
         Route::get('/', [App\Http\Controllers\API\RecruiterApplicationController::class, 'index']);

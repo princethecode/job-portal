@@ -39,6 +39,11 @@ public class JobConverter {
             job.setCompanyLogo(featuredJob.getCompanyLogo());
         }
         
+        // Set job image if available
+        if (featuredJob.getJobImage() != null && !featuredJob.getJobImage().isEmpty()) {
+            job.setImage(featuredJob.getJobImage());
+        }
+        
         return job;
     }
 }

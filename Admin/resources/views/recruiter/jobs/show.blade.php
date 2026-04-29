@@ -17,23 +17,25 @@
                         <a href="{{ route('recruiter.jobs.edit', $job) }}" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-edit me-1"></i>Edit
                         </a>
-                        <form method="POST" action="{{ route('recruiter.jobs.toggle-status', $job) }}" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-{{ $job->is_active ? 'warning' : 'success' }}">
-                                <i class="fas fa-{{ $job->is_active ? 'pause' : 'play' }} me-1"></i>
-                                {{ $job->is_active ? 'Deactivate' : 'Activate' }}
-                            </button>
-                        </form>
+                        @if($job->is_active)
+                            <form method="POST" action="{{ route('recruiter.jobs.deactivate', $job) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-warning" onclick="return confirm('Are you sure you want to deactivate this job?')">
+                                    <i class="fas fa-pause me-1"></i>Deactivate
+                                </button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('recruiter.jobs.activate', $job) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-play me-1"></i>Activate
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                @if($job->image)
-                <div class="mb-3">
-                    <img src="{{ asset('storage/' . $job->image) }}" alt="Job Image" class="img-fluid rounded" style="max-height: 200px;">
-                </div>
-                @endif
-
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>Company:</strong> {{ $job->company }}
@@ -75,6 +77,12 @@
                 </div>
 
                 <hr>
+
+                @if($job->image)
+                <div class="mb-4 text-center">
+                    <img src="{{ asset($job->image) }}" alt="Job Image" class="img-fluid rounded shadow-sm" style="max-height: 300px;">
+                </div>
+                @endif
 
                 <h6>Description</h6>
                 <p>{{ $job->description }}</p>

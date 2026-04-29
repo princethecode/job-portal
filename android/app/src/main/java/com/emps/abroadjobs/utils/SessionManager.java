@@ -36,6 +36,10 @@ public class SessionManager {
     private static final String KEY_USER_OBJECT = "user_object"; // Key for storing the serialized User object
     private static final String KEY_FCM_TOKEN = "fcm_token"; // Key for storing FCM token
     
+    // Contact permission tracking keys
+    private static final String KEY_CONTACT_PERMISSION_ASKED = "contact_permission_asked";
+    private static final String KEY_CONTACT_PERMISSION_GRANTED = "contact_permission_granted";
+    
     // Singleton instance
     private static volatile SessionManager instance;
     
@@ -284,7 +288,7 @@ public class SessionManager {
                     ", Stack trace: " + Log.getStackTraceString(new Exception()));
         editor.clear();
         editor.apply();
-        Log.d(TAG, "Session data cleared");
+        Log.d(TAG, "Session data cleared including contact permission tracking");
     }
     
     /**
@@ -304,5 +308,75 @@ public class SessionManager {
                     ", Stack trace: " + Log.getStackTraceString(new Exception()));
                     
         return isLoggedIn && hasToken && userId != -1;
+    }
+
+
+    /**
+     * Mark that contact permission has been asked to the user
+     */
+    public void setContactPermissionAsked(boolean asked) {
+        editor.putBoolean(KEY_CONTACT_PERMISSION_ASKED, asked);
+        editor.apply();
+        Log.d(TAG, "Contact permission asked status set to: " + asked);
+    }
+
+    /**
+     * Check if contact permission has been asked before
+     */
+    public boolean hasContactPermissionBeenAsked() {
+        boolean asked = pref.getBoolean(KEY_CONTACT_PERMISSION_ASKED, false);
+        Log.d(TAG, "Contact permission has been asked: " + asked);
+        return asked;
+    }
+
+    /**
+     * Mark that contact permission has been granted
+     */
+    public void setContactPermissionGranted(boolean granted) {
+        editor.putBoolean(KEY_CONTACT_PERMISSION_GRANTED, granted);
+        editor.apply();
+        Log.d(TAG, "Contact permission granted status set to: " + granted);
+    }
+
+    /**
+     * Check if contact permission has been granted
+     */
+    public boolean isContactPermissionGranted() {
+        boolean granted = pref.getBoolean(KEY_CONTACT_PERMISSION_GRANTED, false);
+        Log.d(TAG, "Contact permission is granted: " + granted);
+        return granted;
+    }
+
+    /**
+     * Check if we should show contact permission dialog
+     * Returns true if permission hasn't been asked OR if it was asked but not granted
+     */
+    public boolean shouldShowContactPermissionDialog() {
+        boolean hasBeenAsked = hasContactPermissionBeenAsked();
+        boolean isGranted = isContactPermissionGranted();
+        
+        // Show dialog if:
+        // 1. Permission has never been asked, OR
+        // 2. Permission was asked but not granted (user skipped/denied)
+        boolean shouldShow = !hasBeenAsked || (hasBeenAsked && !isGranted);
+
+        Log.d(TAG, "Should show contact permission dialog: " + shouldShow +
+                  " (hasBeenAsked: " + hasBeenAsked + ", isGranted: " + isGranted + ")");
+        
+        // Additional debugging
+        Log.d(TAG, "Raw preference values - asked: " + pref.getBoolean(KEY_CONTACT_PERMISSION_ASKED, false) + 
+                  ", granted: " + pref.getBoolean(KEY_CONTACT_PERMISSION_GRANTED, false));
+        
+        return shouldShow;
+    }
+
+    /**
+     * Reset contact permission tracking (useful for testing or when user logs out)
+     */
+    public void resetContactPermissionTracking() {
+        editor.remove(KEY_CONTACT_PERMISSION_ASKED);
+        editor.remove(KEY_CONTACT_PERMISSION_GRANTED);
+        editor.apply();
+        Log.d(TAG, "Contact permission tracking reset");
     }
 }

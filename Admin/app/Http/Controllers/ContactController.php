@@ -122,16 +122,7 @@ class ContactController extends Controller
             });
         }
         
-        // Get per page value from request, default to 25
-        $perPage = $request->get('per_page', 25);
-        
-        // Validate per_page value
-        $validPerPageValues = [25, 50, 75, 100, 250];
-        if (!in_array($perPage, $validPerPageValues)) {
-            $perPage = 25;
-        }
-        
-        $contacts = $query->paginate($perPage)->withQueryString();
+        $contacts = $query->paginate(10)->withQueryString();
         $labels = Label::all();
         $selectedLabel = $request->label_id ? Label::find($request->label_id) : null;
         
@@ -391,20 +382,11 @@ class ContactController extends Controller
             $uniquePhones = [];
             $duplicates = [];
 
-            // First pass: identify duplicates and track name lengths
+            // First pass: identify duplicates
             foreach ($contacts as $contact) {
                 $phoneNumber = $contact->phone_number;
                 if (isset($uniquePhones[$phoneNumber])) {
-                    // Compare name lengths with existing contact
-                    $existingContact = Contact::find($uniquePhones[$phoneNumber]);
-                    if (strlen(trim($contact->name)) > strlen(trim($existingContact->name))) {
-                        // Current contact has longer name, keep this one instead
-                        $duplicates[] = $uniquePhones[$phoneNumber];
-                        $uniquePhones[$phoneNumber] = $contact->id;
-                    } else {
-                        // Existing contact has longer or equal name length, keep that one
-                        $duplicates[] = $contact->id;
-                    }
+                    $duplicates[] = $contact->id;
                 } else {
                     $uniquePhones[$phoneNumber] = $contact->id;
                 }
@@ -418,7 +400,7 @@ class ContactController extends Controller
                 DB::commit();
                 
                 return redirect()->route('contacts.index')
-                    ->with('success', count($duplicates) . ' duplicate contacts have been removed. Kept contacts with longer names for each phone number.');
+                    ->with('success', count($duplicates) . ' duplicate contacts have been removed.');
             }
 
             DB::commit();
@@ -434,36 +416,6 @@ class ContactController extends Controller
             
             return redirect()->route('contacts.index')
                 ->with('error', 'Error refreshing database: ' . $e->getMessage());
-        }
-    }
-
-    public function bulkDelete(Request $request)
-    {
-        try {
-            $request->validate([
-                'contact_ids' => 'required|array',
-                'contact_ids.*' => 'exists:contacts,id'
-            ]);
-
-            DB::beginTransaction();
-
-            // Delete the selected contacts
-            Contact::whereIn('id', $request->contact_ids)->delete();
-
-            DB::commit();
-
-            return redirect()->route('contacts.index')
-                ->with('success', count($request->contact_ids) . ' contacts have been deleted successfully.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error deleting contacts', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return redirect()->route('contacts.index')
-                ->with('error', 'Error deleting contacts: ' . $e->getMessage());
         }
     }
 } 

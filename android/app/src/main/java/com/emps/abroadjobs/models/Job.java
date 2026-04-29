@@ -7,10 +7,12 @@ import androidx.annotation.NonNull;
 import androidx.room.Ignore;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.annotations.JsonAdapter;
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity(tableName = "jobs")
-public class Job {
+public class Job implements Serializable {
+    private static final long serialVersionUID = 1L;
     @PrimaryKey
     @NonNull
     @ColumnInfo(name = "id")
@@ -335,6 +337,14 @@ public class Job {
 
     public void setBenefits(String benefits) {
         this.benefits = benefits;
+    }
+
+    public String getExperienceRequired() {
+        return experienceLevel != null ? experienceLevel : "";
+    }
+
+    public void setExperienceRequired(String experienceRequired) {
+        this.experienceLevel = experienceRequired;
     }
 
     public String getExperienceLevel() {

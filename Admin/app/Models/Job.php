@@ -22,6 +22,7 @@ class Job extends Model
         'expiry_date',
         'is_active',
         'image',
+        'job_image',
         'recruiter_id',
         'requirements',
         'benefits',

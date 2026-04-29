@@ -79,6 +79,10 @@ public class RecruiterJobsFragment extends Fragment {
     
     private void setupRecyclerView() {
         jobsAdapter = new RecentJobsAdapter(new ArrayList<>());
+        jobsAdapter.setOnJobActionListener(() -> {
+            // Refresh jobs list when a job is updated
+            loadJobs();
+        });
         rvJobs.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvJobs.setAdapter(jobsAdapter);
     }

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +23,7 @@
             margin: 0 auto;
             padding: 20px;
             background-color: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             border-radius: 8px;
             margin-top: 40px;
             margin-bottom: 40px;
@@ -190,18 +189,17 @@
                 margin: 20px;
                 padding: 15px;
             }
-
+            
             .header h1 {
                 font-size: 1.8rem;
             }
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <a href="/" class="back-link">← Back to Home</a>
-
+        
         <div class="header">
             <h1>Account Removal Request</h1>
             <p>We're sorry to see you go. Please read the information below before proceeding.</p>
@@ -241,8 +239,7 @@
             <form id="deleteAccountForm" action="#" method="POST">
                 <div class="form-group">
                     <label for="email">Email Address *</label>
-                    <input type="email" id="email" name="email" required
-                        placeholder="Enter your registered email address">
+                    <input type="email" id="email" name="email" required placeholder="Enter your registered email address">
                 </div>
 
                 <div class="form-group">
@@ -265,20 +262,17 @@
 
                 <div class="form-group">
                     <label for="additional_info">Additional Information (Optional)</label>
-                    <textarea id="additional_info" name="additional_info"
-                        placeholder="Please provide any additional details or feedback"></textarea>
+                    <textarea id="additional_info" name="additional_info" placeholder="Please provide any additional details or feedback"></textarea>
                 </div>
 
                 <div class="checkbox-group">
                     <input type="checkbox" id="confirm_deletion" name="confirm_deletion" required>
-                    <label for="confirm_deletion">I understand that this action is permanent and cannot be undone. I
-                        want to permanently delete my account and all associated data.</label>
+                    <label for="confirm_deletion">I understand that this action is permanent and cannot be undone. I want to permanently delete my account and all associated data.</label>
                 </div>
 
                 <div class="checkbox-group">
                     <input type="checkbox" id="data_export" name="data_export">
-                    <label for="data_export">I have downloaded or exported any data I want to keep before
-                        deletion.</label>
+                    <label for="data_export">I have downloaded or exported any data I want to keep before deletion.</label>
                 </div>
 
                 <button type="submit" class="submit-btn" id="submitBtn" disabled>Submit Deletion Request</button>
@@ -299,18 +293,18 @@
         const submitBtn = document.getElementById('submitBtn');
         const form = document.getElementById('deleteAccountForm');
 
-        confirmCheckbox.addEventListener('change', function () {
+        confirmCheckbox.addEventListener('change', function() {
             submitBtn.disabled = !this.checked;
         });
 
         // Handle form submission
-        form.addEventListener('submit', function (e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
-
+            
             const formData = new FormData(form);
             const email = formData.get('email');
             const reason = formData.get('reason');
-
+            
             if (!email || !reason || !confirmCheckbox.checked) {
                 alert('Please fill in all required fields and confirm the deletion.');
                 return;
@@ -320,7 +314,7 @@
             if (confirm('Are you absolutely sure you want to delete your account? This action cannot be undone.')) {
                 // Here you would typically send the data to your server
                 alert('Your account deletion request has been submitted. You will receive a confirmation email within 24 hours. The deletion process may take up to 30 days to complete.');
-
+                
                 // Reset form
                 form.reset();
                 submitBtn.disabled = true;
@@ -328,5 +322,4 @@
         });
     </script>
 </body>
-
 </html>

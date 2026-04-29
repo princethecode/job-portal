@@ -319,21 +319,68 @@ public class ApiClient {
         googleData.put("google_id", googleId);
         googleData.put("provider", "google");
 
-        Call<ApiResponse<User>> call = apiService.registerWithGoogle(googleData);
-        call.enqueue(new Callback<ApiResponse<User>>() {
+        // Create raw request to get proper response parsing
+        Gson gson = new Gson();
+        String jsonBody = gson.toJson(googleData);
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), jsonBody);
+        
+        Request request = new Request.Builder()
+                .url(BuildConfig.API_BASE_URL + "register/google")
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json")
+                .post(requestBody)
+                .build();
+        
+        Log.d("ApiClient", "Registering with Google");
+        
+        // Execute the request with proper timeouts
+        OkHttpClient httpClient = new OkHttpClient.Builder()
+            .connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+            .build();
+            
+        httpClient.newCall(request).enqueue(new okhttp3.Callback() {
             @Override
-            public void onResponse(Call<ApiResponse<User>> call, Response<ApiResponse<User>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    callback.onSuccess(response.body());
+            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                String responseBody = "";
+                if (response.body() != null) {
+                    responseBody = response.body().string();
+                }
+                
+                Log.d("ApiClient", "Google registration response code: " + response.code());
+                Log.d("ApiClient", "Response body: " + responseBody);
+                
+                if (response.isSuccessful()) {
+                    try {
+                        ApiResponse<User> apiResponse = SafeJsonParser.parseRegistrationResponseAsUser(responseBody);
+                        
+                        if (apiResponse != null && apiResponse.isSuccess()) {
+                            Handler mainHandler = new Handler(Looper.getMainLooper());
+                            mainHandler.post(() -> callback.onSuccess(apiResponse));
+                        } else {
+                            Handler mainHandler = new Handler(Looper.getMainLooper());
+                            mainHandler.post(() -> callback.onError(apiResponse != null ? 
+                                apiResponse.getMessage() : "Google registration failed"));
+                        }
+                    } catch (Exception e) {
+                        Log.e("ApiClient", "Error parsing Google registration response", e);
+                        Log.e("ApiClient", Log.getStackTraceString(e));
+                        Handler mainHandler = new Handler(Looper.getMainLooper());
+                        mainHandler.post(() -> callback.onError("Error parsing response: " + e.getMessage()));
+                    }
                 } else {
-                    callback.onError("Google registration failed: " + response.message());
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(() -> callback.onError("Google registration failed: " + response.message()));
                 }
             }
-
+            
             @Override
-            public void onFailure(Call<ApiResponse<User>> call, Throwable t) {
-                Log.e("ApiClient", "Google registration network error", t);
-                callback.onError("Network error: " + t.getMessage());
+            public void onFailure(okhttp3.Call call, IOException e) {
+                Log.e("ApiClient", "Google registration network error", e);
+                Log.e("ApiClient", Log.getStackTraceString(e));
+                Handler mainHandler = new Handler(Looper.getMainLooper());
+                mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
             }
         });
     }
@@ -421,7 +468,7 @@ public class ApiClient {
                     
                     if (response.isSuccessful()) {
                         try {
-                            ApiResponse<User> apiResponse = SafeJsonParser.parseUserResponse(responseBody);
+                            ApiResponse<User> apiResponse = SafeJsonParser.parseRegistrationResponseAsUser(responseBody);
                             
                             if (apiResponse != null && apiResponse.isSuccess()) {
                                 Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -464,8 +511,70 @@ public class ApiClient {
             registerData.put("password", password);
             registerData.put("password_confirmation", password);
             
-            Call<ApiResponse<User>> call = apiService.register(registerData);
-            executeCall(call, callback);
+            // Create raw request to get proper response parsing
+            Gson gson = new Gson();
+            String jsonBody = gson.toJson(registerData);
+            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), jsonBody);
+            
+            Request request = new Request.Builder()
+                    .url(BuildConfig.API_BASE_URL + "register")
+                    .header("Accept", "application/json")
+                    .header("Content-Type", "application/json")
+                    .post(requestBody)
+                    .build();
+            
+            Log.d("ApiClient", "Registering without resume file");
+            
+            // Execute the request with proper timeouts
+            OkHttpClient httpClient = new OkHttpClient.Builder()
+                .connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .writeTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .build();
+                
+            httpClient.newCall(request).enqueue(new okhttp3.Callback() {
+                @Override
+                public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
+                    String responseBody = "";
+                    if (response.body() != null) {
+                        responseBody = response.body().string();
+                    }
+                    
+                    Log.d("ApiClient", "Registration response code: " + response.code());
+                    Log.d("ApiClient", "Response body: " + responseBody);
+                    
+                    if (response.isSuccessful()) {
+                        try {
+                            ApiResponse<User> apiResponse = SafeJsonParser.parseRegistrationResponseAsUser(responseBody);
+                            
+                            if (apiResponse != null && apiResponse.isSuccess()) {
+                                Handler mainHandler = new Handler(Looper.getMainLooper());
+                                mainHandler.post(() -> callback.onSuccess(apiResponse));
+                            } else {
+                                Handler mainHandler = new Handler(Looper.getMainLooper());
+                                mainHandler.post(() -> callback.onError(apiResponse != null ? 
+                                    apiResponse.getMessage() : "Registration failed"));
+                            }
+                        } catch (Exception e) {
+                            Log.e("ApiClient", "Error parsing response", e);
+                            Log.e("ApiClient", Log.getStackTraceString(e));
+                            Handler mainHandler = new Handler(Looper.getMainLooper());
+                            mainHandler.post(() -> callback.onError("Error parsing response: " + e.getMessage()));
+                        }
+                    } else {
+                        Handler mainHandler = new Handler(Looper.getMainLooper());
+                        mainHandler.post(() -> callback.onError("Registration failed: " + response.message()));
+                    }
+                }
+                
+                @Override
+                public void onFailure(okhttp3.Call call, IOException e) {
+                    Log.e("ApiClient", "Registration network error", e);
+                    Log.e("ApiClient", Log.getStackTraceString(e));
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    mainHandler.post(() -> callback.onError("Network error: " + e.getMessage()));
+                }
+            });
         }
     }
 

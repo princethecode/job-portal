@@ -17,6 +17,7 @@ class FeaturedJob extends Model
         'salary',
         'job_type',
         'description',
+          'job_image',
         'posted_date',
         'is_active'
     ];

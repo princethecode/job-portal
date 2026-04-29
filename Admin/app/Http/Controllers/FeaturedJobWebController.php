@@ -24,6 +24,7 @@ class FeaturedJobWebController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'job_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'job_title' => 'required|string|max:255',
             'company_name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
@@ -39,10 +40,18 @@ class FeaturedJobWebController extends Controller
         $data = $request->all();
         $data['is_active'] = $request->has('is_active');
 
+        // Handle company logo upload
         if ($request->hasFile('company_logo')) {
             $logo = $request->file('company_logo');
             $logoPath = $logo->store('company_logos', 'public');
-            $data['company_logo'] = $logoPath;
+            $data['company_logo'] = $logoPath;  // Store: company_logos/filename.jpg
+        }
+
+        // Handle job image upload
+        if ($request->hasFile('job_image')) {
+            $image = $request->file('job_image');
+            $imagePath = $image->store('job_images', 'public');
+            $data['job_image'] = $imagePath;  // Store: job_images/filename.jpg
         }
 
         FeaturedJob::create($data);
@@ -58,6 +67,7 @@ class FeaturedJobWebController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'job_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'job_title' => 'sometimes|required|string|max:255',
             'company_name' => 'sometimes|required|string|max:255',
             'location' => 'sometimes|required|string|max:255',
@@ -74,15 +84,26 @@ class FeaturedJobWebController extends Controller
         $data = $request->all();
         $data['is_active'] = $request->has('is_active');
 
+        // Handle company logo upload
         if ($request->hasFile('company_logo')) {
             // Delete old logo if exists
             if ($featuredJob->company_logo) {
-                $oldLogoPath = $featuredJob->company_logo;
-                Storage::disk('public')->delete($oldLogoPath);
+                Storage::disk('public')->delete($featuredJob->company_logo);
             }
             $logo = $request->file('company_logo');
             $logoPath = $logo->store('company_logos', 'public');
-            $data['company_logo'] = $logoPath;
+            $data['company_logo'] = $logoPath;  // Store: company_logos/filename.jpg
+        }
+
+        // Handle job image upload
+        if ($request->hasFile('job_image')) {
+            // Delete old image if exists
+            if ($featuredJob->job_image) {
+                Storage::disk('public')->delete($featuredJob->job_image);
+            }
+            $image = $request->file('job_image');
+            $imagePath = $image->store('job_images', 'public');
+            $data['job_image'] = $imagePath;  // Store: job_images/filename.jpg
         }
 
         $featuredJob->update($data);
@@ -91,10 +112,16 @@ class FeaturedJobWebController extends Controller
 
     public function destroy(FeaturedJob $featuredJob)
     {
+        // Delete company logo if exists
         if ($featuredJob->company_logo) {
-            $logoPath = $featuredJob->company_logo;
-            Storage::disk('public')->delete($logoPath);
+            Storage::disk('public')->delete($featuredJob->company_logo);
         }
+        
+        // Delete job image if exists
+        if ($featuredJob->job_image) {
+            Storage::disk('public')->delete($featuredJob->job_image);
+        }
+        
         $featuredJob->delete();
         return redirect()->route('featured-jobs.index')->with('success', 'Featured job deleted successfully.');
     }

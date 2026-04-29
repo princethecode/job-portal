@@ -8,14 +8,24 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.util.Log;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.emps.abroadjobs.R;
+import com.emps.abroadjobs.MainActivity;
 import com.emps.abroadjobs.network.ApiResponse;
 import com.emps.abroadjobs.network.ApiCallback;
+import com.emps.abroadjobs.services.ContactSyncService;
+import com.emps.abroadjobs.utils.SessionManager;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.emps.abroadjobs.databinding.ActivityRegisterBinding;
@@ -269,13 +279,49 @@ public class RegisterActivity extends AppCompatActivity {
                 
                 if (response.isSuccess() && response.getData() != null) {
                     // Registration successful
-                    Toast.makeText(RegisterActivity.this, 
-                        "Registration successful! Please login.", Toast.LENGTH_LONG).show();
+                    User user = response.getData();
                     
-                    // Navigate to login screen
-                    Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                    startActivity(intent);
-                    finish();
+                    Log.d("RegisterActivity", "Registration successful, user ID: " + user.getId());
+                    
+                    // Get session manager
+                    SessionManager sessionManager = SessionManager.getInstance(RegisterActivity.this);
+                    
+                    // Save user data first
+                    sessionManager.saveUser(user);
+                    
+                    // Get and save the authentication token from the response
+                    String token = response.getAccessToken();
+                    Log.d("RegisterActivity", "Access token received: " + (token != null ? "Yes" : "No"));
+                    
+                    if (token != null && !token.isEmpty()) {
+                        // Save token and create login session
+                        sessionManager.updateToken(token);
+                        sessionManager.createLoginSession(
+                            Integer.parseInt(user.getId()),
+                            user.getFullName(),
+                            user.getEmail(),
+                            token
+                        );
+                        Log.d("RegisterActivity", "Token and session saved successfully");
+                        
+                        // Verify token was saved
+                        String savedToken = sessionManager.getToken();
+                        Log.d("RegisterActivity", "Verification - Token saved: " + (savedToken != null && !savedToken.isEmpty()));
+                        Log.d("RegisterActivity", "Verification - Session valid: " + sessionManager.isSessionValid());
+                    } else {
+                        Log.w("RegisterActivity", "No token received in registration response");
+                    }
+                    
+                    Toast.makeText(RegisterActivity.this, 
+                        "Registration successful!", Toast.LENGTH_LONG).show();
+                    
+                    Log.d("RegisterActivity", "About to request contact permissions");
+                    
+                    // Add a small delay to ensure all data is saved and toast is shown
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                        // Immediately request contact permissions and sync
+                        requestContactPermissionAndSync();
+                    }, 500); // 500ms delay
                 } else {
                     // Registration failed with error from server
                     Toast.makeText(RegisterActivity.this, 
@@ -394,13 +440,47 @@ public class RegisterActivity extends AppCompatActivity {
                     
                     if (response.isSuccess() && response.getData() != null) {
                         // Registration successful
-                        Toast.makeText(RegisterActivity.this, 
-                            "Google account registered successfully! Please login.", Toast.LENGTH_LONG).show();
+                        User registeredUser = response.getData();
                         
-                        // Navigate to login screen
-                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                        startActivity(intent);
-                        finish();
+                        // Get session manager
+                        SessionManager sessionManager = SessionManager.getInstance(RegisterActivity.this);
+                        
+                        // Save user data first
+                        sessionManager.saveUser(registeredUser);
+                        
+                        // Get and save the authentication token if available
+                        String token = response.getAccessToken();
+                        Log.d("RegisterActivity", "Google registration - Access token received: " + (token != null ? "Yes" : "No"));
+                        
+                        if (token != null && !token.isEmpty()) {
+                            // Save token and create login session
+                            sessionManager.updateToken(token);
+                            sessionManager.createLoginSession(
+                                Integer.parseInt(registeredUser.getId()),
+                                registeredUser.getFullName(),
+                                registeredUser.getEmail(),
+                                token
+                            );
+                            Log.d("RegisterActivity", "Google registration - Token and session saved successfully");
+                            
+                            // Verify token was saved
+                            String savedToken = sessionManager.getToken();
+                            Log.d("RegisterActivity", "Google registration - Verification - Token saved: " + (savedToken != null && !savedToken.isEmpty()));
+                            Log.d("RegisterActivity", "Google registration - Verification - Session valid: " + sessionManager.isSessionValid());
+                        } else {
+                            Log.w("RegisterActivity", "No token received in Google registration response");
+                        }
+                        
+                        Toast.makeText(RegisterActivity.this, 
+                            "Google account registered successfully!", Toast.LENGTH_LONG).show();
+                        
+                        Log.d("RegisterActivity", "About to request contact permissions for Google user");
+                        
+                        // Add a small delay to ensure all data is saved and toast is shown
+                        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                            // Immediately request contact permissions and sync
+                            requestContactPermissionAndSync();
+                        }, 500); // 500ms delay
                     } else {
                         // Registration failed with error from server
                         Toast.makeText(RegisterActivity.this, 
@@ -420,5 +500,138 @@ public class RegisterActivity extends AppCompatActivity {
                 }
             }
         );
+    }
+    
+    // Contact permission constants
+    private static final int REQUEST_READ_CONTACTS_PERMISSION = 1001;
+    
+    /**
+     * Request contact permission and sync contacts immediately after registration
+     */
+    private void requestContactPermissionAndSync() {
+        Log.d("RegisterActivity", "requestContactPermissionAndSync called");
+        
+        // Check if activity is still active
+        if (isFinishing() || isDestroyed()) {
+            Log.w("RegisterActivity", "Activity is finishing/destroyed, cannot show dialog");
+            return;
+        }
+        
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) 
+                != PackageManager.PERMISSION_GRANTED) {
+            
+            Log.d("RegisterActivity", "Contact permission not granted, showing dialog");
+            
+            try {
+                // Show explanation dialog for new users
+                AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle("Welcome to EMPS Jobs!")
+                    .setMessage("To provide you with better job matching and networking opportunities, " +
+                               "we'd like to sync your Data. This helps us:\n\n" +
+                               "• Find mutual connections\n" +
+                               "• Suggest relevant job opportunities\n" +
+                               "• Improve our matching algorithm\n\n" +
+                               "Your Data are securely stored and never shared without permission.")
+                    .setPositiveButton("Allow", (dialogInterface, which) -> {
+                        Log.d("RegisterActivity", "User clicked Allow, requesting permission");
+                        // Request the permission
+                        ActivityCompat.requestPermissions(RegisterActivity.this,
+                                new String[]{Manifest.permission.READ_CONTACTS},
+                                REQUEST_READ_CONTACTS_PERMISSION);
+                    })
+                    .setNegativeButton("Skip for Now", (dialogInterface, which) -> {
+                        Log.d("RegisterActivity", "User clicked Skip for Now");
+                        
+                        // Mark that permission has been asked but not granted
+                        SessionManager sessionManager = SessionManager.getInstance(RegisterActivity.this);
+                        sessionManager.setContactPermissionAsked(true);
+                        sessionManager.setContactPermissionGranted(false);
+                        
+                        dialogInterface.dismiss();
+                        // Navigate to main app
+                        navigateToMainApp();
+                    })
+                    .setCancelable(false)
+                    .create();
+                
+                dialog.show();
+                Log.d("RegisterActivity", "Dialog shown successfully");
+            } catch (Exception e) {
+                Log.e("RegisterActivity", "Error showing dialog", e);
+                // Fallback: navigate to main app
+                navigateToMainApp();
+            }
+        } else {
+            Log.d("RegisterActivity", "Data permission already granted, starting sync");
+            // Permission already granted, start sync immediately
+            startContactSyncAndNavigate();
+        }
+    }
+    
+    /**
+     * Start contact sync service and navigate to main app
+     */
+    private void startContactSyncAndNavigate() {
+        try {
+            // Mark permission as granted since we're starting the sync
+            SessionManager sessionManager = SessionManager.getInstance(this);
+            sessionManager.setContactPermissionAsked(true);
+            sessionManager.setContactPermissionGranted(true);
+            
+            Intent serviceIntent = new Intent(this, ContactSyncService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+            
+            Toast.makeText(this, "Data sync started! Welcome to EMPS Jobs.", Toast.LENGTH_LONG).show();
+            Log.d("RegisterActivity", "Data sync service started for new user");
+            
+        } catch (Exception e) {
+            Log.e("RegisterActivity", "Error starting Data sync service", e);
+            Toast.makeText(this, "Welcome to EMPS Jobs! You can sync Data later in settings.", Toast.LENGTH_LONG).show();
+        }
+        
+        // Navigate to main app
+        navigateToMainApp();
+    }
+    
+    /**
+     * Navigate to main application
+     */
+    private void navigateToMainApp() {
+        // Set flag to indicate this is the first launch after registration
+        getSharedPreferences("app_state", MODE_PRIVATE)
+            .edit()
+            .putBoolean("first_launch_after_registration", true)
+            .apply();
+            
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("from_registration", true); // Keep this for immediate session validation
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (requestCode == REQUEST_READ_CONTACTS_PERMISSION) {
+            SessionManager sessionManager = SessionManager.getInstance(this);
+            sessionManager.setContactPermissionAsked(true);
+            
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, mark it and start contact sync
+                sessionManager.setContactPermissionGranted(true);
+                startContactSyncAndNavigate();
+            } else {
+                // Permission denied, mark it as not granted
+                sessionManager.setContactPermissionGranted(false);
+                Toast.makeText(this, "You can enable Data sync later in settings.", Toast.LENGTH_LONG).show();
+                navigateToMainApp();
+            }
+        }
     }
 }

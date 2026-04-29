@@ -42,7 +42,6 @@
                 android:text="Active"
                 android:textSize="12sp"
                 android:textColor="@color/success"
-                android:background="@drawable/bg_status_active"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp" />
 

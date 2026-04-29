@@ -8,6 +8,7 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
@@ -104,6 +105,7 @@ class RecruiterJobController extends Controller
             'expiry_date' => 'required|date|after:today',
             'benefits' => 'sometimes|nullable|string',
             'skills_required' => 'sometimes|nullable|string',
+            'image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'boolean',
         ]);
 
@@ -117,6 +119,17 @@ class RecruiterJobController extends Controller
 
         try {
             $recruiter = $request->user();
+
+            // Handle image upload
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                
+                // Store in storage/app/public/job_images using Laravel Storage
+                $path = $image->storeAs('public/job_images', $imageName);
+                $imagePath = 'job_images/' . $imageName;
+            }
 
             // Handle category - create category record if it doesn't exist, but store as string in jobs table
             $category = Category::where('name', $request->category)->first();
@@ -145,6 +158,7 @@ class RecruiterJobController extends Controller
                 'expiry_date' => $request->expiry_date,
                 'benefits' => $request->benefits,
                 'skills_required' => $request->skills_required ? explode(',', $request->skills_required) : null,
+                'image' => $imagePath, // Store the image path
                 'is_active' => $request->is_active ?? true,
                 'approval_status' => 'pending', // Set as pending by default for recruiter posts
                 'posting_date' => now(), // Set posting date to current time
@@ -176,6 +190,7 @@ class RecruiterJobController extends Controller
                         'expiry_date' => $job->expiry_date,
                         'benefits' => $job->benefits,
                         'skills_required' => is_array($job->skills_required) ? implode(', ', $job->skills_required) : $job->skills_required,
+                        'image' => $job->image,
                         'is_active' => $job->is_active,
                         'approval_status' => $job->approval_status,
                         'company_name' => $job->company_name ?? $job->company,
@@ -205,34 +220,38 @@ class RecruiterJobController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'job' => [
-                    'id' => $job->id,
-                    'title' => $job->title,
-                    'description' => $job->description,
-                    'requirements' => $job->requirements,
-                    'location' => $job->location,
-                    'job_type' => $job->job_type,
-                    'salary' => $job->salary,
-                    'experience_level' => $job->experience_level,
-                    'category' => $job->category ?? 'General',
-                    'expiry_date' => $job->expiry_date,
-                    'is_active' => $job->is_active,
-                    'company_name' => $job->company_name ?? $recruiter->company_name, // Fallback to recruiter's company
-                    'company_website' => $job->company_website,
-                    'company_description' => $job->company_description,
-                    'applications_count' => $job->applications->count(),
-                    'applications' => $job->applications->map(function ($application) {
-                        return [
-                            'id' => $application->id,
-                            'user_name' => $application->user->name,
-                            'user_email' => $application->user->email,
-                            'status' => $application->status,
-                            'applied_date' => $application->created_at,
-                        ];
-                    }),
-                    'created_at' => $job->created_at,
-                    'updated_at' => $job->updated_at,
-                ]
+                'id' => $job->id,
+                'title' => $job->title,
+                'description' => $job->description,
+                'requirements' => $job->requirements,
+                'benefits' => $job->benefits,
+                'skills_required' => is_array($job->skills_required) ? implode(', ', $job->skills_required) : $job->skills_required,
+                'location' => $job->location,
+                'job_type' => $job->job_type,
+                'salary' => $job->salary,
+                'experience_required' => $job->experience_required,
+                'category' => $job->category ?? 'General',
+                'expiry_date' => $job->expiry_date,
+                'is_active' => $job->is_active,
+                'approval_status' => $job->approval_status,
+                'company' => $job->company,
+                'company_name' => $job->company_name ?? $recruiter->company_name,
+                'company_website' => $job->company_website,
+                'company_description' => $job->company_description,
+                'company_logo' => $job->company_logo,
+                'image' => $job->image,
+                'applications_count' => $job->applications->count(),
+                'applications' => $job->applications->map(function ($application) {
+                    return [
+                        'id' => $application->id,
+                        'user_name' => $application->user->name,
+                        'user_email' => $application->user->email,
+                        'status' => $application->status,
+                        'applied_date' => $application->created_at,
+                    ];
+                }),
+                'created_at' => $job->created_at,
+                'updated_at' => $job->updated_at,
             ]
         ]);
     }
@@ -252,6 +271,9 @@ class RecruiterJobController extends Controller
             'experience_level' => 'sometimes|in:Entry,Intermediate,Senior,Executive',
             'category' => 'sometimes|string|max:255',
             'expiry_date' => 'sometimes|date|after:today',
+            'benefits' => 'sometimes|nullable|string',
+            'skills_required' => 'sometimes|nullable|string',
+            'image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'sometimes|boolean',
         ]);
 
@@ -267,8 +289,23 @@ class RecruiterJobController extends Controller
             $recruiter = $request->user();
             $job = $recruiter->jobs()->findOrFail($id);
 
+            // Handle image upload
+            $updateData = $request->except(['category', 'image']);
+            if ($request->hasFile('image')) {
+                // Delete old image if exists
+                if ($job->image && \Storage::disk('public')->exists($job->image)) {
+                    \Storage::disk('public')->delete($job->image);
+                }
+                
+                $image = $request->file('image');
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                
+                // Store in storage/app/public/job_images using Laravel Storage
+                $path = $image->storeAs('public/job_images', $imageName);
+                $updateData['image'] = 'job_images/' . $imageName;
+            }
+
             // Handle category if provided
-            $updateData = $request->except('category');
             if ($request->has('category')) {
                 $category = Category::where('name', $request->category)->first();
                 if (!$category) {
@@ -302,13 +339,17 @@ class RecruiterJobController extends Controller
                         'title' => $job->title,
                         'description' => $job->description,
                         'requirements' => $job->requirements,
+                        'benefits' => $job->benefits,
+                        'skills_required' => is_array($job->skills_required) ? implode(', ', $job->skills_required) : $job->skills_required,
                         'location' => $job->location,
                         'job_type' => $job->job_type,
                         'salary' => $job->salary,
-                        'experience_level' => $job->experience_level,
+                        'experience_required' => $job->experience_required,
                         'category' => $categoryName,
                         'expiry_date' => $job->expiry_date,
+                        'image' => $job->image,
                         'is_active' => $job->is_active,
+                        'approval_status' => $job->approval_status,
                         'company_name' => $job->company_name,
                         'updated_at' => $job->updated_at,
                     ]
@@ -375,6 +416,70 @@ class RecruiterJobController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Status update failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Deactivate a job
+     */
+    public function deactivate(Request $request, $id)
+    {
+        try {
+            $recruiter = $request->user();
+            $job = $recruiter->jobs()->findOrFail($id);
+            
+            $job->update(['is_active' => false]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Job deactivated successfully',
+                'data' => [
+                    'job' => [
+                        'id' => $job->id,
+                        'title' => $job->title,
+                        'is_active' => $job->is_active,
+                    ]
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Job deactivation failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Activate a job
+     */
+    public function activate(Request $request, $id)
+    {
+        try {
+            $recruiter = $request->user();
+            $job = $recruiter->jobs()->findOrFail($id);
+            
+            $job->update(['is_active' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Job activated successfully',
+                'data' => [
+                    'job' => [
+                        'id' => $job->id,
+                        'title' => $job->title,
+                        'is_active' => $job->is_active,
+                    ]
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Job activation failed',
                 'error' => $e->getMessage()
             ], 500);
         }

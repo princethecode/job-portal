@@ -11,6 +11,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\FeaturedJobWebController;
 use App\Http\Controllers\AppVersionController;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -25,6 +26,17 @@ use App\Http\Controllers\AppVersionController;
 Route::get('/', function () {
     return view('landing'); // This loads resources/views/landing.blade.php
 });
+
+// Serve job images from storage
+Route::get('/job_images/{filename}', function ($filename) {
+    $path = storage_path('app/public/job_images/' . $filename);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    
+    return response()->file($path);
+})->name('job.image');
 
 
 // Public Routes
@@ -42,7 +54,9 @@ Route::get('/terms-of-service', function() {
 
 Route::get('/account-remove', function() {
     return file_get_contents(public_path('account-remove.html'));
-})->name('app.account-remove');
+})->name('app.terms-of-service');
+
+
 
 // Reset Password Route
 Route::get('/reset-password', function() {
@@ -52,16 +66,7 @@ Route::get('/reset-password', function() {
 // Handle reset password POST request
 Route::post('/reset-password', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
 
-// Test-Mail Functionality
 
-Route::get('/test-mail', function () {
-    Mail::raw('This is a test email from Laravel.', function ($message) {
-        $message->to('g.paresh123@gmail.com')
-                ->subject('Test Email');
-    });
-
-    return 'Test mail sent!';
-});
 
 // Authentication Routes
 Route::get('/admin', [AdminAuthController::class, 'showLoginForm'])->name('admin.login');
@@ -73,40 +78,40 @@ Route::get('/register', [AdminAuthController::class, 'showRegistrationForm'])->n
 Route::post('/register', [AdminAuthController::class, 'register'])->name('admin.register.submit');
 
 
-
 // Protected Routes (require authentication)
 Route::middleware(['web', 'admin.auth'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-   
-   // Change Password Routes (require authentication)
-
+    
+    
+    // Change Password Routes (require authentication)
     Route::get('/change-password', [AdminAuthController::class, 'showChangePasswordForm'])->name('admin.change-password.form');
     Route::post('/change-password', [AdminAuthController::class, 'changePassword'])->name('admin.change-password.submit');
-
-
+    
     // Jobs Management
     Route::prefix('jobs')->group(function () {
         Route::get('/', [AdminJobController::class, 'index'])->name('admin.jobs.index');
         Route::get('/create', [AdminJobController::class, 'create'])->name('admin.jobs.create');
         Route::post('/', [AdminJobController::class, 'store'])->name('admin.jobs.store');
         Route::delete('/bulk-delete', [AdminJobController::class, 'bulkDestroy'])->name('admin.jobs.bulk-destroy');
-        
-        // Job Approval Routes
-        Route::get('/pending-approval', [AdminJobController::class, 'pendingApproval'])->name('admin.jobs.pending-approval');
-        Route::post('/{id}/approve', [AdminJobController::class, 'approve'])->name('admin.jobs.approve');
-        Route::post('/{id}/decline', [AdminJobController::class, 'decline'])->name('admin.jobs.decline');
-        
-        // Bulk import routes
-        Route::get('/import', [AdminJobController::class, 'import'])->name('admin.jobs.import');
-        Route::get('/download-template', [AdminJobController::class, 'downloadTemplate'])->name('admin.jobs.downloadTemplate');
-        Route::post('/process-import', [AdminJobController::class, 'processImport'])->name('admin.jobs.processImport');
-        
         Route::get('/{id}', [AdminJobController::class, 'show'])->name('admin.jobs.show');
         Route::get('/{id}/edit', [AdminJobController::class, 'edit'])->name('admin.jobs.edit');
         Route::put('/{id}', [AdminJobController::class, 'update'])->name('admin.jobs.update');
         Route::delete('/{id}', [AdminJobController::class, 'destroy'])->name('admin.jobs.destroy');
     });
+    
+          
+        // Job Approval Routes
+        Route::get('/pending-approval', [AdminJobController::class, 'pendingApproval'])->name('admin.jobs.pending-approval');
+        Route::post('/{id}/approve', [AdminJobController::class, 'approve'])->name('admin.jobs.approve');
+        Route::post('/{id}/decline', [AdminJobController::class, 'decline'])->name('admin.jobs.decline');
+        
+            
+        // Bulk import routes
+        Route::get('/import', [AdminJobController::class, 'import'])->name('admin.jobs.import');
+        Route::get('/download-template', [AdminJobController::class, 'downloadTemplate'])->name('admin.jobs.downloadTemplate');
+        Route::post('/process-import', [AdminJobController::class, 'processImport'])->name('admin.jobs.processImport');
+        
     
     // Applications Management
     Route::prefix('applications')->group(function () {
@@ -116,37 +121,52 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
         Route::put('/{id}/status', [ApplicationController::class, 'updateStatus'])->name('admin.applications.update-status');
         Route::get('/{id}/view-resume', [ApplicationController::class, 'viewResume'])->name('admin.applications.view-resume');
         Route::get('/{id}/download-resume', [ApplicationController::class, 'downloadResume'])->name('admin.applications.download-resume');
+ 
     });
 
+    //  // Resume file handling route - with a specific prefix to avoid conflicts
+    // Route::get('resumes/{filename}', function ($filename) {
+    //     // Sanitize filename to prevent directory traversal
+    //     $filename = basename($filename);
+    //     $path = storage_path('public/resumes/' . $filename);
+        
+    //     if (!file_exists($path)) {
+    //         abort(404, 'Resume not found');
+    //     }
+        
+    //     // Check if download is requested
+    //     $isDownload = request()->has('download');
+        
+    //     return response()->file($path, [
+    //         'Content-Type' => 'application/pdf',
+    //         'Content-Disposition' => ($isDownload ? 'attachment' : 'inline') . '; filename="' . $filename . '"'
+    //     ]);
+    // })->name('admin.resume.view');
+    
     // Resume file handling route - with a specific prefix to avoid conflicts
     Route::get('resume/{filename}', function ($filename) {
-        $path = storage_path('app/public/resumes/' . $filename);
+        // Sanitize filename to prevent directory traversal
+        $filename = basename($filename);
+        
+        // Try public/storage first (direct directory), then storage/app/public (symlink location)
+        $publicPath = public_path('storage/resumes/' . $filename);
+        $storagePath = storage_path('app/public/resumes/' . $filename);
+        
+        $path = file_exists($publicPath) ? $publicPath : $storagePath;
         
         if (!file_exists($path)) {
-            abort(404, 'Resume not found');
+            abort(404, 'Resume not found: ' . $filename);
         }
+        
+        // Check if download is requested
+        $isDownload = request()->has('download');
         
         return response()->file($path, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $filename . '"'
+            'Content-Disposition' => ($isDownload ? 'attachment' : 'inline') . '; filename="' . $filename . '"'
         ]);
     })->name('admin.resume.view');
-    
-    // Profile photo handling route
-    Route::get('profile_photos/{filename}', function ($filename) {
-        $path = storage_path('app/public/profile_photos/' . $filename);
-        
-        if (!file_exists($path)) {
-            abort(404, 'Profile photo not found');
-        }
-        
-        $mimeType = mime_content_type($path);
-        
-        return response()->file($path, [
-            'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="' . $filename . '"'
-        ]);
-    })->name('admin.profile.photo.view');
+
     
     // Users Management
     Route::prefix('users')->group(function () {
@@ -167,7 +187,7 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
         Route::put('/{id}', [NotificationController::class, 'update'])->name('admin.notifications.update');
         Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('admin.notifications.destroy');
     });
-
+    
     // Recruiter Management
     Route::prefix('recruiters')->group(function () {
         Route::get('/', [App\Http\Controllers\AdminRecruiterController::class, 'index'])->name('admin.recruiters.index');
@@ -178,8 +198,8 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
         Route::delete('/{recruiter}', [App\Http\Controllers\AdminRecruiterController::class, 'destroy'])->name('admin.recruiters.destroy');
         Route::post('/bulk-action', [App\Http\Controllers\AdminRecruiterController::class, 'bulkAction'])->name('admin.recruiters.bulk-action');
     });
-
-    // Contact Management Routes
+    
+     // Contact Management Routes
     Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
     Route::post('/contacts/upload', [ContactController::class, 'upload'])->name('contacts.upload');
     Route::get('/contacts/download', [ContactController::class, 'download'])->name('contacts.download');
@@ -188,7 +208,6 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
     Route::post('/contacts/{contact}/label', [ContactController::class, 'updateContactLabel'])->name('contacts.update-label');
     Route::post('/contacts/sync-labels', [ContactController::class, 'syncLabels'])->name('contacts.sync-labels');
     Route::get('/contacts/refresh-database', [ContactController::class, 'refreshDatabase'])->name('contacts.refresh-database');
-    Route::post('/contacts/bulk-delete', [ContactController::class, 'bulkDelete'])->name('contacts.bulk-delete');
 
     // Label Management Routes
     Route::get('/labels', [ContactController::class, 'labels'])->name('labels.index');
@@ -196,7 +215,16 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
     Route::put('/labels/{label}', [ContactController::class, 'updateLabel'])->name('labels.update');
     Route::delete('/labels/{label}', [ContactController::class, 'deleteLabel'])->name('labels.destroy');
     
-    // App Version Management Routes
+// Featured Jobs Web Routes
+Route::get('/featured-jobs', [FeaturedJobWebController::class, 'index'])->name('featured-jobs.index');
+Route::get('/featured-jobs/create', [FeaturedJobWebController::class, 'create'])->name('featured-jobs.create');
+Route::post('/featured-jobs', [FeaturedJobWebController::class, 'store'])->name('featured-jobs.store');
+Route::get('/featured-jobs/{featuredJob}/edit', [FeaturedJobWebController::class, 'edit'])->name('featured-jobs.edit');
+Route::put('/featured-jobs/{featuredJob}', [FeaturedJobWebController::class, 'update'])->name('featured-jobs.update');
+Route::delete('/featured-jobs/{featuredJob}', [FeaturedJobWebController::class, 'destroy'])->name('featured-jobs.destroy');
+
+
+  // App Version Management Routes
     Route::prefix('app-versions')->group(function () {
         Route::get('/', [AppVersionController::class, 'index'])->name('admin.app-versions.index');
         Route::get('/create', [AppVersionController::class, 'create'])->name('admin.app-versions.create');
@@ -208,6 +236,7 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
         Route::post('/{id}/toggle-status', [AppVersionController::class, 'toggleStatus'])->name('admin.app-versions.toggle-status');
         Route::get('/latest/{platform}', [AppVersionController::class, 'getLatestVersion'])->name('admin.app-versions.latest');
     });
+
 });
 
 // Serve app screenshots
@@ -220,6 +249,8 @@ Route::get('/app-screenshot/{number}', function($number) {
     
     return response()->file($path);
 })->name('app.screenshot');
+
+
 
 // Add APK download route
 Route::get('/jobportal.apk', function() {
@@ -234,6 +265,8 @@ Route::get('/jobportal.apk', function() {
         'Content-Disposition' => 'attachment; filename="jobportal.apk"'
     ]);
 })->name('app.download.apk');
+
+
 
 // Test notification route
 Route::get('/test-notification', function() {
@@ -256,13 +289,7 @@ Route::get('/test-notification', function() {
     return $result ? 'Notification sent successfully' : 'Failed to send notification';
 })->name('test.notification');
 
-// Featured Jobs Web Routes
-Route::get('/featured-jobs', [FeaturedJobWebController::class, 'index'])->name('featured-jobs.index');
-Route::get('/featured-jobs/create', [FeaturedJobWebController::class, 'create'])->name('featured-jobs.create');
-Route::post('/featured-jobs', [FeaturedJobWebController::class, 'store'])->name('featured-jobs.store');
-Route::get('/featured-jobs/{featuredJob}/edit', [FeaturedJobWebController::class, 'edit'])->name('featured-jobs.edit');
-Route::put('/featured-jobs/{featuredJob}', [FeaturedJobWebController::class, 'update'])->name('featured-jobs.update');
-Route::delete('/featured-jobs/{featuredJob}', [FeaturedJobWebController::class, 'destroy'])->name('featured-jobs.destroy');
+
 
 // New route for company logos
 Route::get('/company_logos/{filename}', function ($filename) {
@@ -272,6 +299,18 @@ Route::get('/company_logos/{filename}', function ($filename) {
     }
     return response()->file($path);
 });
+
+// // Serve app screenshots
+// Route::get('/company_logos/{filename}', function($number) {
+//     $path = public_path('app/public/company_logos/' . $filename);
+    
+//     if (!file_exists($path)) {
+//         return response()->json(['error' => 'Logo not found'], 404);
+//     }
+    
+//     return response()->file($path);
+// });
+
 
 
 // Recruiter Routes
@@ -291,6 +330,8 @@ Route::prefix('recruiter')->name('recruiter.')->group(function () {
         // Job Management
         Route::resource('jobs', App\Http\Controllers\RecruiterJobController::class);
         Route::post('/jobs/{job}/toggle-status', [App\Http\Controllers\RecruiterJobController::class, 'toggleStatus'])->name('jobs.toggle-status');
+        Route::post('/jobs/{job}/deactivate', [App\Http\Controllers\RecruiterJobController::class, 'deactivate'])->name('jobs.deactivate');
+        Route::post('/jobs/{job}/activate', [App\Http\Controllers\RecruiterJobController::class, 'activate'])->name('jobs.activate');
         
         // Application Management
         Route::prefix('applications')->name('applications.')->group(function () {

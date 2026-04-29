@@ -132,13 +132,14 @@ class DashboardController extends Controller
                 ->take(5)
                 ->get()
                 ->each(function ($application) use (&$recentActivities) {
-                    $userName = $application->user ? $application->user->name : 'Deleted User';
-                    $jobTitle = $application->job ? $application->job->title : 'Deleted Job';
-                    $recentActivities->push([
-                        'type' => 'application',
-                        'message' => "{$userName} applied for {$jobTitle}",
-                        'date' => $application->created_at,
-                    ]);
+                    // Skip if user or job is null (deleted)
+                    if ($application->user && $application->job) {
+                        $recentActivities->push([
+                            'type' => 'application',
+                            'message' => "{$application->user->name} applied for {$application->job->title}",
+                            'date' => $application->created_at,
+                        ]);
+                    }
                 });
 
             // Sort activities by date

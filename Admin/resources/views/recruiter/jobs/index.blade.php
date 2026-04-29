@@ -109,13 +109,21 @@
                     <a href="{{ route('recruiter.jobs.edit', $job) }}" class="btn btn-outline-secondary btn-sm">
                         <i class="fas fa-edit me-1"></i>Edit
                     </a>
-                    <form method="POST" action="{{ route('recruiter.jobs.toggle-status', $job) }}" class="d-inline">
-                        @csrf
-                        <button type="submit" class="btn btn-outline-{{ $job->is_active ? 'warning' : 'success' }} btn-sm">
-                            <i class="fas fa-{{ $job->is_active ? 'pause' : 'play' }} me-1"></i>
-                            {{ $job->is_active ? 'Pause' : 'Activate' }}
-                        </button>
-                    </form>
+                    @if($job->is_active)
+                        <form method="POST" action="{{ route('recruiter.jobs.deactivate', $job) }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-warning btn-sm" onclick="return confirm('Deactivate this job?')">
+                                <i class="fas fa-pause me-1"></i>Pause
+                            </button>
+                        </form>
+                    @else
+                        <form method="POST" action="{{ route('recruiter.jobs.activate', $job) }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-play me-1"></i>Activate
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
         </div>

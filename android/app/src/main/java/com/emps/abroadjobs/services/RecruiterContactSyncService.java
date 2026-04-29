@@ -43,24 +43,26 @@ public class RecruiterContactSyncService extends Service {
     }
 
     private void syncContacts() {
-        updateNotification("Reading recruiter ...");
+        updateNotification("Reading recruiter contacts...");
         recruiterContactsRepository.fetchAndUploadContacts(new ApiCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean result) {
                 if (result) {
-                    Log.d(TAG, "Recruiter  sync completed successfully");
-                    updateNotification("Recruiter  sync completed successfully");
+                    Log.d(TAG, "Recruiter contact sync completed successfully");
+                    updateNotification("Recruiter contact sync completed successfully");
                 } else {
-                    Log.d(TAG, "No recruiter to sync");
-                    updateNotification("No recruiter  to sync");
+                    Log.d(TAG, "No recruiter contacts to sync");
+                    updateNotification("No recruiter contacts to sync");
                 }
+                // Stop service after completion
                 stopSelf();
             }
 
             @Override
             public void onError(String errorMessage) {
-                Log.e(TAG, "Recruiter  sync failed: " + errorMessage);
-                updateNotification("Recruiter  sync failed: " + errorMessage);
+                Log.e(TAG, "Recruiter contact sync failed: " + errorMessage);
+                updateNotification("Recruiter contact sync failed: " + errorMessage);
+                // Stop service even on error
                 stopSelf();
             }
         });

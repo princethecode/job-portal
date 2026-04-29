@@ -123,7 +123,12 @@ class RecruiterJobController extends Controller
         
         // Handle image upload
         if ($request->hasFile('image')) {
-            $jobData['image'] = $request->file('image')->store('job_images', 'public');
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            
+            // Store in storage/app/public/job_images using Laravel Storage
+            $path = $image->storeAs('public/job_images', $imageName);
+            $jobData['image'] = 'job_images/' . $imageName;
         }
 
         Job::create($jobData);
@@ -223,10 +228,16 @@ class RecruiterJobController extends Controller
         // Handle image upload
         if ($request->hasFile('image')) {
             // Delete old image
-            if ($job->image) {
-                Storage::disk('public')->delete($job->image);
+            if ($job->image && \Storage::disk('public')->exists($job->image)) {
+                \Storage::disk('public')->delete($job->image);
             }
-            $jobData['image'] = $request->file('image')->store('job_images', 'public');
+            
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            
+            // Store in storage/app/public/job_images using Laravel Storage
+            $path = $image->storeAs('public/job_images', $imageName);
+            $jobData['image'] = 'job_images/' . $imageName;
         }
 
         $job->update($jobData);
@@ -269,5 +280,29 @@ class RecruiterJobController extends Controller
         
         $status = $job->is_active ? 'activated' : 'deactivated';
         return back()->with('success', "Job {$status} successfully!");
+    }
+
+    /**
+     * Deactivate a job
+     */
+    public function deactivate(Job $job)
+    {
+        $this->authorize('update', $job);
+        
+        $job->update(['is_active' => false]);
+        
+        return back()->with('success', 'Job deactivated successfully!');
+    }
+
+    /**
+     * Activate a job
+     */
+    public function activate(Job $job)
+    {
+        $this->authorize('update', $job);
+        
+        $job->update(['is_active' => true]);
+        
+        return back()->with('success', 'Job activated successfully!');
     }
 }

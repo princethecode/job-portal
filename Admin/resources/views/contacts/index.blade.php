@@ -174,25 +174,6 @@
                         </div>
                     </div>
 
-                    <!-- Per Page Selector -->
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center">
-                                    <label for="perPage" class="me-2">Show</label>
-                                    <select id="perPage" class="form-select" style="width: auto;">
-                                        <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25</option>
-                                        <option value="50" {{ request('per_page', 25) == 50 ? 'selected' : '' }}>50</option>
-                                        <option value="75" {{ request('per_page', 25) == 75 ? 'selected' : '' }}>75</option>
-                                        <option value="100" {{ request('per_page', 25) == 100 ? 'selected' : '' }}>100</option>
-                                        <option value="250" {{ request('per_page', 25) == 250 ? 'selected' : '' }}>250</option>
-                                    </select>
-                                    <span class="ms-2">entries</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Contacts Table -->
                     @if(isset($contacts) && count($contacts) > 0)
                     <div class="table-responsive">
@@ -201,142 +182,125 @@
                             @if(request('search'))
                                 <span class="text-muted">for "{{ request('search') }}"</span>
                             @endif
-                            <div class="float-end">
-                                <span id="selectedCount" class="me-2" style="display: none;">
-                                    <span class="badge bg-primary">0</span> contacts selected
-                                </span>
-                                <button type="button" class="btn btn-danger" id="bulkDeleteBtn" style="display: none;">
-                                    <i class="fas fa-trash"></i> Delete Selected
-                                </button>
-                            </div>
                         </div>
-                        <form id="bulkDeleteForm" action="{{ route('contacts.bulk-delete') }}" method="POST">
-                            @csrf
-                            <table class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            <input type="checkbox" id="selectAll" class="form-check-input">
-                                        </th>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Phone Number</th>
-                                        <th>Country Code</th>
-                                        <th>Email</th>
-                                        <th>Label</th>
-                                        <th>Import Tag</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($contacts as $contact)
-                                    <tr>
-                                        <td>
-                                            <input type="checkbox" name="contact_ids[]" value="{{ $contact->id }}" class="form-check-input contact-checkbox">
-                                        </td>
-                                        <td>{{ $contact->id }}</td>
-                                        <td>{{ $contact->name }}</td>
-                                        <td>{{ $contact->phone_number }}</td>
-                                        <td>{{ $contact->country_code }}</td>
-                                        <td>{{ $contact->email }}</td>
-                                        <td>
-                                            <div class="d-flex flex-wrap gap-1">
-                                                @foreach($contact->labels as $label)
-                                                    <span class="badge" style="background-color: {{ $label->color }};">
-                                                        {{ $label->name }}
-                                                        <form action="{{ route('contacts.update-label', $contact) }}" method="POST" class="d-inline">
-                                                            @csrf
-                                                            <input type="hidden" name="label_ids[]" value="{{ $label->id }}">
-                                                            <input type="hidden" name="action" value="remove">
-                                                            <button type="submit" class="btn btn-link btn-sm p-0 ml-1 text-white" 
-                                                                    onclick="return confirm('Remove this label?')" 
-                                                                    style="text-decoration: none;">
-                                                                <i class="fas fa-times"></i>
-                                                            </button>
-                                                        </form>
-                                                    </span>
-                                                @endforeach
-                                            </div>
-                                        </td>
-                                        <td>{{ $contact->import_tag }}</td>
-                                        <td>
-                                            <div class="btn-group">
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-primary" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#labelModal{{ $contact->id }}"
-                                                        title="Edit Labels">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-danger" 
-                                                        onclick="if(confirm('Are you sure you want to remove all labels from this contact?')) {
-                                                            document.getElementById('removeAllLabels{{ $contact->id }}').submit();
-                                                        }"
-                                                        title="Remove All Labels">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </div>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Phone Number</th>
+                                    <th>Country Code</th>
+                                    <th>Email</th>
+                                    <th>Label</th>
+                                    <th>Import Tag</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($contacts as $contact)
+                                <tr>
+                                    <td>{{ $contact->id }}</td>
+                                    <td>{{ $contact->name }}</td>
+                                    <td>{{ $contact->phone_number }}</td>
+                                    <td>{{ $contact->country_code }}</td>
+                                    <td>{{ $contact->email }}</td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach($contact->labels as $label)
+                                                <span class="badge" style="background-color: {{ $label->color }};">
+                                                    {{ $label->name }}
+                                                    <form action="{{ route('contacts.update-label', $contact) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <input type="hidden" name="label_ids[]" value="{{ $label->id }}">
+                                                        <input type="hidden" name="action" value="remove">
+                                                        <button type="submit" class="btn btn-link btn-sm p-0 ml-1 text-white" 
+                                                                onclick="return confirm('Remove this label?')" 
+                                                                style="text-decoration: none;">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </form>
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    </td>
+                                    <td>{{ $contact->import_tag }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-primary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#labelModal{{ $contact->id }}"
+                                                    title="Edit Labels">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-danger" 
+                                                    onclick="if(confirm('Are you sure you want to remove all labels from this contact?')) {
+                                                        document.getElementById('removeAllLabels{{ $contact->id }}').submit();
+                                                    }"
+                                                    title="Remove All Labels">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
 
-                                            <!-- Hidden form for removing all labels -->
-                                            <form id="removeAllLabels{{ $contact->id }}" 
-                                                  action="{{ route('contacts.update-label', $contact) }}" 
-                                                  method="POST" 
-                                                  style="display: none;">
-                                                @csrf
-                                                <input type="hidden" name="label_ids" value="[]">
-                                            </form>
+                                        <!-- Hidden form for removing all labels -->
+                                        <form id="removeAllLabels{{ $contact->id }}" 
+                                              action="{{ route('contacts.update-label', $contact) }}" 
+                                              method="POST" 
+                                              style="display: none;">
+                                            @csrf
+                                            <input type="hidden" name="label_ids" value="[]">
+                                        </form>
 
-                                            <!-- Label Modal -->
-                                            <div class="modal fade" id="labelModal{{ $contact->id }}" tabindex="-1" aria-labelledby="labelModalLabel{{ $contact->id }}" aria-hidden="true">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <form action="{{ route('contacts.update-label', $contact) }}" method="POST">
-                                                            @csrf
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title" id="labelModalLabel{{ $contact->id }}">Manage Labels for {{ $contact->name }}</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <div class="form-group">
-                                                                    <label>Select Labels</label>
-                                                                    <div class="d-flex flex-wrap gap-2">
-                                                                        @foreach($labels as $label)
-                                                                            <div class="custom-control custom-checkbox">
-                                                                                <input type="checkbox" 
-                                                                                       class="custom-control-input" 
-                                                                                       id="label{{ $contact->id }}_{{ $label->id }}" 
-                                                                                       name="label_ids[]" 
-                                                                                       value="{{ $label->id }}"
-                                                                                       {{ $contact->hasLabel($label->id) ? 'checked' : '' }}>
-                                                                                <label class="custom-control-label" 
-                                                                                       for="label{{ $contact->id }}_{{ $label->id }}"
-                                                                                       style="color: {{ $label->color }}">
-                                                                                    {{ $label->name }}
-                                                                                </label>
-                                                                            </div>
-                                                                        @endforeach
-                                                                    </div>
+                                        <!-- Label Modal -->
+                                        <div class="modal fade" id="labelModal{{ $contact->id }}" tabindex="-1" aria-labelledby="labelModalLabel{{ $contact->id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form action="{{ route('contacts.update-label', $contact) }}" method="POST">
+                                                        @csrf
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="labelModalLabel{{ $contact->id }}">Manage Labels for {{ $contact->name }}</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="form-group">
+                                                                <label>Select Labels</label>
+                                                                <div class="d-flex flex-wrap gap-2">
+                                                                    @foreach($labels as $label)
+                                                                        <div class="custom-control custom-checkbox">
+                                                                            <input type="checkbox" 
+                                                                                   class="custom-control-input" 
+                                                                                   id="label{{ $contact->id }}_{{ $label->id }}" 
+                                                                                   name="label_ids[]" 
+                                                                                   value="{{ $label->id }}"
+                                                                                   {{ $contact->hasLabel($label->id) ? 'checked' : '' }}>
+                                                                            <label class="custom-control-label" 
+                                                                                   for="label{{ $contact->id }}_{{ $label->id }}"
+                                                                                   style="color: {{ $label->color }}">
+                                                                                {{ $label->name }}
+                                                                            </label>
+                                                                        </div>
+                                                                    @endforeach
                                                                 </div>
                                                             </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                                                <button type="submit" class="btn btn-primary">Save Changes</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </div>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
 
-                            <!-- Pagination -->
-                            <div class="d-flex justify-content-center mt-4">
-                                {{ $contacts->links('pagination::bootstrap-4') }}
-                            </div>
+                        <!-- Pagination -->
+                        <div class="d-flex justify-content-center mt-4">
+                            {{ $contacts->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
                     @else
@@ -386,58 +350,4 @@
         gap: 0.5rem;
     }
 </style>
-@endpush
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const selectAllCheckbox = document.getElementById('selectAll');
-    const contactCheckboxes = document.querySelectorAll('.contact-checkbox');
-    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-    const bulkDeleteForm = document.getElementById('bulkDeleteForm');
-    const selectedCount = document.getElementById('selectedCount');
-    const countBadge = selectedCount.querySelector('.badge');
-    const perPageSelect = document.getElementById('perPage');
-
-    // Handle per page change
-    perPageSelect.addEventListener('change', function() {
-        const currentUrl = new URL(window.location.href);
-        currentUrl.searchParams.set('per_page', this.value);
-        window.location.href = currentUrl.toString();
-    });
-
-    // Handle select all checkbox
-    selectAllCheckbox.addEventListener('change', function() {
-        contactCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
-        });
-        updateBulkDeleteButton();
-    });
-
-    // Handle individual checkboxes
-    contactCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            updateBulkDeleteButton();
-            // Update select all checkbox state
-            selectAllCheckbox.checked = Array.from(contactCheckboxes).every(cb => cb.checked);
-        });
-    });
-
-    // Update bulk delete button visibility and count
-    function updateBulkDeleteButton() {
-        const checkedCount = document.querySelectorAll('.contact-checkbox:checked').length;
-        bulkDeleteBtn.style.display = checkedCount > 0 ? 'inline-block' : 'none';
-        selectedCount.style.display = checkedCount > 0 ? 'inline-block' : 'none';
-        countBadge.textContent = checkedCount;
-    }
-
-    // Handle bulk delete button click
-    bulkDeleteBtn.addEventListener('click', function() {
-        const checkedCount = document.querySelectorAll('.contact-checkbox:checked').length;
-        if (confirm(`Are you sure you want to delete ${checkedCount} selected contact(s)?`)) {
-            bulkDeleteForm.submit();
-        }
-    });
-});
-</script>
 @endpush 

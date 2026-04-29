@@ -273,7 +273,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="24dp"
@@ -297,9 +297,8 @@
                 <!-- Apply Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/apply_button"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:layout_weight="2"
                     android:text="Apply Now"
                     android:textAllCaps="false"
                     android:textColor="@android:color/white"
@@ -307,7 +306,16 @@
                     app:icon="@drawable/ic_apply"
                     app:iconGravity="textStart"
                     app:iconTint="@android:color/white" />
+
+                <!-- Empty Placeholder -->
+                <View
+                    android:id="@+id/placeholder_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:visibility="invisible" />
+
             </LinearLayout>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView> 

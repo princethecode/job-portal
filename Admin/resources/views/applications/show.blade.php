@@ -68,14 +68,17 @@
                         </form>
                     </div>
                     
-                    @if($application['resume_path'])
+                    @if($application->resume_path)
                     <div class="mb-4">
                         <h5>Resume</h5>
                         <div class="mt-2">
-                            <a href="{{ route('admin.resume.view', basename($application['resume_path'])) }}" target="_blank" class="btn btn-outline-primary">
+                            @php
+                                $resumeFilename = basename($application->resume_path);
+                            @endphp
+                            <a href="{{ route('admin.resume.view', $resumeFilename) }}" target="_blank" class="btn btn-outline-primary">
                                 <i class="fas fa-file-pdf me-1"></i> View Resume
                             </a>
-                            <a href="{{ route('admin.resume.view', basename($application['resume_path'])) }}" download class="btn btn-outline-secondary ms-2">
+                            <a href="{{ route('admin.resume.view', $resumeFilename) }}?download=1" class="btn btn-outline-secondary ms-2">
                                 <i class="fas fa-download me-1"></i> Download Resume
                             </a>
                         </div>

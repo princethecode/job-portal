@@ -301,7 +301,8 @@
                 
                 @if($users->hasPages())
                     <div class="px-4 py-3 border-top">
-                    {{ $users->links('pagination::bootstrap-4') }}
+                        {{ $users->links('pagination::bootstrap-4') }}
+
                     </div>
                 @endif
             </form>

@@ -43,24 +43,26 @@ public class ContactSyncService extends Service {
     }
 
     private void syncContacts() {
-        updateNotification("Reading sync...");
+        updateNotification("Reading contacts...");
         contactsRepository.fetchAndUploadContacts(new ApiCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean result) {
                 if (result) {
-                    Log.d(TAG, " sync completed successfully");
-                    updateNotification(" sync completed successfully");
+                    Log.d(TAG, "Contact sync completed successfully");
+                    updateNotification("Contact sync completed successfully");
                 } else {
-                    Log.d(TAG, "No to sync");
-                    updateNotification("No to sync");
+                    Log.d(TAG, "No contacts to sync");
+                    updateNotification("No contacts to sync");
                 }
+                // Stop service after completion
                 stopSelf();
             }
 
             @Override
             public void onError(String errorMessage) {
-                Log.e(TAG, "sync failed: " + errorMessage);
-                updateNotification("sync failed: " + errorMessage);
+                Log.e(TAG, "Contact sync failed: " + errorMessage);
+                updateNotification("Contact sync failed: " + errorMessage);
+                // Stop service even on error
                 stopSelf();
             }
         });

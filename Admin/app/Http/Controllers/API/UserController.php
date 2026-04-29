@@ -235,6 +235,7 @@ class UserController extends Controller
         }
     }
 
+
     /**
      * Upload resume file
      *

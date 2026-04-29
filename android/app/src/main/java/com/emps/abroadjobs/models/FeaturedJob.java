@@ -37,6 +37,9 @@ public class FeaturedJob {
     @SerializedName("share_count")
     private int shareCount = 0;
 
+    @SerializedName("job_image")
+    private String jobImage;
+
     // Add getters and setters for all fields
     public int getId() {
         return id;
@@ -132,5 +135,21 @@ public class FeaturedJob {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public int getShareCount() {
+        return shareCount;
+    }
+
+    public void setShareCount(int shareCount) {
+        this.shareCount = shareCount;
+    }
+
+    public String getJobImage() {
+        return jobImage;
+    }
+
+    public void setJobImage(String jobImage) {
+        this.jobImage = jobImage;
     }
 }

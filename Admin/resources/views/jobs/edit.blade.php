@@ -125,7 +125,7 @@
                     <label for="image" class="form-label">Job Image</label>
                     @if(!empty($job['image']))
                         <div class="mb-2">
-                            <img src="{{ asset('storage/' . $job['image']) }}" alt="Current Job Image" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #ccc;">
+                            <img src="{{ asset( $job['image']) }}" alt="Current Job Image" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #ccc;">
                         </div>
                     @endif
                     <input type="file" class="form-control-file" id="image" name="image" accept="image/*">

@@ -64,14 +64,55 @@ public interface RecruiterApiService {
     @GET("recruiter/jobs")
     Call<JobListResponse> getMyJobs();
     
+    @GET("recruiter/jobs/{id}")
+    Call<ApiResponse<Job>> getJobDetails(@Path("id") int jobId);
+    
     @POST("recruiter/jobs")
     Call<ApiResponse<Job>> createJob(@Body Map<String, Object> jobData);
     
+    @Multipart
+    @POST("recruiter/jobs")
+    Call<ApiResponse<Job>> createJobWithImage(@Part("title") okhttp3.RequestBody title,
+                                            @Part("location") okhttp3.RequestBody location,
+                                            @Part("description") okhttp3.RequestBody description,
+                                            @Part("requirements") okhttp3.RequestBody requirements,
+                                            @Part("job_type") okhttp3.RequestBody jobType,
+                                            @Part("category") okhttp3.RequestBody category,
+                                            @Part("experience_level") okhttp3.RequestBody experienceLevel,
+                                            @Part("expiry_date") okhttp3.RequestBody expiryDate,
+                                            @Part("salary") okhttp3.RequestBody salary,
+                                            @Part("benefits") okhttp3.RequestBody benefits,
+                                            @Part("skills_required") okhttp3.RequestBody skillsRequired,
+                                            @Part MultipartBody.Part image);
+    
     @PUT("recruiter/jobs/{id}")
-    Call<ApiResponse<Job>> updateJob(@Path("id") int jobId, @Body Job job);
+    Call<ApiResponse<Job>> updateJob(@Path("id") int jobId, @Body Map<String, Object> jobData);
+    
+    @Multipart
+    @POST("recruiter/jobs/{id}")
+    Call<ApiResponse<Job>> updateJobWithImage(@Path("id") int jobId,
+                                            @Part("title") okhttp3.RequestBody title,
+                                            @Part("location") okhttp3.RequestBody location,
+                                            @Part("description") okhttp3.RequestBody description,
+                                            @Part("requirements") okhttp3.RequestBody requirements,
+                                            @Part("job_type") okhttp3.RequestBody jobType,
+                                            @Part("category") okhttp3.RequestBody category,
+                                            @Part("experience_level") okhttp3.RequestBody experienceLevel,
+                                            @Part("expiry_date") okhttp3.RequestBody expiryDate,
+                                            @Part("salary") okhttp3.RequestBody salary,
+                                            @Part("benefits") okhttp3.RequestBody benefits,
+                                            @Part("skills_required") okhttp3.RequestBody skillsRequired,
+                                            @Part MultipartBody.Part image,
+                                            @Part("_method") okhttp3.RequestBody method);
     
     @PATCH("recruiter/jobs/{id}/toggle-status")
     Call<ApiResponse<Void>> toggleJobStatus(@Path("id") int jobId);
+    
+    @PATCH("recruiter/jobs/{id}/deactivate")
+    Call<ApiResponse<Void>> deactivateJob(@Path("id") int jobId);
+    
+    @PATCH("recruiter/jobs/{id}/activate")
+    Call<ApiResponse<Void>> activateJob(@Path("id") int jobId);
     
     // Applications
     @GET("recruiter/applications")

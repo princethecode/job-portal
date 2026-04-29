@@ -208,7 +208,8 @@ class AdminJobController extends Controller
             'category' => 'required|string|max:255',
             'posting_date' => 'required|date',
             'expiry_date' => 'required|date|after:posting_date',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         try {
@@ -231,7 +232,15 @@ class AdminJobController extends Controller
             }
             
             $job = Job::findOrFail($id);
-            $job->update($request->all());
+            $data = $request->all();
+            
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('job_images', 'public');
+                $data['image'] = $imagePath;
+            }
+            
+            $job->update($data);
 
             $successMessage = 'Job updated successfully';
             if ($isNewCategory) {

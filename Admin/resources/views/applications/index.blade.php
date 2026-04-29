@@ -124,16 +124,19 @@
                                     <td>
                                         @if($application->resume_path)
                                             <div class="btn-group">
-                                                <a href="{{ route('admin.resume.view', basename($application->resume_path)) }}" 
+                                                @php
+                                                    $resumeFilename = basename($application->resume_path);
+                                                @endphp
+                                                <a href="{{ route('admin.resume.view', $resumeFilename) }}" 
                                                    class="btn btn-sm btn-info" 
                                                    title="View Resume"
                                                    target="_blank">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="{{ route('admin.resume.view', basename($application->resume_path)) }}" 
+                                                
+                                                <a href="{{ route('admin.resume.view', $resumeFilename) }}?download=1" 
                                                    class="btn btn-sm btn-success" 
-                                                   title="Download Resume"
-                                                   download>
+                                                   title="Download Resume">
                                                     <i class="fas fa-download"></i>
                                                 </a>
                                             </div>

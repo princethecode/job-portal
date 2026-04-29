@@ -266,8 +266,8 @@ public class JobDetailsFragment extends Fragment {
             String logoUrl = job.getCompanyLogo();
             // Ensure URL is absolute
             if (!logoUrl.startsWith("http")) {
-                // If it's a relative URL, append to base URL
-                String baseUrl = "https://emps.co.in/";
+                // If it's a relative URL, append to base URL with /storage/ prefix
+                String baseUrl = "https://emps.co.in/storage/";
                 if (logoUrl.startsWith("/")) {
                     logoUrl = baseUrl + logoUrl.substring(1);
                 } else {
@@ -293,7 +293,7 @@ public class JobDetailsFragment extends Fragment {
             jobImageView.setVisibility(View.VISIBLE);
             String imageUrl = job.getImage();
             if (!imageUrl.startsWith("http")) {
-                String baseUrl = "https://emps.co.in/";
+                String baseUrl = "https://emps.co.in/storage/";
                 if (imageUrl.startsWith("/")) {
                     imageUrl = baseUrl + imageUrl.substring(1);
                 } else {

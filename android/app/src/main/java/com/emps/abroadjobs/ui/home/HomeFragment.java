@@ -384,6 +384,12 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
             return;
         }
         
+        // Check if view is still valid
+        if (binding == null || !isAdded()) {
+            Log.w(TAG, "Fragment view destroyed, cannot show job details");
+            return;
+        }
+        
         // Show loading indicator
         binding.progressBar.setVisibility(View.VISIBLE);
         
@@ -391,6 +397,12 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
         ApiClient.getApiService().getFeaturedJobDetails(job.getId()).enqueue(new Callback<ApiResponse<FeaturedJob>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<FeaturedJob>> call, @NonNull Response<ApiResponse<FeaturedJob>> response) {
+                // Check if view is still valid before accessing binding
+                if (binding == null || !isAdded()) {
+                    Log.w(TAG, "Fragment view destroyed, ignoring response");
+                    return;
+                }
+                
                 binding.progressBar.setVisibility(View.GONE);
                 
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
@@ -409,6 +421,12 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
             
             @Override
             public void onFailure(@NonNull Call<ApiResponse<FeaturedJob>> call, @NonNull Throwable t) {
+                // Check if view is still valid before accessing binding
+                if (binding == null || !isAdded()) {
+                    Log.w(TAG, "Fragment view destroyed, ignoring failure");
+                    return;
+                }
+                
                 binding.progressBar.setVisibility(View.GONE);
                 Log.e(TAG, "Network error: " + t.getMessage(), t);
                 Toast.makeText(requireContext(), "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
@@ -477,11 +495,19 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
     }
 
     private void fetchJobs() {
+        if (binding == null) return;
+        
         binding.progressBar.setVisibility(View.VISIBLE);
         ApiClient.getApiService().getJobs().enqueue(new Callback<JobsListResponse>() {
             @Override
             public void onResponse(@NonNull Call<JobsListResponse> call,
                           @NonNull Response<JobsListResponse> response) {
+                // Check if view is still valid before accessing binding
+                if (binding == null || !isAdded()) {
+                    Log.w(TAG, "Fragment view destroyed, ignoring response");
+                    return;
+                }
+                
                 binding.progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     JobsListResponse jobsResponse = response.body();
@@ -513,6 +539,12 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
     
             @Override
             public void onFailure(@NonNull Call<JobsListResponse> call, @NonNull Throwable t) {
+                // Check if view is still valid before accessing binding
+                if (binding == null || !isAdded()) {
+                    Log.w(TAG, "Fragment view destroyed, ignoring failure");
+                    return;
+                }
+                
                 binding.progressBar.setVisibility(View.GONE);
                 Toast.makeText(requireContext(), 
                     "Network error: " + t.getMessage(), 
@@ -681,12 +713,20 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
     }
 
     private void searchJobs(String query) {
+        if (binding == null) return;
+        
         binding.progressBar.setVisibility(View.VISIBLE);
         
         ApiClient.getApiService().getJobs().enqueue(new Callback<JobsListResponse>() {
             @Override
             public void onResponse(@NonNull Call<JobsListResponse> call, 
                           @NonNull Response<JobsListResponse> response) {
+                // Check if view is still valid before accessing binding
+                if (binding == null || !isAdded()) {
+                    Log.w(TAG, "Fragment view destroyed, ignoring response");
+                    return;
+                }
+                
                 binding.progressBar.setVisibility(View.GONE);
                 
                 if (response.isSuccessful() && response.body() != null) {
@@ -706,6 +746,12 @@ public class HomeFragment extends Fragment implements FeaturedJobsAdapter.OnJobC
 
             @Override
             public void onFailure(@NonNull Call<JobsListResponse> call, @NonNull Throwable t) {
+                // Check if view is still valid before accessing binding
+                if (binding == null || !isAdded()) {
+                    Log.w(TAG, "Fragment view destroyed, ignoring failure");
+                    return;
+                }
+                
                 binding.progressBar.setVisibility(View.GONE);
                 showEmptySearchResults();
             }

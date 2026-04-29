@@ -83,6 +83,16 @@
                         </div>
 
                         <div class="mb-3">
+                            <label for="job_image" class="form-label">Job Image</label>
+                            <input type="file" class="form-control @error('job_image') is-invalid @enderror" 
+                                   id="job_image" name="job_image" accept="image/*">
+                            <div class="form-text">Upload a job image (JPEG, PNG, JPG, GIF, WEBP up to 5MB) - This will be displayed in the job details</div>
+                            @error('job_image')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input @error('is_active') is-invalid @enderror" 
                                        id="is_active" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
@@ -103,4 +113,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

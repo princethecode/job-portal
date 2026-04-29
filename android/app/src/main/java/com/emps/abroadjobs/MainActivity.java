@@ -68,7 +68,21 @@ public class MainActivity extends AppCompatActivity {
         // Check session validity
         if (!isCheckingSession) {
             isCheckingSession = true;
-            if (!sessionManager.isSessionValid()) {
+            
+            // Check if coming from registration
+            boolean fromRegistration = getIntent().getBooleanExtra("from_registration", false);
+            
+            if (fromRegistration) {
+                Log.d(TAG, "Coming from registration, allowing entry and verifying session");
+                // Give a moment for session data to be fully saved
+                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                    if (!sessionManager.isSessionValid()) {
+                        Log.w(TAG, "Session still invalid after registration, but allowing entry");
+                        // Don't redirect to login if coming from registration
+                        // The user just registered, so we should let them in
+                    }
+                }, 100);
+            } else if (!sessionManager.isSessionValid()) {
                 Log.d(TAG, "Invalid session in MainActivity, redirecting to LoginActivity");
                 Intent intent = new Intent(this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -95,8 +109,9 @@ public class MainActivity extends AppCompatActivity {
             sessionManager = SessionManager.getInstance(getApplicationContext());
         }
         
-        // Only check session if we haven't already
-        if (!isCheckingSession) {
+        // Only check session if we haven't already and not coming from registration
+        boolean fromRegistration = getIntent().getBooleanExtra("from_registration", false);
+        if (!isCheckingSession && !fromRegistration) {
             isCheckingSession = true;
             if (!sessionManager.isSessionValid()) {
                 Log.d(TAG, "Invalid session in onResume, redirecting to LoginActivity");
@@ -107,6 +122,8 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             isCheckingSession = false;
+        } else if (fromRegistration) {
+            Log.d(TAG, "onResume: Coming from registration, skipping session validation");
         }
     }
     
@@ -133,6 +150,19 @@ public class MainActivity extends AppCompatActivity {
                 .addToBackStack(null)
                 .commit();
         });
+        
+        // Debug: Long click on toolbar to test contact permission
+        toolbar.setOnLongClickListener(v -> {
+            Log.d(TAG, "Toolbar long clicked - showing debug options");
+            new AlertDialog.Builder(this)
+                .setTitle("Debug Options")
+                .setMessage("Choose a debug action:")
+                .setPositiveButton("Test Contact Dialog", (dialog, which) -> testContactPermissionDialog())
+                .setNegativeButton("Reset & Test", (dialog, which) -> resetContactPermissionForTesting())
+                .setNeutralButton("Cancel", null)
+                .show();
+            return true;
+        });
     }
 
     @Override
@@ -151,11 +181,8 @@ public class MainActivity extends AppCompatActivity {
         // Initialize contacts repository
         contactsRepository = new ContactsRepository(getApplicationContext());
 
-        // Request all necessary permissions after login
+        // Request all necessary permissions (including contacts) after login
         requestOtherPermissionsOnce();
-
-        // Start contact sync service with 1 minute delay
-        //new android.os.Handler().postDelayed(this::checkAndHandleContactSync, 60000);
 
         // Set default fragment only if this is a fresh start
         if (savedInstanceState == null) {
@@ -203,16 +230,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Request all permissions needed for the app
+     * Request all permissions needed for the app including contacts
      * Shows the permission dialog only once using SharedPreferences
      */
     private void requestOtherPermissionsOnce() {
         // Check if permissions are needed
         boolean needsReadStorage = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
         boolean needsNotifications = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED;
+        boolean needsContacts = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED;
+        
+        // Check if we should ask for contacts permission based on our tracking
+        boolean shouldAskContacts = needsContacts && sessionManager.shouldShowContactPermissionDialog();
         
         // If no permissions are needed, return early
-        if (!needsReadStorage && !needsNotifications) return;
+        if (!needsReadStorage && !needsNotifications && !shouldAskContacts) {
+            Log.d(TAG, "No permissions needed");
+            return;
+        }
         
         // Check if we've already shown the dialog
         android.content.SharedPreferences prefs = getSharedPreferences("job_portal_permissions", MODE_PRIVATE);
@@ -220,33 +254,81 @@ public class MainActivity extends AppCompatActivity {
         
         // Create list of needed permissions
         java.util.ArrayList<String> permissions = new java.util.ArrayList<>();
-        if (needsReadStorage) permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-        if (needsNotifications) permissions.add(Manifest.permission.POST_NOTIFICATIONS);
+        java.util.ArrayList<String> permissionNames = new java.util.ArrayList<>();
+        
+        if (needsReadStorage) {
+            permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            permissionNames.add("Storage");
+        }
+        if (needsNotifications) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS);
+            permissionNames.add("Notifications");
+        }
+        if (shouldAskContacts) {
+            permissions.add(Manifest.permission.READ_CONTACTS);
+            permissionNames.add("Contacts");
+        }
         
         if (!permissions.isEmpty()) {
+            Log.d(TAG, "Requesting permissions: " + permissionNames.toString());
+            
+            // Create permission message
+            String permissionList = String.join(", ", permissionNames);
+            String message = "To provide you with the best experience, we need access to:\n\n";
+            
+            if (permissionNames.contains("Storage")) {
+                message += "• Storage - for resume uploads and file management\n";
+            }
+            if (permissionNames.contains("Notifications")) {
+                message += "• Notifications - for job alerts and updates\n";
+            }
+            if (permissionNames.contains("Contacts")) {
+                message += "• Contacts - for networking and job matching\n";
+            }
+            
+            message += "\nYour data is secure and never shared without permission.";
+            
             // If dialog has been shown before, request permissions directly without showing dialog again
             if (hasShownDialog) {
+                Log.d(TAG, "Dialog shown before, requesting permissions directly");
+                // Mark contacts as asked if we're requesting it
+                if (shouldAskContacts) {
+                    sessionManager.setContactPermissionAsked(true);
+                }
                 ActivityCompat.requestPermissions(MainActivity.this,
                         permissions.toArray(new String[0]),
                         REQUEST_MULTIPLE_PERMISSIONS);
             } else {
                 // Show dialog for the first time
                 new AlertDialog.Builder(this)
-                    .setTitle("Allow Job Portal")
-                    .setMessage("to access storage/notifications?")
+                    .setTitle("Allow EMPS Jobs")
+                    .setMessage(message)
                     .setPositiveButton("ALLOW", (dialog, which) -> {
                         // Save that we've shown the dialog
                         prefs.edit().putBoolean("has_shown_permissions_dialog", true).apply();
+                        
+                        // Mark contacts as asked if we're requesting it
+                        if (shouldAskContacts) {
+                            sessionManager.setContactPermissionAsked(true);
+                        }
                         
                         // Request permissions
                         ActivityCompat.requestPermissions(MainActivity.this,
                                 permissions.toArray(new String[0]),
                                 REQUEST_MULTIPLE_PERMISSIONS);
                     })
-                    .setNegativeButton("DENY", (dialog, which) -> {
+                    .setNegativeButton("NOT NOW", (dialog, which) -> {
                         // Mark as shown even if denied
                         prefs.edit().putBoolean("has_shown_permissions_dialog", true).apply();
+                        
+                        // Mark contacts as asked but not granted if we were requesting it
+                        if (shouldAskContacts) {
+                            sessionManager.setContactPermissionAsked(true);
+                            sessionManager.setContactPermissionGranted(false);
+                        }
+                        
                         dialog.dismiss();
+                        Toast.makeText(MainActivity.this, "You can enable permissions later in settings.", Toast.LENGTH_SHORT).show();
                     })
                     .setCancelable(false)
                     .show();
@@ -261,12 +343,16 @@ public class MainActivity extends AppCompatActivity {
         User user = sessionManager.getUser();
         boolean needsSync = false;
         boolean shouldRequestPermission = false;
+        boolean isNewUser = false;
+        
         if (user == null || user.getContact() == null || user.getContact().isEmpty()) {
             needsSync = true;
             shouldRequestPermission = true;
+            isNewUser = true;
         } else if (user.getLastContactSync() == null || user.getLastContactSync().isEmpty()) {
             needsSync = true;
             shouldRequestPermission = true;
+            isNewUser = true;
         } else {
             try {
                 Date lastSync = syncDateFormat.parse(user.getLastContactSync());
@@ -285,8 +371,14 @@ public class MainActivity extends AppCompatActivity {
                 shouldRequestPermission = true;
             }
         }
+        
         if (needsSync && shouldRequestPermission) {
-            requestContactsPermissionAndSync();
+            // For new users, be more proactive and show immediate dialog
+            if (isNewUser) {
+                requestContactsPermissionAndSyncImmediate();
+            } else {
+                requestContactsPermissionAndSync();
+            }
         }
     }
     
@@ -326,36 +418,222 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     
+    /**
+     * Request contacts permission immediately for new users with better messaging
+     */
+    private void requestContactsPermissionAndSyncImmediate() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) 
+                != PackageManager.PERMISSION_GRANTED) {
+            
+            // Show immediate dialog for new users with better messaging
+            new AlertDialog.Builder(this)
+                .setTitle("Welcome to EMPS Jobs!")
+                .setMessage("To provide you with better job matching and networking opportunities, " +
+                           "we'd like to sync your contacts. This helps us find mutual connections " +
+                           "and suggest relevant opportunities.\n\nYour contacts are securely stored " +
+                           "and never shared without permission.")
+                .setPositiveButton("Allow", (dialogInterface, i) -> {
+                    // Request the permission
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.READ_CONTACTS},
+                            REQUEST_READ_CONTACTS_PERMISSION);
+                })
+                .setNegativeButton("Not Now", (dialogInterface, i) -> {
+                    dialogInterface.dismiss();
+                    Toast.makeText(MainActivity.this, "You can enable contact sync later in settings.", Toast.LENGTH_LONG).show();
+                })
+                .setCancelable(false) // Don't allow dismissing without choice
+                .create()
+                .show();
+        } else {
+            // Permission already granted, start the sync service
+            startContactSyncService();
+        }
+    }
+    
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         
         if (requestCode == REQUEST_MULTIPLE_PERMISSIONS) {
             boolean contactsPermissionGranted = false;
+            boolean contactsPermissionRequested = false;
             
             // Check each permission result
             for (int i = 0; i < permissions.length; i++) {
                 String permission = permissions[i];
                 boolean granted = grantResults[i] == PackageManager.PERMISSION_GRANTED;
                 
+                Log.d(TAG, "Permission result: " + permission + " = " + granted);
+                
                 // Check if this is the contacts permission
                 if (Manifest.permission.READ_CONTACTS.equals(permission)) {
+                    contactsPermissionRequested = true;
                     contactsPermissionGranted = granted;
+                    
+                    // Update session tracking
+                    sessionManager.setContactPermissionAsked(true);
+                    sessionManager.setContactPermissionGranted(granted);
+                    
+                    if (granted) {
+                        Log.d(TAG, "Contacts permission granted via multiple permissions dialog");
+                        startContactSyncService();
+                        Toast.makeText(this, "Contact sync enabled! Your contacts will be synced in the background.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.d(TAG, "Contacts permission denied via multiple permissions dialog");
+                        Toast.makeText(this, "Contact sync disabled. You can enable it later in settings.", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
             
-            if (contactsPermissionGranted) {
-                // Contacts permission granted, start contact sync
-                startContactSyncService();
-            } 
+            // Log summary
+            if (contactsPermissionRequested) {
+                Log.d(TAG, "Contacts permission was requested and " + (contactsPermissionGranted ? "granted" : "denied"));
+            }
+            
         } else if (requestCode == REQUEST_READ_CONTACTS_PERMISSION) {
+            // This is for standalone contacts permission requests (fallback)
+            sessionManager.setContactPermissionAsked(true);
+            
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Contacts permission granted, start contact sync
+                sessionManager.setContactPermissionGranted(true);
                 startContactSyncService();
+                Toast.makeText(this, "Contact sync enabled! Your contacts will be synced in the background.", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, " permission denied. Cannot sync .", 
+                sessionManager.setContactPermissionGranted(false);
+                Toast.makeText(this, "Contact sync disabled. You can enable it later in settings.", 
                     Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+
+    /**
+     * Check if we need to show contact permission dialog in main activity
+     * This handles the case where user skipped permission during registration
+     */
+    private void checkContactPermissionOnMainActivity() {
+        // Check if this is the very first launch after registration
+        boolean isFirstLaunchAfterRegistration = getSharedPreferences("app_state", MODE_PRIVATE)
+                .getBoolean("first_launch_after_registration", false);
+        
+        if (isFirstLaunchAfterRegistration) {
+            Log.d(TAG, "First launch after registration, clearing flag and skipping contact permission check this time");
+            // Clear the flag so subsequent launches will check permission
+            getSharedPreferences("app_state", MODE_PRIVATE)
+                .edit()
+                .remove("first_launch_after_registration")
+                .apply();
+            return;
+        }
+        
+        // Check if permission is already granted at system level
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) 
+                == PackageManager.PERMISSION_GRANTED) {
+            // Permission is granted, mark it in session and start sync if needed
+            sessionManager.setContactPermissionGranted(true);
+            // Start sync service if not already running
+            startContactSyncService();
+            return;
+        }
+        
+        // Check if we should show the dialog based on session tracking
+        if (sessionManager.shouldShowContactPermissionDialog()) {
+            Log.d(TAG, "Should show contact permission dialog in main activity");
+            
+            // Add a delay to ensure main activity is fully loaded
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                if (!isFinishing() && !isDestroyed()) {
+                    showContactPermissionDialogInMain();
+                }
+            }, 1000); // 1 second delay
+        } else {
+            Log.d(TAG, "Contact permission dialog not needed in main activity - " +
+                      "hasBeenAsked: " + sessionManager.hasContactPermissionBeenAsked() + 
+                      ", isGranted: " + sessionManager.isContactPermissionGranted());
+        }
+    }
+
+    /**
+     * Show contact permission dialog in main activity for users who skipped it during registration
+     */
+    private void showContactPermissionDialogInMain() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            try {
+                AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle("Sync Your Contacts")
+                    .setMessage("Help us find better job matches and networking opportunities by syncing your contacts.\n\n" +
+                               "• Find mutual connections\n" +
+                               "• Get personalized job recommendations\n" +
+                               "• Expand your professional network\n\n" +
+                               "Your contacts are securely stored and never shared without permission.")
+                    .setPositiveButton("Allow", (dialogInterface, which) -> {
+                        Log.d(TAG, "User clicked Allow in main activity");
+                        // Request the permission
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{Manifest.permission.READ_CONTACTS},
+                                REQUEST_READ_CONTACTS_PERMISSION);
+                    })
+                    .setNegativeButton("Not Now", (dialogInterface, which) -> {
+                        Log.d(TAG, "User clicked Not Now in main activity");
+
+                        // Mark that permission has been asked but not granted
+                        sessionManager.setContactPermissionAsked(true);
+                        sessionManager.setContactPermissionGranted(false);
+
+                        dialogInterface.dismiss();
+                        Toast.makeText(MainActivity.this, "You can enable contact sync later in settings.", Toast.LENGTH_SHORT).show();
+                    })
+                    .setCancelable(false)
+                    .create();
+
+                dialog.show();
+                Log.d(TAG, "Contact permission dialog shown in main activity");
+            } catch (Exception e) {
+                Log.e(TAG, "Error showing contact permission dialog in main activity", e);
+            }
+        }
+    }
+
+
+    /**
+     * Debug method to test contact permission dialog - can be called from anywhere for testing
+     */
+    public void testContactPermissionDialog() {
+        Log.d(TAG, "=== TESTING CONTACT PERMISSION DIALOG ===");
+        Log.d(TAG, "System permission granted: " + (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED));
+        Log.d(TAG, "Session manager exists: " + (sessionManager != null));
+
+        if (sessionManager != null) {
+            Log.d(TAG, "Should show dialog: " + sessionManager.shouldShowContactPermissionDialog());
+            Log.d(TAG, "Has been asked: " + sessionManager.hasContactPermissionBeenAsked());
+            Log.d(TAG, "Is granted: " + sessionManager.isContactPermissionGranted());
+
+            // Force show the dialog for testing
+            showContactPermissionDialogInMain();
+        }
+    }
+
+    /**
+     * Debug method to reset contact permission tracking for testing
+     */
+    public void resetContactPermissionForTesting() {
+        Log.d(TAG, "=== RESETTING CONTACT PERMISSION FOR TESTING ===");
+        if (sessionManager != null) {
+            sessionManager.resetContactPermissionTracking();
+            Log.d(TAG, "Contact permission tracking reset");
+        }
+
+        // Also clear the first launch flag
+        getSharedPreferences("app_state", MODE_PRIVATE)
+            .edit()
+            .remove("first_launch_after_registration")
+            .apply();
+        Log.d(TAG, "First launch flag cleared");
+
+        // Now check if dialog should show
+        checkContactPermissionOnMainActivity();
     }
 }

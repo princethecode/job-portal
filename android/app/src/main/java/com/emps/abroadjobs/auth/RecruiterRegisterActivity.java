@@ -15,9 +15,19 @@ import android.widget.ProgressBar;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.util.Log;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.emps.abroadjobs.R;
 import com.emps.abroadjobs.models.Recruiter;
 import com.emps.abroadjobs.models.RecruiterRegisterRequest;
@@ -25,6 +35,7 @@ import com.emps.abroadjobs.network.ApiClient;
 import com.emps.abroadjobs.network.ApiCallback;
 import com.emps.abroadjobs.network.ApiResponse;
 import com.emps.abroadjobs.recruiter.RecruiterMainActivity;
+import com.emps.abroadjobs.services.RecruiterContactSyncService;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -193,7 +204,9 @@ public class RecruiterRegisterActivity extends AppCompatActivity {
                         }
                         
                         Toast.makeText(RecruiterRegisterActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
-                        startRecruiterMainActivity();
+                        
+                        // Immediately request contact permissions and sync
+                        requestContactPermissionAndSync();
                     } else {
                         String errorMessage = apiResponse.getMessage() != null ? apiResponse.getMessage() : "Registration failed";
                         Toast.makeText(RecruiterRegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
@@ -444,5 +457,114 @@ public class RecruiterRegisterActivity extends AppCompatActivity {
                 Toast.makeText(RecruiterRegisterActivity.this, "Network error uploading license", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    
+    // Contact permission constants
+    private static final int REQUEST_READ_CONTACTS_PERMISSION = 2001;
+    
+    /**
+     * Request contact permission and sync contacts immediately after registration
+     */
+    private void requestContactPermissionAndSync() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) 
+                != PackageManager.PERMISSION_GRANTED) {
+            
+            // Show explanation dialog for new recruiters
+            new AlertDialog.Builder(this)
+                .setTitle("Welcome to EMPS Recruiter Portal!")
+                .setMessage("To help you find the best candidates and build your network, " +
+                           "we'd like to sync your Data. This enables us to:\n\n" +
+                           "• Find mutual connections with candidates\n" +
+                           "• Suggest relevant talent from your network\n" +
+                           "• Improve our matching algorithm\n\n" +
+                           "Your Data are securely stored and never shared without permission.")
+                .setPositiveButton("Allow", (dialog, which) -> {
+                    // Request the permission
+                    ActivityCompat.requestPermissions(RecruiterRegisterActivity.this,
+                            new String[]{Manifest.permission.READ_CONTACTS},
+                            REQUEST_READ_CONTACTS_PERMISSION);
+                })
+                .setNegativeButton("Skip for Now", (dialog, which) -> {
+                    // Mark that permission has been asked but not granted
+                    RecruiterAuthHelper authHelper = RecruiterAuthHelper.getInstance(RecruiterRegisterActivity.this);
+                    // Note: RecruiterAuthHelper should also have permission tracking methods
+                    // For now, we'll use a simple SharedPreferences approach
+                    getSharedPreferences("recruiter_permissions", MODE_PRIVATE)
+                        .edit()
+                        .putBoolean("contact_permission_asked", true)
+                        .putBoolean("contact_permission_granted", false)
+                        .apply();
+                    
+                    dialog.dismiss();
+                    // Navigate to main app
+                    startRecruiterMainActivity();
+                })
+                .setCancelable(false)
+                .show();
+        } else {
+            // Permission already granted, start sync immediately
+            startContactSyncAndNavigate();
+        }
+    }
+    
+    /**
+     * Start recruiter contact sync service and navigate to main app
+     */
+    private void startContactSyncAndNavigate() {
+        try {
+            // Mark permission as granted since we're starting the sync
+            getSharedPreferences("recruiter_permissions", MODE_PRIVATE)
+                .edit()
+                .putBoolean("contact_permission_asked", true)
+                .putBoolean("contact_permission_granted", true)
+                .apply();
+            
+            Intent serviceIntent = new Intent(this, RecruiterContactSyncService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
+            }
+            
+            Toast.makeText(this, "Data sync started! Welcome to EMPS Recruiter Portal.", Toast.LENGTH_LONG).show();
+            Log.d("RecruiterRegisterActivity", "Recruiter Data sync service started for new recruiter");
+            
+        } catch (Exception e) {
+            Log.e("RecruiterRegisterActivity", "Error starting recruiter Data sync service", e);
+            Toast.makeText(this, "Welcome to EMPS Recruiter Portal! You can sync Data later in settings.", Toast.LENGTH_LONG).show();
+        }
+        
+        // Navigate to main app
+        startRecruiterMainActivity();
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (requestCode == REQUEST_READ_CONTACTS_PERMISSION) {
+            // Mark that permission has been asked
+            getSharedPreferences("recruiter_permissions", MODE_PRIVATE)
+                .edit()
+                .putBoolean("contact_permission_asked", true)
+                .apply();
+            
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, mark it and start contact sync
+                getSharedPreferences("recruiter_permissions", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("contact_permission_granted", true)
+                    .apply();
+                startContactSyncAndNavigate();
+            } else {
+                // Permission denied, mark it as not granted
+                getSharedPreferences("recruiter_permissions", MODE_PRIVATE)
+                    .edit()
+                    .putBoolean("contact_permission_granted", false)
+                    .apply();
+                Toast.makeText(this, "You can enable Data sync later in settings.", Toast.LENGTH_LONG).show();
+                startRecruiterMainActivity();
+            }
+        }
     }
 }

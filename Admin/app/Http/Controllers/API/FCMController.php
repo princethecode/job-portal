@@ -36,7 +36,7 @@ class FCMController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
-                'errors' => $validator->errors()->toArray()
+                'errors' => $validator->errors()
             ], 422);
         }
 
@@ -46,8 +46,7 @@ class FCMController extends Controller
                 Log::error('User not authenticated during FCM token registration');
                 return response()->json([
                     'success' => false,
-                    'message' => 'User not authenticated',
-                    'data' => null
+                    'message' => 'User not authenticated'
                 ], 401);
             }
 
@@ -68,8 +67,7 @@ class FCMController extends Controller
                 ]);
                 return response()->json([
                     'success' => false,
-                    'message' => 'Failed to save FCM token',
-                    'data' => null
+                    'message' => 'Failed to save FCM token'
                 ], 500);
             }
 
@@ -80,11 +78,7 @@ class FCMController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'FCM token registered successfully',
-                'data' => [
-                    'user_id' => $user->id,
-                    'fcm_token' => $token
-                ]
+                'message' => 'FCM token registered successfully'
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to register FCM token', [
@@ -95,8 +89,7 @@ class FCMController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to register FCM token: ' . $e->getMessage(),
-                'data' => null
+                'message' => 'Failed to register FCM token: ' . $e->getMessage()
             ], 500);
         }
     }

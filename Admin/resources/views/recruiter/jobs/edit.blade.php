@@ -150,7 +150,7 @@
                         <label for="image" class="form-label">Job Image</label>
                         @if($job->image)
                             <div class="mb-2">
-                                <img src="{{ asset('storage/' . $job->image) }}" alt="Current Image" class="img-thumbnail" style="max-height: 100px;">
+                                <img src="{{ asset($job->image) }}" alt="Current Image" class="img-thumbnail" style="max-height: 100px;">
                                 <small class="text-muted d-block">Current image</small>
                             </div>
                         @endif
