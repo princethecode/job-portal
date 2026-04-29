@@ -171,6 +171,7 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
     // Users Management
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('admin.users.index');
+        Route::get('/export', [UserController::class, 'export'])->name('admin.users.export');
         Route::delete('/bulk-delete', [UserController::class, 'bulkDestroy'])->name('admin.users.bulk-destroy');
         Route::get('/{id}', [UserController::class, 'show'])->name('admin.users.show');
         Route::put('/{id}/status', [UserController::class, 'updateStatus'])->name('admin.users.update-status');

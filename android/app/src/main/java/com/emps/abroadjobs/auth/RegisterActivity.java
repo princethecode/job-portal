@@ -127,9 +127,21 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         btnUploadResume.setOnClickListener(v -> {
-            // Launch file picker for PDF and DOC files
-            resumePicker.launch(new String[]{"application/pdf", "application/msword", 
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+            // Launch file picker for all document formats
+            resumePicker.launch(new String[]{
+                    "application/pdf",
+                    "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "application/vnd.ms-powerpoint",
+                    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                    "text/plain",
+                    "application/rtf",
+                    "application/vnd.oasis.opendocument.text",
+                    "application/vnd.oasis.opendocument.spreadsheet",
+                    "application/vnd.oasis.opendocument.presentation"
+            });
         });
 
         btnRegister.setOnClickListener(v -> {
@@ -345,19 +357,33 @@ public class RegisterActivity extends AppCompatActivity {
     // Helper method to get file path from URI
     private String getFilePathFromUri(Uri uri) {
         try {
-            // Check file size first - max 2MB as per server validation
-            try (android.os.ParcelFileDescriptor fileDescriptor = getContentResolver().openFileDescriptor(uri, "r")) {
-                if (fileDescriptor != null) {
-                    long fileSize = fileDescriptor.getStatSize();
-                    if (fileSize > 2 * 1024 * 1024) { // 2MB limit
-                        Toast.makeText(this, "File size exceeds 2MB limit. Please select a smaller file.", Toast.LENGTH_LONG).show();
-                        return null;
-                    }
-                }
+            // Validate file using FileValidator
+            com.emps.abroadjobs.utils.FileValidator.ValidationResult validation = 
+                com.emps.abroadjobs.utils.FileValidator.validateFile(this, uri);
+            
+            if (!validation.isValid) {
+                Toast.makeText(this, validation.errorMessage, Toast.LENGTH_LONG).show();
+                return null;
+            }
+            
+            // Get file extension based on MIME type
+            String extension = ".pdf";
+            if (validation.mimeType != null) {
+                if (validation.mimeType.contains("msword")) extension = ".doc";
+                else if (validation.mimeType.contains("wordprocessingml")) extension = ".docx";
+                else if (validation.mimeType.contains("ms-excel")) extension = ".xls";
+                else if (validation.mimeType.contains("spreadsheetml")) extension = ".xlsx";
+                else if (validation.mimeType.contains("ms-powerpoint")) extension = ".ppt";
+                else if (validation.mimeType.contains("presentationml")) extension = ".pptx";
+                else if (validation.mimeType.equals("text/plain")) extension = ".txt";
+                else if (validation.mimeType.equals("application/rtf")) extension = ".rtf";
+                else if (validation.mimeType.contains("opendocument.text")) extension = ".odt";
+                else if (validation.mimeType.contains("opendocument.spreadsheet")) extension = ".ods";
+                else if (validation.mimeType.contains("opendocument.presentation")) extension = ".odp";
             }
             
             // Create a temporary file to store the resume
-            java.io.File tempFile = java.io.File.createTempFile("resume_upload", ".pdf", getCacheDir());
+            java.io.File tempFile = java.io.File.createTempFile("resume_upload", extension, getCacheDir());
             tempFile.deleteOnExit();
             
             try (java.io.InputStream inputStream = getContentResolver().openInputStream(uri);

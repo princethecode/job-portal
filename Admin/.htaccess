@@ -22,13 +22,39 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
+#newly added for image processing 
+
 # Set proper permissions
 <IfModule mod_authz_core.c>
     Require all granted
 </IfModule>
 
-# Allow access to specific file types
-<FilesMatch "\.(pdf|doc|docx|txt|jpg|jpeg|png|gif|webp|svg)$">
-    Order Allow,Deny
-    Allow from all
+# Increase upload file size limit to 10MB (only if PHP runs as Apache module)
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+    php_value memory_limit 128M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
+
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+    php_value memory_limit 128M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
+
+# Allow access to all document and image file types
+<FilesMatch "\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|odt|ods|odp|csv|jpg|jpeg|png|gif|bmp|webp|svg|tiff|tif|ico|heic|heif)$">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Allow from all
+    </IfModule>
 </FilesMatch>
+
+#newly added for image processing 

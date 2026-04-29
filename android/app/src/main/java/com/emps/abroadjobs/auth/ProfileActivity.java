@@ -143,8 +143,30 @@ public class ProfileActivity extends AppCompatActivity {
      * @return The created file
      */
     private File createImageFileFromUri(Uri uri) throws IOException {
+        // Validate file using FileValidator
+        com.emps.abroadjobs.utils.FileValidator.ValidationResult validation = 
+            com.emps.abroadjobs.utils.FileValidator.validateFile(this, uri);
+        
+        if (!validation.isValid) {
+            throw new IOException(validation.errorMessage);
+        }
+        
+        // Get file extension based on MIME type
+        String extension = ".jpg";
+        if (validation.mimeType != null) {
+            if (validation.mimeType.equals("image/png")) extension = ".png";
+            else if (validation.mimeType.equals("image/gif")) extension = ".gif";
+            else if (validation.mimeType.equals("image/bmp")) extension = ".bmp";
+            else if (validation.mimeType.equals("image/webp")) extension = ".webp";
+            else if (validation.mimeType.equals("image/svg+xml")) extension = ".svg";
+            else if (validation.mimeType.equals("image/tiff")) extension = ".tiff";
+            else if (validation.mimeType.equals("image/x-icon")) extension = ".ico";
+            else if (validation.mimeType.equals("image/heic")) extension = ".heic";
+            else if (validation.mimeType.equals("image/heif")) extension = ".heif";
+        }
+        
         // Create a temp file with appropriate prefix and suffix
-        File tempFile = File.createTempFile("profile_photo", ".jpg", getCacheDir());
+        File tempFile = File.createTempFile("profile_photo", extension, getCacheDir());
         tempFile.deleteOnExit();
         
         // Copy the content from the URI to the file
@@ -291,7 +313,31 @@ public class ProfileActivity extends AppCompatActivity {
     }
     
     private File createFileFromUri(Uri uri) throws IOException {
-        File tempFile = File.createTempFile("resume_upload", ".pdf", getCacheDir());
+        // Validate file using FileValidator
+        com.emps.abroadjobs.utils.FileValidator.ValidationResult validation = 
+            com.emps.abroadjobs.utils.FileValidator.validateFile(this, uri);
+        
+        if (!validation.isValid) {
+            throw new IOException(validation.errorMessage);
+        }
+        
+        // Get file extension based on MIME type
+        String extension = ".pdf";
+        if (validation.mimeType != null) {
+            if (validation.mimeType.contains("msword")) extension = ".doc";
+            else if (validation.mimeType.contains("wordprocessingml")) extension = ".docx";
+            else if (validation.mimeType.contains("ms-excel")) extension = ".xls";
+            else if (validation.mimeType.contains("spreadsheetml")) extension = ".xlsx";
+            else if (validation.mimeType.contains("ms-powerpoint")) extension = ".ppt";
+            else if (validation.mimeType.contains("presentationml")) extension = ".pptx";
+            else if (validation.mimeType.equals("text/plain")) extension = ".txt";
+            else if (validation.mimeType.equals("application/rtf")) extension = ".rtf";
+            else if (validation.mimeType.contains("opendocument.text")) extension = ".odt";
+            else if (validation.mimeType.contains("opendocument.spreadsheet")) extension = ".ods";
+            else if (validation.mimeType.contains("opendocument.presentation")) extension = ".odp";
+        }
+        
+        File tempFile = File.createTempFile("resume_upload", extension, getCacheDir());
         tempFile.deleteOnExit();
         
         try (InputStream inputStream = getContentResolver().openInputStream(uri);

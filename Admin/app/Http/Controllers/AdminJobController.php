@@ -98,7 +98,7 @@ class AdminJobController extends Controller
             'category' => 'required|string|max:255',
             'posting_date' => 'required|date',
             'expiry_date' => 'required|date|after:posting_date',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
         ]);
 
         try {
@@ -209,7 +209,7 @@ class AdminJobController extends Controller
             'posting_date' => 'required|date',
             'expiry_date' => 'required|date|after:posting_date',
             'is_active' => 'boolean',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
         ]);
 
         try {
@@ -360,7 +360,7 @@ class AdminJobController extends Controller
     public function processImport(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048'
+            'csv_file' => 'required|file|mimes:csv,txt|max:10240'
         ]);
 
         if ($validator->fails()) {

@@ -105,7 +105,7 @@ class RecruiterJobController extends Controller
             'expiry_date' => 'required|date|after:today',
             'benefits' => 'sometimes|nullable|string',
             'skills_required' => 'sometimes|nullable|string',
-            'image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
             'is_active' => 'boolean',
         ]);
 
@@ -273,7 +273,7 @@ class RecruiterJobController extends Controller
             'expiry_date' => 'sometimes|date|after:today',
             'benefits' => 'sometimes|nullable|string',
             'skills_required' => 'sometimes|nullable|string',
-            'image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
             'is_active' => 'sometimes|boolean',
         ]);
 

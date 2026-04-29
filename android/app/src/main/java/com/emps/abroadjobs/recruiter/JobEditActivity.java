@@ -226,15 +226,24 @@ public class JobEditActivity extends AppCompatActivity {
 
     private void handleImageSelection(Uri uri) {
         try {
+            // Validate file using FileValidator
+            com.emps.abroadjobs.utils.FileValidator.ValidationResult validation = 
+                com.emps.abroadjobs.utils.FileValidator.validateFile(this, uri);
+            
+            if (!validation.isValid) {
+                Toast.makeText(this, validation.errorMessage, Toast.LENGTH_LONG).show();
+                return;
+            }
+            
             selectedImageFileName = getFileNameFromUri(uri);
             imageFile = createFileFromUri(uri);
             
             // Update UI to show selected image
             updateImageUI(selectedImageFileName, false);
             
-            Toast.makeText(this, "Image selected: " + selectedImageFileName, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Image selected: " + selectedImageFileName + " (" + validation.getFormattedFileSize() + ")", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-            Toast.makeText(this, "Error selecting image file", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error selecting image file: " + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
     }
@@ -281,6 +290,14 @@ public class JobEditActivity extends AppCompatActivity {
         if (mimeType != null) {
             if (mimeType.equals("image/jpeg") || mimeType.equals("image/jpg")) return ".jpg";
             if (mimeType.equals("image/png")) return ".png";
+            if (mimeType.equals("image/gif")) return ".gif";
+            if (mimeType.equals("image/bmp")) return ".bmp";
+            if (mimeType.equals("image/webp")) return ".webp";
+            if (mimeType.equals("image/svg+xml")) return ".svg";
+            if (mimeType.equals("image/tiff")) return ".tiff";
+            if (mimeType.equals("image/x-icon")) return ".ico";
+            if (mimeType.equals("image/heic")) return ".heic";
+            if (mimeType.equals("image/heif")) return ".heif";
         }
         return ".jpg"; // default
     }

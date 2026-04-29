@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Application;
 use Illuminate\Support\Facades\Storage;
+use App\Exports\UsersExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
 {
@@ -130,6 +132,35 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('admin.users.index')
                 ->with('error', 'Failed to delete users. ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export users to Excel
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function export(Request $request)
+    {
+        try {
+            $filters = [];
+            
+            // Apply filters from request
+            if ($request->has('status') && $request->status !== 'all') {
+                $filters['status'] = $request->status;
+            }
+            
+            if ($request->has('search') && !empty($request->search)) {
+                $filters['search'] = $request->search;
+            }
+            
+            $filename = 'users_' . date('Y-m-d_His') . '.xlsx';
+            
+            return Excel::download(new UsersExport($filters), $filename);
+        } catch (\Exception $e) {
+            return redirect()->route('admin.users.index')
+                ->with('error', 'Failed to export users. ' . $e->getMessage());
         }
     }
 }

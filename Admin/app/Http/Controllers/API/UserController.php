@@ -40,7 +40,7 @@ class UserController extends Controller
             'mobile' => 'nullable|string|max:15',
             'skills' => 'nullable|string',
             'experience' => 'nullable|string',
-            'resume' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'resume' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,rtf,odt,ods,odp|max:10240',
         ]);
 
         if ($validator->fails()) {
@@ -197,7 +197,7 @@ class UserController extends Controller
     public function uploadProfilePhoto(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
         ]);
 
         if ($validator->fails()) {
@@ -245,7 +245,7 @@ class UserController extends Controller
     public function uploadResume(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'resume' => 'required|file|mimes:pdf,doc,docx|max:5120', // 5MB max
+            'resume' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,rtf,odt,ods,odp|max:10240', // 10MB max
         ]);
 
         if ($validator->fails()) {

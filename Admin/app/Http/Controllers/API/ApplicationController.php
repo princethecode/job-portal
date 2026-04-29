@@ -32,7 +32,7 @@ class ApplicationController extends Controller
         // Validate request
         $validator = Validator::make($request->all(), [
             'cover_letter' => 'required|string|max:1000',
-            'resume' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'resume' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,txt,rtf,odt,ods,odp|max:10240',
         ]);
 
         if ($validator->fails()) {

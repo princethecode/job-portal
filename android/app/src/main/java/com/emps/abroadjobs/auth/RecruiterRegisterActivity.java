@@ -317,7 +317,31 @@ public class RecruiterRegisterActivity extends AppCompatActivity {
     private void openLicenseFilePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
-        String[] mimeTypes = {"application/pdf", "image/jpeg", "image/jpg", "image/png"};
+        String[] mimeTypes = {
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/vnd.ms-powerpoint",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                "text/plain",
+                "application/rtf",
+                "application/vnd.oasis.opendocument.text",
+                "application/vnd.oasis.opendocument.spreadsheet",
+                "application/vnd.oasis.opendocument.presentation",
+                "image/jpeg",
+                "image/jpg",
+                "image/png",
+                "image/gif",
+                "image/bmp",
+                "image/webp",
+                "image/svg+xml",
+                "image/tiff",
+                "image/x-icon",
+                "image/heic",
+                "image/heif"
+        };
         intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         licensePickerLauncher.launch(Intent.createChooser(intent, "Select Company License"));
@@ -325,15 +349,24 @@ public class RecruiterRegisterActivity extends AppCompatActivity {
     
     private void handleLicenseSelection(Uri uri) {
         try {
+            // Validate file using FileValidator
+            com.emps.abroadjobs.utils.FileValidator.ValidationResult validation = 
+                com.emps.abroadjobs.utils.FileValidator.validateFile(this, uri);
+            
+            if (!validation.isValid) {
+                Toast.makeText(this, validation.errorMessage, Toast.LENGTH_LONG).show();
+                return;
+            }
+            
             selectedLicenseFileName = getFileNameFromUri(uri);
             licenseFile = createFileFromUri(uri);
             
             // Update UI to show selected file
             updateLicenseUI(selectedLicenseFileName, false);
             
-            Toast.makeText(this, "License selected: " + selectedLicenseFileName, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "License selected: " + selectedLicenseFileName + " (" + validation.getFormattedFileSize() + ")", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
-            Toast.makeText(this, "Error selecting license file", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error selecting license file: " + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
     }
@@ -379,8 +412,27 @@ public class RecruiterRegisterActivity extends AppCompatActivity {
         String mimeType = getContentResolver().getType(uri);
         if (mimeType != null) {
             if (mimeType.equals("application/pdf")) return ".pdf";
+            if (mimeType.equals("application/msword")) return ".doc";
+            if (mimeType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) return ".docx";
+            if (mimeType.equals("application/vnd.ms-excel")) return ".xls";
+            if (mimeType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) return ".xlsx";
+            if (mimeType.equals("application/vnd.ms-powerpoint")) return ".ppt";
+            if (mimeType.equals("application/vnd.openxmlformats-officedocument.presentationml.presentation")) return ".pptx";
+            if (mimeType.equals("text/plain")) return ".txt";
+            if (mimeType.equals("application/rtf")) return ".rtf";
+            if (mimeType.equals("application/vnd.oasis.opendocument.text")) return ".odt";
+            if (mimeType.equals("application/vnd.oasis.opendocument.spreadsheet")) return ".ods";
+            if (mimeType.equals("application/vnd.oasis.opendocument.presentation")) return ".odp";
             if (mimeType.equals("image/jpeg") || mimeType.equals("image/jpg")) return ".jpg";
             if (mimeType.equals("image/png")) return ".png";
+            if (mimeType.equals("image/gif")) return ".gif";
+            if (mimeType.equals("image/bmp")) return ".bmp";
+            if (mimeType.equals("image/webp")) return ".webp";
+            if (mimeType.equals("image/svg+xml")) return ".svg";
+            if (mimeType.equals("image/tiff")) return ".tiff";
+            if (mimeType.equals("image/x-icon")) return ".ico";
+            if (mimeType.equals("image/heic")) return ".heic";
+            if (mimeType.equals("image/heif")) return ".heif";
         }
         return ".pdf"; // default
     }

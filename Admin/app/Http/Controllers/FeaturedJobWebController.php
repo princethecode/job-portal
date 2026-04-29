@@ -23,8 +23,8 @@ class FeaturedJobWebController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'job_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
+            'job_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
             'job_title' => 'required|string|max:255',
             'company_name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
@@ -66,8 +66,8 @@ class FeaturedJobWebController extends Controller
     public function update(Request $request, FeaturedJob $featuredJob)
     {
         $validator = Validator::make($request->all(), [
-            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'job_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
+            'job_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
             'job_title' => 'sometimes|required|string|max:255',
             'company_name' => 'sometimes|required|string|max:255',
             'location' => 'sometimes|required|string|max:255',

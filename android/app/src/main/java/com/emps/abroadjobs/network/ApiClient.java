@@ -867,8 +867,33 @@ public class ApiClient {
             return;
         }
         
+        // Determine MIME type based on file extension
+        String mimeType = "image/*";
+        String fileName = photoFile.getName().toLowerCase();
+        if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+            mimeType = "image/jpeg";
+        } else if (fileName.endsWith(".png")) {
+            mimeType = "image/png";
+        } else if (fileName.endsWith(".gif")) {
+            mimeType = "image/gif";
+        } else if (fileName.endsWith(".bmp")) {
+            mimeType = "image/bmp";
+        } else if (fileName.endsWith(".webp")) {
+            mimeType = "image/webp";
+        } else if (fileName.endsWith(".svg")) {
+            mimeType = "image/svg+xml";
+        } else if (fileName.endsWith(".tiff") || fileName.endsWith(".tif")) {
+            mimeType = "image/tiff";
+        } else if (fileName.endsWith(".ico")) {
+            mimeType = "image/x-icon";
+        } else if (fileName.endsWith(".heic")) {
+            mimeType = "image/heic";
+        } else if (fileName.endsWith(".heif")) {
+            mimeType = "image/heif";
+        }
+        
         // Create request body for the photo file
-        RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), photoFile);
+        RequestBody requestFile = RequestBody.create(MediaType.parse(mimeType), photoFile);
         
         // MultipartBody.Part is used to send also the actual file name
         MultipartBody.Part photoPart = MultipartBody.Part.createFormData(
@@ -1469,14 +1494,41 @@ public class ApiClient {
             return;
         }
         
+        // Determine MIME type based on file extension
+        String mimeType = "application/pdf";
+        String fileName = resumeFile.getName().toLowerCase();
+        if (fileName.endsWith(".doc")) {
+            mimeType = "application/msword";
+        } else if (fileName.endsWith(".docx")) {
+            mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        } else if (fileName.endsWith(".xls")) {
+            mimeType = "application/vnd.ms-excel";
+        } else if (fileName.endsWith(".xlsx")) {
+            mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        } else if (fileName.endsWith(".ppt")) {
+            mimeType = "application/vnd.ms-powerpoint";
+        } else if (fileName.endsWith(".pptx")) {
+            mimeType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+        } else if (fileName.endsWith(".txt")) {
+            mimeType = "text/plain";
+        } else if (fileName.endsWith(".rtf")) {
+            mimeType = "application/rtf";
+        } else if (fileName.endsWith(".odt")) {
+            mimeType = "application/vnd.oasis.opendocument.text";
+        } else if (fileName.endsWith(".ods")) {
+            mimeType = "application/vnd.oasis.opendocument.spreadsheet";
+        } else if (fileName.endsWith(".odp")) {
+            mimeType = "application/vnd.oasis.opendocument.presentation";
+        }
+        
         // Create request body for the resume file
-        RequestBody requestFile = RequestBody.create(MediaType.parse("application/pdf"), resumeFile);
+        RequestBody requestFile = RequestBody.create(MediaType.parse(mimeType), resumeFile);
         
         // MultipartBody.Part is used to send also the actual file name
         MultipartBody.Part resumePart = MultipartBody.Part.createFormData(
                 "resume", resumeFile.getName(), requestFile);
         
-        Log.d("ApiClient", "Uploading resume file: " + resumeFile.getName());
+        Log.d("ApiClient", "Uploading resume file: " + resumeFile.getName() + " with MIME type: " + mimeType);
         
         // Create the API call
         Call<ApiResponse<User>> call = apiService.uploadResume(resumePart);

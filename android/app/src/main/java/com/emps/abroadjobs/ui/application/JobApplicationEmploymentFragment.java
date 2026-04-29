@@ -232,7 +232,31 @@ public class JobApplicationEmploymentFragment extends Fragment {
      * Creates a temporary file from the given URI
      */
     private File createFileFromUri(Uri uri) throws IOException {
-        File tempFile = File.createTempFile("resume_upload", ".pdf", requireContext().getCacheDir());
+        // Validate file using FileValidator
+        com.emps.abroadjobs.utils.FileValidator.ValidationResult validation = 
+            com.emps.abroadjobs.utils.FileValidator.validateFile(requireContext(), uri);
+        
+        if (!validation.isValid) {
+            throw new IOException(validation.errorMessage);
+        }
+        
+        // Get file extension based on MIME type
+        String extension = ".pdf";
+        if (validation.mimeType != null) {
+            if (validation.mimeType.contains("msword")) extension = ".doc";
+            else if (validation.mimeType.contains("wordprocessingml")) extension = ".docx";
+            else if (validation.mimeType.contains("ms-excel")) extension = ".xls";
+            else if (validation.mimeType.contains("spreadsheetml")) extension = ".xlsx";
+            else if (validation.mimeType.contains("ms-powerpoint")) extension = ".ppt";
+            else if (validation.mimeType.contains("presentationml")) extension = ".pptx";
+            else if (validation.mimeType.equals("text/plain")) extension = ".txt";
+            else if (validation.mimeType.equals("application/rtf")) extension = ".rtf";
+            else if (validation.mimeType.contains("opendocument.text")) extension = ".odt";
+            else if (validation.mimeType.contains("opendocument.spreadsheet")) extension = ".ods";
+            else if (validation.mimeType.contains("opendocument.presentation")) extension = ".odp";
+        }
+        
+        File tempFile = File.createTempFile("resume_upload", extension, requireContext().getCacheDir());
         tempFile.deleteOnExit();
         
         try (InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);

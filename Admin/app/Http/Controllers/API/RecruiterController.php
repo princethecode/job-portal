@@ -126,7 +126,7 @@ class RecruiterController extends Controller
         $recruiter = $request->user();
 
         $validator = Validator::make($request->all(), [
-            'license' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120', // 5MB max
+            'license' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png,gif,bmp,webp,svg,tiff,tif|max:10240', // 10MB max
         ]);
 
         if ($validator->fails()) {

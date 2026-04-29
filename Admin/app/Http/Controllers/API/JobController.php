@@ -106,7 +106,7 @@ class JobController extends Controller
     'category' => 'required|string|max:255',
     'posting_date' => 'required|date',
     'expiry_date' => 'required|date|after:posting_date',
-    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+    'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
 ]);
 
 if ($validator->fails()) {

@@ -85,7 +85,7 @@ class RecruiterJobController extends Controller
             'benefits' => 'nullable|string',
             'experience_required' => 'nullable|string',
             'skills_required' => 'nullable|array',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
         ]);
 
         // Handle custom category creation
@@ -195,7 +195,7 @@ class RecruiterJobController extends Controller
             'benefits' => 'nullable|string',
             'experience_required' => 'nullable|string',
             'skills_required' => 'nullable|array',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
         ]);
 
         // Handle custom category creation

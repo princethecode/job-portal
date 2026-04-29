@@ -31,6 +31,9 @@
         line-height: 14px;
         display: inline-block;
     }
+    .gap-2 {
+        gap: 0.5rem;
+    }
     /* Updated Pagination Styling */
     .pagination {
         margin: 0;
@@ -116,7 +119,7 @@
         border-top: 1px solid #e3e6f0;
     }
     /* Search Input Styling */
-    .form-control-sm {
+    .form-control-sm, .form-select-sm {
         height: calc(1.5em + 0.5rem + 2px);
         padding: 0.25rem 0.5rem;
         font-size: 0.875rem;
@@ -130,9 +133,14 @@
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-dark mb-0">Users Management</h2>
-        <button id="bulk-delete-btn" class="btn btn-danger" disabled>
-            <i class="fas fa-trash me-1"></i> Delete Selected
-        </button>
+        <div class="d-flex gap-2">
+            <button id="export-btn" class="btn btn-success" onclick="exportUsers()">
+                <i class="fas fa-file-excel me-1"></i> Export to Excel
+            </button>
+            <button id="bulk-delete-btn" class="btn btn-danger" disabled>
+                <i class="fas fa-trash me-1"></i> Delete Selected
+            </button>
+        </div>
     </div>
     
     @if(isset($error))
@@ -147,7 +155,12 @@
         <div class="card-header py-3">
             <div class="d-flex justify-content-between align-items-center">
                 <h6 class="m-0 font-weight-bold text-primary">All Users</h6>
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <select class="form-select form-select-sm" id="statusFilter" style="width: auto;">
+                        <option value="all">All Status</option>
+                        <option value="active">Active Only</option>
+                        <option value="inactive">Inactive Only</option>
+                    </select>
                     <div class="form-check me-3">
                         <input class="form-check-input" type="checkbox" id="select-all">
                         <label class="form-check-label" for="select-all">Select All</label>
@@ -313,6 +326,41 @@
 
 @push('scripts')
 <script>
+// Export users to Excel
+function exportUsers() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const searchValue = document.getElementById('userSearch').value;
+    
+    // Build URL with filters
+    let url = '{{ route("admin.users.export") }}?';
+    const params = [];
+    
+    if (statusFilter && statusFilter !== 'all') {
+        params.push('status=' + encodeURIComponent(statusFilter));
+    }
+    
+    if (searchValue) {
+        params.push('search=' + encodeURIComponent(searchValue));
+    }
+    
+    url += params.join('&');
+    
+    // Show loading state
+    const exportBtn = document.getElementById('export-btn');
+    const originalHtml = exportBtn.innerHTML;
+    exportBtn.disabled = true;
+    exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Exporting...';
+    
+    // Trigger download
+    window.location.href = url;
+    
+    // Reset button after a delay
+    setTimeout(() => {
+        exportBtn.disabled = false;
+        exportBtn.innerHTML = originalHtml;
+    }, 2000);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM Content Loaded');
     
@@ -321,6 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
     const bulkDeleteForm = document.getElementById('bulk-delete-form');
     const confirmBulkDeleteBtn = document.getElementById('confirm-bulk-delete');
+    const statusFilter = document.getElementById('statusFilter');
     
     console.log('Select All Checkbox:', selectAllCheckbox);
     console.log('User Checkboxes:', userCheckboxes);
@@ -333,13 +382,41 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
+    // Status filter functionality
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            const filterValue = this.value;
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                if (filterValue === 'all') {
+                    row.style.display = '';
+                } else {
+                    const statusBadge = row.querySelector('.badge');
+                    if (statusBadge) {
+                        const isActive = statusBadge.classList.contains('bg-success');
+                        if ((filterValue === 'active' && isActive) || (filterValue === 'inactive' && !isActive)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                }
+            });
+        });
+    }
+    
     // Select all functionality
     selectAllCheckbox.addEventListener('change', function() {
         console.log('Select All Changed:', this.checked);
         const isChecked = this.checked;
         
         userCheckboxes.forEach(checkbox => {
-            checkbox.checked = isChecked;
+            // Only check visible rows
+            const row = checkbox.closest('tr');
+            if (row.style.display !== 'none') {
+                checkbox.checked = isChecked;
+            }
         });
         
         updateBulkDeleteButton();
@@ -355,8 +432,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!this.checked) {
                 selectAllCheckbox.checked = false;
             } else {
-                // Check if all checkboxes are checked
-                const allChecked = Array.from(userCheckboxes).every(c => c.checked);
+                // Check if all visible checkboxes are checked
+                const visibleCheckboxes = Array.from(userCheckboxes).filter(c => c.closest('tr').style.display !== 'none');
+                const allChecked = visibleCheckboxes.every(c => c.checked);
                 selectAllCheckbox.checked = allChecked;
             }
         });
@@ -409,6 +487,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const text = row.textContent.toLowerCase();
                 row.style.display = text.includes(searchText) ? '' : 'none';
             });
+            
+            // Update select all checkbox state after search
+            selectAllCheckbox.checked = false;
         });
     }
 
