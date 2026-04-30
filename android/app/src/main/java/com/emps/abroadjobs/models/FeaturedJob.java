@@ -40,6 +40,12 @@ public class FeaturedJob {
     @SerializedName("job_image")
     private String jobImage;
 
+    private String requirements;
+    private String benefits;
+    
+    @SerializedName("skills_required")
+    private String skillsRequired;
+
     // Add getters and setters for all fields
     public int getId() {
         return id;
@@ -151,5 +157,29 @@ public class FeaturedJob {
 
     public void setJobImage(String jobImage) {
         this.jobImage = jobImage;
+    }
+
+    public String getRequirements() {
+        return requirements != null ? requirements : "";
+    }
+
+    public void setRequirements(String requirements) {
+        this.requirements = requirements;
+    }
+
+    public String getBenefits() {
+        return benefits != null ? benefits : "";
+    }
+
+    public void setBenefits(String benefits) {
+        this.benefits = benefits;
+    }
+
+    public String getSkillsRequired() {
+        return skillsRequired != null ? skillsRequired : "";
+    }
+
+    public void setSkillsRequired(String skillsRequired) {
+        this.skillsRequired = skillsRequired;
     }
 }

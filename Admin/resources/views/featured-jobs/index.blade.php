@@ -55,13 +55,16 @@
                                 </td>
                                 <td>
                                     <div class="btn-group">
-                                        <a href="{{ route('featured-jobs.edit', $job) }}" class="btn btn-sm btn-info">
+                                        <a href="{{ route('featured-jobs.show', $job) }}" class="btn btn-sm btn-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ route('featured-jobs.edit', $job) }}" class="btn btn-sm btn-warning" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form action="{{ route('featured-jobs.destroy', $job) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this job?')">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this job?')" title="Delete">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>

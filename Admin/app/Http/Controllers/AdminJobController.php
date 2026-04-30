@@ -98,6 +98,9 @@ class AdminJobController extends Controller
             'category' => 'required|string|max:255',
             'posting_date' => 'required|date',
             'expiry_date' => 'required|date|after:posting_date',
+            'requirements' => 'nullable|string',
+            'benefits' => 'nullable|string',
+            'skills_required' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
         ]);
 
@@ -121,9 +124,23 @@ class AdminJobController extends Controller
             }
             
             $data = $request->all();
+            
+            // Convert skills_required from comma-separated string to array
+            if (!empty($data['skills_required'])) {
+                $data['skills_required'] = array_map('trim', explode(',', $data['skills_required']));
+            }
+            
             if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('job_images', 'public');
-                $data['image'] = $imagePath;
+                $image = $request->file('image');
+                // Sanitize filename: remove spaces and special characters
+                $originalName = $image->getClientOriginalName();
+                $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $originalName);
+                $sanitizedName = preg_replace('/_+/', '_', $sanitizedName); // Replace multiple underscores with single
+                $imageName = time() . '_' . $sanitizedName;
+                
+                // Store in storage/app/public/job_images using Laravel Storage
+                $path = $image->storeAs('public/job_images', $imageName);
+                $data['image'] = 'job_images/' . $imageName;
             }
             $job = Job::create($data);
 
@@ -209,6 +226,9 @@ class AdminJobController extends Controller
             'posting_date' => 'required|date',
             'expiry_date' => 'required|date|after:posting_date',
             'is_active' => 'boolean',
+            'requirements' => 'nullable|string',
+            'benefits' => 'nullable|string',
+            'skills_required' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,bmp,webp,svg,tiff,tif,ico,heic,heif|max:10240',
         ]);
 
@@ -234,10 +254,23 @@ class AdminJobController extends Controller
             $job = Job::findOrFail($id);
             $data = $request->all();
             
+            // Convert skills_required from comma-separated string to array
+            if (!empty($data['skills_required'])) {
+                $data['skills_required'] = array_map('trim', explode(',', $data['skills_required']));
+            }
+            
             // Handle image upload
             if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store('job_images', 'public');
-                $data['image'] = $imagePath;
+                $image = $request->file('image');
+                // Sanitize filename: remove spaces and special characters
+                $originalName = $image->getClientOriginalName();
+                $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $originalName);
+                $sanitizedName = preg_replace('/_+/', '_', $sanitizedName); // Replace multiple underscores with single
+                $imageName = time() . '_' . $sanitizedName;
+                
+                // Store in storage/app/public/job_images using Laravel Storage
+                $path = $image->storeAs('public/job_images', $imageName);
+                $data['image'] = 'job_images/' . $imageName;
             }
             
             $job->update($data);

@@ -124,7 +124,11 @@ class RecruiterJobController extends Controller
             $imagePath = null;
             if ($request->hasFile('image')) {
                 $image = $request->file('image');
-                $imageName = time() . '_' . $image->getClientOriginalName();
+                // Sanitize filename: remove spaces and special characters
+                $originalName = $image->getClientOriginalName();
+                $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $originalName);
+                $sanitizedName = preg_replace('/_+/', '_', $sanitizedName); // Replace multiple underscores with single
+                $imageName = time() . '_' . $sanitizedName;
                 
                 // Store in storage/app/public/job_images using Laravel Storage
                 $path = $image->storeAs('public/job_images', $imageName);
@@ -298,7 +302,11 @@ class RecruiterJobController extends Controller
                 }
                 
                 $image = $request->file('image');
-                $imageName = time() . '_' . $image->getClientOriginalName();
+                // Sanitize filename: remove spaces and special characters
+                $originalName = $image->getClientOriginalName();
+                $sanitizedName = preg_replace('/[^A-Za-z0-9\-_\.]/', '_', $originalName);
+                $sanitizedName = preg_replace('/_+/', '_', $sanitizedName); // Replace multiple underscores with single
+                $imageName = time() . '_' . $sanitizedName;
                 
                 // Store in storage/app/public/job_images using Laravel Storage
                 $path = $image->storeAs('public/job_images', $imageName);

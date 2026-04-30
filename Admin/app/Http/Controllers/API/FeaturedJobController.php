@@ -45,6 +45,9 @@ class FeaturedJobController extends Controller
             'salary' => 'required|string|max:255',
             'job_type' => 'required|string|max:255',
             'description' => 'required|string',
+            'requirements' => 'nullable|string',
+            'benefits' => 'nullable|string',
+            'skills_required' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -56,6 +59,11 @@ class FeaturedJobController extends Controller
         }
 
         $data = $request->all();
+
+        // Convert skills_required from comma-separated string to array
+        if (!empty($data['skills_required'])) {
+            $data['skills_required'] = array_map('trim', explode(',', $data['skills_required']));
+        }
 
         // Set the posted_date to current date if not provided
         if (!isset($data['posted_date'])) {
@@ -161,6 +169,9 @@ class FeaturedJobController extends Controller
             'salary' => 'sometimes|required|string|max:255',
             'job_type' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string',
+            'requirements' => 'nullable|string',
+            'benefits' => 'nullable|string',
+            'skills_required' => 'nullable|string',
             'is_active' => 'sometimes|boolean',
         ]);
 
@@ -173,6 +184,11 @@ class FeaturedJobController extends Controller
         }
 
         $data = $request->all();
+
+        // Convert skills_required from comma-separated string to array
+        if (!empty($data['skills_required'])) {
+            $data['skills_required'] = array_map('trim', explode(',', $data['skills_required']));
+        }
 
         // Handle company logo upload
         if ($request->hasFile('company_logo')) {

@@ -17,13 +17,17 @@ class FeaturedJob extends Model
         'salary',
         'job_type',
         'description',
-          'job_image',
+        'requirements',
+        'benefits',
+        'skills_required',
+        'job_image',
         'posted_date',
         'is_active'
     ];
 
     protected $casts = [
         'posted_date' => 'datetime',
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
+        'skills_required' => 'array'
     ];
 }

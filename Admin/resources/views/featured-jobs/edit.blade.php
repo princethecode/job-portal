@@ -89,6 +89,38 @@
                         </div>
 
                         <div class="mb-3">
+                            <label for="requirements" class="form-label">Requirements</label>
+                            <textarea class="form-control @error('requirements') is-invalid @enderror" 
+                                      id="requirements" name="requirements" rows="4">{{ old('requirements', $featuredJob->requirements ?? '') }}</textarea>
+                            <div class="form-text">List the job requirements (e.g., education, experience, certifications)</div>
+                            @error('requirements')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="benefits" class="form-label">Benefits</label>
+                            <textarea class="form-control @error('benefits') is-invalid @enderror" 
+                                      id="benefits" name="benefits" rows="3">{{ old('benefits', $featuredJob->benefits ?? '') }}</textarea>
+                            <div class="form-text">List the benefits offered (e.g., health insurance, paid time off, remote work)</div>
+                            @error('benefits')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="skills_required" class="form-label">Required Skills</label>
+                            <input type="text" class="form-control @error('skills_required') is-invalid @enderror" 
+                                   id="skills_required" name="skills_required" 
+                                   value="{{ old('skills_required', is_array($featuredJob->skills_required ?? null) ? implode(', ', $featuredJob->skills_required) : ($featuredJob->skills_required ?? '')) }}" 
+                                   placeholder="e.g., Java, Python, SQL">
+                            <div class="form-text">Enter skills separated by commas</div>
+                            @error('skills_required')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
                             <label for="job_image" class="form-label">Job Image</label>
                             @if($featuredJob->job_image)
                                 <div class="mb-2">

@@ -57,6 +57,41 @@
                             {!! nl2br(e($job['description'])) !!}
                         </div>
                     </div>
+
+                    @if(!empty($job['requirements']))
+                    <div class="mb-3">
+                        <h5><i class="fas fa-clipboard-list me-2"></i>Requirements</h5>
+                        <div class="p-3 bg-light rounded">
+                            {!! nl2br(e($job['requirements'])) !!}
+                        </div>
+                    </div>
+                    @endif
+
+                    @if(!empty($job['benefits']))
+                    <div class="mb-3">
+                        <h5><i class="fas fa-gift me-2"></i>Benefits</h5>
+                        <div class="p-3 bg-light rounded">
+                            {!! nl2br(e($job['benefits'])) !!}
+                        </div>
+                    </div>
+                    @endif
+
+                    @if(!empty($job['skills_required']))
+                    <div class="mb-3">
+                        <h5><i class="fas fa-tools me-2"></i>Required Skills</h5>
+                        <div class="p-3 bg-light rounded">
+                            @php
+                                $skills = is_array($job['skills_required']) ? $job['skills_required'] : json_decode($job['skills_required'], true);
+                                if (!is_array($skills)) {
+                                    $skills = explode(',', $job['skills_required']);
+                                }
+                            @endphp
+                            @foreach($skills as $skill)
+                                <span class="badge bg-primary me-2 mb-2">{{ trim($skill) }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>

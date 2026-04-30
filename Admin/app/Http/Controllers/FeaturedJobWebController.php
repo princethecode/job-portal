@@ -20,6 +20,11 @@ class FeaturedJobWebController extends Controller
         return view('featured-jobs.create');
     }
 
+    public function show(FeaturedJob $featuredJob)
+    {
+        return view('featured-jobs.show', compact('featuredJob'));
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -31,6 +36,9 @@ class FeaturedJobWebController extends Controller
             'salary' => 'required|string|max:255',
             'job_type' => 'required|string|max:255',
             'description' => 'required|string',
+            'requirements' => 'nullable|string',
+            'benefits' => 'nullable|string',
+            'skills_required' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -39,6 +47,11 @@ class FeaturedJobWebController extends Controller
 
         $data = $request->all();
         $data['is_active'] = $request->has('is_active');
+
+        // Convert skills_required from comma-separated string to array
+        if (!empty($data['skills_required'])) {
+            $data['skills_required'] = array_map('trim', explode(',', $data['skills_required']));
+        }
 
         // Handle company logo upload
         if ($request->hasFile('company_logo')) {
@@ -74,6 +87,9 @@ class FeaturedJobWebController extends Controller
             'salary' => 'sometimes|required|string|max:255',
             'job_type' => 'sometimes|required|string|max:255',
             'description' => 'sometimes|required|string',
+            'requirements' => 'nullable|string',
+            'benefits' => 'nullable|string',
+            'skills_required' => 'nullable|string',
             'is_active' => 'sometimes|boolean',
         ]);
 
@@ -83,6 +99,11 @@ class FeaturedJobWebController extends Controller
 
         $data = $request->all();
         $data['is_active'] = $request->has('is_active');
+
+        // Convert skills_required from comma-separated string to array
+        if (!empty($data['skills_required'])) {
+            $data['skills_required'] = array_map('trim', explode(',', $data['skills_required']));
+        }
 
         // Handle company logo upload
         if ($request->hasFile('company_logo')) {

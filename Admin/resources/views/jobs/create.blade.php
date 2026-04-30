@@ -119,6 +119,24 @@
                     <textarea class="form-control" id="description" name="description" rows="6" required>{{ old('description') }}</textarea>
                 </div>
                 
+                <div class="mb-3">
+                    <label for="requirements" class="form-label">Requirements</label>
+                    <textarea class="form-control" id="requirements" name="requirements" rows="4">{{ old('requirements') }}</textarea>
+                    <small class="form-text text-muted">List the job requirements (e.g., education, experience, certifications)</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="benefits" class="form-label">Benefits</label>
+                    <textarea class="form-control" id="benefits" name="benefits" rows="3">{{ old('benefits') }}</textarea>
+                    <small class="form-text text-muted">List the benefits offered (e.g., health insurance, paid time off, remote work)</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="skills_required" class="form-label">Required Skills</label>
+                    <input type="text" class="form-control" id="skills_required" name="skills_required" value="{{ old('skills_required') }}" placeholder="e.g., Java, Python, SQL">
+                    <small class="form-text text-muted">Enter skills separated by commas</small>
+                </div>
+                
                 <div class="form-group">
                     <label for="image">Job Image</label>
                     <input type="file" name="image" id="image" class="form-control-file" accept="image/*">

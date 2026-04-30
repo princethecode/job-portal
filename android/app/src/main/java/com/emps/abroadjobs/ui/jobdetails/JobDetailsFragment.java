@@ -55,6 +55,12 @@ public class JobDetailsFragment extends Fragment {
     private TextView typeTextView;
     private TextView dateTextView;
     private TextView descriptionTextView;
+    private TextView requirementsTextView;
+    private TextView benefitsTextView;
+    private com.google.android.material.chip.ChipGroup skillsChipGroup;
+    private View requirementsContainer;
+    private View benefitsContainer;
+    private View skillsContainer;
     private Button applyButton;
     private View progressBar;
     private ImageView jobImageView;
@@ -113,6 +119,12 @@ public class JobDetailsFragment extends Fragment {
         typeTextView = view.findViewById(R.id.job_type);
         dateTextView = view.findViewById(R.id.posting_date);
         descriptionTextView = view.findViewById(R.id.description);
+        requirementsTextView = view.findViewById(R.id.requirements);
+        benefitsTextView = view.findViewById(R.id.benefits);
+        skillsChipGroup = view.findViewById(R.id.skills_chip_group);
+        requirementsContainer = view.findViewById(R.id.requirements_container);
+        benefitsContainer = view.findViewById(R.id.benefits_container);
+        skillsContainer = view.findViewById(R.id.skills_container);
         applyButton = view.findViewById(R.id.apply_button);
         progressBar = view.findViewById(R.id.progress_bar);
         contentLayout = view.findViewById(R.id.content_layout);
@@ -266,8 +278,8 @@ public class JobDetailsFragment extends Fragment {
             String logoUrl = job.getCompanyLogo();
             // Ensure URL is absolute
             if (!logoUrl.startsWith("http")) {
-                // If it's a relative URL, append to base URL with /storage/ prefix
-                String baseUrl = "https://emps.co.in/storage/";
+
+                String baseUrl = "https://emps.co.in/";
                 if (logoUrl.startsWith("/")) {
                     logoUrl = baseUrl + logoUrl.substring(1);
                 } else {
@@ -293,7 +305,7 @@ public class JobDetailsFragment extends Fragment {
             jobImageView.setVisibility(View.VISIBLE);
             String imageUrl = job.getImage();
             if (!imageUrl.startsWith("http")) {
-                String baseUrl = "https://emps.co.in/storage/";
+                String baseUrl = "https://emps.co.in/";
                 if (imageUrl.startsWith("/")) {
                     imageUrl = baseUrl + imageUrl.substring(1);
                 } else {
@@ -316,11 +328,90 @@ public class JobDetailsFragment extends Fragment {
             descriptionTextView.setVisibility(View.VISIBLE);
             descriptionTextView.setText(job.getDescription());
         }
+        
+        // Display Requirements if available
+        if (requirementsTextView != null && requirementsContainer != null) {
+            String requirements = job.getRequirements();
+            if (requirements != null && !requirements.isEmpty() && !requirements.trim().isEmpty()) {
+                requirementsContainer.setVisibility(View.VISIBLE);
+                requirementsTextView.setText(requirements);
+            } else {
+                requirementsContainer.setVisibility(View.GONE);
+            }
+        }
+        
+        // Display Benefits if available
+        if (benefitsTextView != null && benefitsContainer != null) {
+            String benefits = job.getBenefits();
+            if (benefits != null && !benefits.isEmpty() && !benefits.trim().isEmpty()) {
+                benefitsContainer.setVisibility(View.VISIBLE);
+                benefitsTextView.setText(benefits);
+            } else {
+                benefitsContainer.setVisibility(View.GONE);
+            }
+        }
+        
+        // Display Required Skills if available
+        if (skillsChipGroup != null && skillsContainer != null) {
+            String skillsRequired = job.getSkillsRequired();
+            if (skillsRequired != null && !skillsRequired.isEmpty() && !skillsRequired.trim().isEmpty()) {
+                skillsContainer.setVisibility(View.VISIBLE);
+                skillsChipGroup.removeAllViews();
+                
+                // Parse skills - could be JSON array or comma-separated string
+                String[] skills = parseSkills(skillsRequired);
+                
+                if (skills != null && skills.length > 0) {
+                    for (String skill : skills) {
+                        if (skill != null && !skill.trim().isEmpty()) {
+                            com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(requireContext());
+                            chip.setText(skill.trim());
+                            chip.setChipBackgroundColorResource(R.color.primary);
+                            chip.setTextColor(getResources().getColor(android.R.color.white, null));
+                            chip.setClickable(false);
+                            chip.setCheckable(false);
+                            skillsChipGroup.addView(chip);
+                        }
+                    }
+                } else {
+                    skillsContainer.setVisibility(View.GONE);
+                }
+            } else {
+                skillsContainer.setVisibility(View.GONE);
+            }
+        }
+        
         // Enable apply button only if job is active
         applyButton.setEnabled(job.isActive());
         if (!job.isActive()) {
             applyButton.setText("Job Closed");
         }
+    }
+    
+    /**
+     * Parse skills from JSON array or comma-separated string
+     */
+    private String[] parseSkills(String skillsRequired) {
+        if (skillsRequired == null || skillsRequired.isEmpty()) {
+            return new String[0];
+        }
+        
+        // Try to parse as JSON array first
+        if (skillsRequired.trim().startsWith("[")) {
+            try {
+                org.json.JSONArray jsonArray = new org.json.JSONArray(skillsRequired);
+                String[] skills = new String[jsonArray.length()];
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    skills[i] = jsonArray.getString(i);
+                }
+                return skills;
+            } catch (org.json.JSONException e) {
+                Log.e("JobDetailsFragment", "Error parsing skills JSON: " + e.getMessage());
+            }
+        }
+        
+        // Fall back to comma-separated parsing
+        return skillsRequired.split(",");
     }
     
     /**

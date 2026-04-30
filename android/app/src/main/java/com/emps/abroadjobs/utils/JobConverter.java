@@ -44,6 +44,11 @@ public class JobConverter {
             job.setImage(featuredJob.getJobImage());
         }
         
+        // Set requirements, benefits, and skills
+        job.setRequirements(featuredJob.getRequirements());
+        job.setBenefits(featuredJob.getBenefits());
+        job.setSkillsRequired(featuredJob.getSkillsRequired());
+        
         return job;
     }
 }

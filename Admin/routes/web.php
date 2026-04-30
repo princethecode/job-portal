@@ -220,6 +220,7 @@ Route::middleware(['web', 'admin.auth'])->group(function () {
 Route::get('/featured-jobs', [FeaturedJobWebController::class, 'index'])->name('featured-jobs.index');
 Route::get('/featured-jobs/create', [FeaturedJobWebController::class, 'create'])->name('featured-jobs.create');
 Route::post('/featured-jobs', [FeaturedJobWebController::class, 'store'])->name('featured-jobs.store');
+Route::get('/featured-jobs/{featuredJob}', [FeaturedJobWebController::class, 'show'])->name('featured-jobs.show');
 Route::get('/featured-jobs/{featuredJob}/edit', [FeaturedJobWebController::class, 'edit'])->name('featured-jobs.edit');
 Route::put('/featured-jobs/{featuredJob}', [FeaturedJobWebController::class, 'update'])->name('featured-jobs.update');
 Route::delete('/featured-jobs/{featuredJob}', [FeaturedJobWebController::class, 'destroy'])->name('featured-jobs.destroy');

@@ -121,6 +121,26 @@
                     <label for="description" class="form-label">Job Description</label>
                     <textarea class="form-control" id="description" name="description" rows="6" required>{{ old('description', $job['description']) }}</textarea>
                 </div>
+                
+                <div class="mb-3">
+                    <label for="requirements" class="form-label">Requirements</label>
+                    <textarea class="form-control" id="requirements" name="requirements" rows="4">{{ old('requirements', $job['requirements'] ?? '') }}</textarea>
+                    <small class="form-text text-muted">List the job requirements (e.g., education, experience, certifications)</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="benefits" class="form-label">Benefits</label>
+                    <textarea class="form-control" id="benefits" name="benefits" rows="3">{{ old('benefits', $job['benefits'] ?? '') }}</textarea>
+                    <small class="form-text text-muted">List the benefits offered (e.g., health insurance, paid time off, remote work)</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="skills_required" class="form-label">Required Skills</label>
+                    <input type="text" class="form-control" id="skills_required" name="skills_required" 
+                           value="{{ old('skills_required', is_array($job['skills_required'] ?? null) ? implode(', ', $job['skills_required']) : ($job['skills_required'] ?? '')) }}" 
+                           placeholder="e.g., Java, Python, SQL">
+                    <small class="form-text text-muted">Enter skills separated by commas</small>
+                </div>
                 <div class="mb-3">
                     <label for="image" class="form-label">Job Image</label>
                     @if(!empty($job['image']))
