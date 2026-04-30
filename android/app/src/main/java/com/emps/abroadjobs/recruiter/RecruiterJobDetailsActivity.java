@@ -337,6 +337,7 @@ public class RecruiterJobDetailsActivity extends AppCompatActivity {
                 .load(imageUrl)
                 .placeholder(R.drawable.ic_jobs)
                 .error(R.drawable.ic_jobs)
+                .override(com.bumptech.glide.request.target.Target.SIZE_ORIGINAL)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(ivJobImage);
             imageCard.setVisibility(View.VISIBLE);

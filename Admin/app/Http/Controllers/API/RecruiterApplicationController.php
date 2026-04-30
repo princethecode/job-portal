@@ -61,30 +61,7 @@ class RecruiterApplicationController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'application' => [
-                    'id' => $application->id,
-                    'status' => $application->status,
-                    'cover_letter' => $application->cover_letter,
-                    'notes' => $application->notes,
-                    'applied_date' => $application->created_at,
-                    'user' => [
-                        'id' => $application->user->id,
-                        'name' => $application->user->name,
-                        'email' => $application->user->email,
-                        'mobile' => $application->user->mobile,
-                        'profile_photo' => $application->user->profile_photo,
-                        'resume' => $application->user->resume,
-                        'experiences' => $application->user->experiences,
-                    ],
-                    'job' => [
-                        'id' => $application->job->id,
-                        'title' => $application->job->title,
-                        'company_name' => $application->job->company_name,
-                        'location' => $application->job->location,
-                    ]
-                ]
-            ]
+            'data' => $application->load(['user', 'job'])
         ]);
     }
 
@@ -94,7 +71,7 @@ class RecruiterApplicationController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:Applied,Reviewing,Shortlisted,Rejected,Hired',
+            'status' => 'required|in:Applied,Pending,Under Review,Reviewing,Shortlisted,Rejected,Hired',
             'notes' => 'nullable|string',
         ]);
 

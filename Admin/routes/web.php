@@ -38,6 +38,28 @@ Route::get('/job_images/{filename}', function ($filename) {
     return response()->file($path);
 })->name('job.image');
 
+// Serve profile photos from storage
+Route::get('/profile_photos/{filename}', function ($filename) {
+    $path = storage_path('app/public/profile_photos/' . $filename);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    
+    return response()->file($path);
+})->name('profile.photo');
+
+// Serve storage files (fallback for all storage files)
+Route::get('/storage/{folder}/{filename}', function ($folder, $filename) {
+    $path = storage_path('app/public/' . $folder . '/' . $filename);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    
+    return response()->file($path);
+})->name('storage.file');
+
 
 // Public Routes
 Route::get('/download', function() {

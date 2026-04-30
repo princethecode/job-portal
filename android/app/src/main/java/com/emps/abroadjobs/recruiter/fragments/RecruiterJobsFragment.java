@@ -2,6 +2,8 @@ package com.emps.abroadjobs.recruiter.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,10 +23,14 @@ import com.emps.abroadjobs.recruiter.JobPostingActivity;
 import com.emps.abroadjobs.recruiter.adapters.RecentJobsAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.textfield.TextInputEditText;
 import retrofit2.Call;
 import retrofit2.Response;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RecruiterJobsFragment extends Fragment {
     
@@ -35,6 +41,14 @@ public class RecruiterJobsFragment extends Fragment {
     private MaterialButton btnPostFirstJob;
     private View llEmptyState;
     private ActivityResultLauncher<Intent> jobPostingLauncher;
+    private ChipGroup chipGroupFilters;
+    private Chip chipAll, chipActive, chipInactive, chipDraft;
+    private TextInputEditText etSearchJobs;
+    
+    // Store all jobs for filtering
+    private List<Job> allJobs = new ArrayList<>();
+    private String currentFilter = "all";
+    private String currentSearchQuery = "";
     
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,6 +78,8 @@ public class RecruiterJobsFragment extends Fragment {
         initializeViews(view);
         setupRecyclerView();
         setupClickListeners();
+        setupFilterChips();
+        setupSearchBar();
         loadJobs();
         
         return view;
@@ -75,6 +91,12 @@ public class RecruiterJobsFragment extends Fragment {
         btnPostFirstJob = view.findViewById(R.id.btn_post_first_job);
         llEmptyState = view.findViewById(R.id.ll_empty_state);
         progressBar = view.findViewById(R.id.ll_loading);
+        chipGroupFilters = view.findViewById(R.id.chip_group_filters);
+        chipAll = view.findViewById(R.id.chip_all);
+        chipActive = view.findViewById(R.id.chip_active);
+        chipInactive = view.findViewById(R.id.chip_inactive);
+        chipDraft = view.findViewById(R.id.chip_draft);
+        etSearchJobs = view.findViewById(R.id.et_search_jobs);
     }
     
     private void setupRecyclerView() {
@@ -94,6 +116,102 @@ public class RecruiterJobsFragment extends Fragment {
         
         if (btnPostFirstJob != null) {
             btnPostFirstJob.setOnClickListener(v -> openJobPostingActivity());
+        }
+    }
+    
+    private void setupFilterChips() {
+        if (chipGroupFilters != null) {
+            chipGroupFilters.setOnCheckedStateChangeListener((group, checkedIds) -> {
+                if (checkedIds.isEmpty()) {
+                    return;
+                }
+                
+                int checkedId = checkedIds.get(0);
+                
+                if (checkedId == R.id.chip_all) {
+                    currentFilter = "all";
+                } else if (checkedId == R.id.chip_active) {
+                    currentFilter = "active";
+                } else if (checkedId == R.id.chip_inactive) {
+                    currentFilter = "inactive";
+                } else if (checkedId == R.id.chip_draft) {
+                    currentFilter = "draft";
+                }
+                
+                applyFilters();
+            });
+        }
+    }
+    
+    private void setupSearchBar() {
+        if (etSearchJobs != null) {
+            etSearchJobs.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                }
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    currentSearchQuery = s.toString().toLowerCase().trim();
+                    applyFilters();
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {
+                }
+            });
+        }
+    }
+    
+    private void applyFilters() {
+        List<Job> filteredJobs = new ArrayList<>(allJobs);
+        
+        // Apply status filter
+        if (!currentFilter.equals("all")) {
+            filteredJobs = filteredJobs.stream()
+                .filter(job -> {
+                    switch (currentFilter) {
+                        case "active":
+                            return job.isActive() && 
+                                   (job.getApprovalStatus() == null || 
+                                    !job.getApprovalStatus().equalsIgnoreCase("draft"));
+                        case "inactive":
+                            return !job.isActive() && 
+                                   (job.getApprovalStatus() == null || 
+                                    !job.getApprovalStatus().equalsIgnoreCase("draft"));
+                        case "draft":
+                            return job.getApprovalStatus() != null && 
+                                   job.getApprovalStatus().equalsIgnoreCase("draft");
+                        default:
+                            return true;
+                    }
+                })
+                .collect(Collectors.toList());
+        }
+        
+        // Apply search filter
+        if (!currentSearchQuery.isEmpty()) {
+            filteredJobs = filteredJobs.stream()
+                .filter(job -> {
+                    String title = job.getTitle() != null ? job.getTitle().toLowerCase() : "";
+                    String company = job.getCompany() != null ? job.getCompany().toLowerCase() : "";
+                    String location = job.getLocation() != null ? job.getLocation().toLowerCase() : "";
+                    String category = job.getCategory() != null ? job.getCategory().toLowerCase() : "";
+                    
+                    return title.contains(currentSearchQuery) ||
+                           company.contains(currentSearchQuery) ||
+                           location.contains(currentSearchQuery) ||
+                           category.contains(currentSearchQuery);
+                })
+                .collect(Collectors.toList());
+        }
+        
+        // Update adapter
+        if (filteredJobs.isEmpty()) {
+            showEmptyState();
+        } else {
+            jobsAdapter.updateJobs(filteredJobs);
+            showJobsList();
         }
     }
     
@@ -119,9 +237,10 @@ public class RecruiterJobsFragment extends Fragment {
                     if (jobListResponse.isSuccess() && jobListResponse.getData() != null) {
                         List<Job> jobs = jobListResponse.getData().getJobs();
                         if (jobs != null && !jobs.isEmpty()) {
-                            jobsAdapter.updateJobs(jobs);
-                            showJobsList();
+                            allJobs = new ArrayList<>(jobs);
+                            applyFilters();
                         } else {
+                            allJobs.clear();
                             showEmptyState();
                         }
                     } else {
