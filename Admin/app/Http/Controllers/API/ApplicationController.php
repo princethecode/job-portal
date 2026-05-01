@@ -121,8 +121,10 @@ class ApplicationController extends Controller
         if ($existingApplication) {
             return response()->json([
                 'success' => false,
-                'message' => 'You have already applied for this job'
-            ], 422);
+                'message' => 'You have already applied for this job',
+                'error' => 'DUPLICATE_APPLICATION',
+                'error_code' => 'ALREADY_APPLIED'
+            ], 200); // Changed to 200 so Android app can parse the response properly
         }
 
         // Handle resume upload
@@ -446,8 +448,10 @@ class ApplicationController extends Controller
         if ($existingApplication) {
             return response()->json([
                 'success' => false,
-                'message' => 'You have already applied for this job'
-            ], 422);
+                'message' => 'You have already applied for this job',
+                'error' => 'DUPLICATE_APPLICATION',
+                'error_code' => 'ALREADY_APPLIED'
+            ], 200); // Changed to 200 so Android app can parse the response properly
         }
 
         // Update user employment details

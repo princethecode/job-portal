@@ -203,48 +203,10 @@ public class JobsFragment extends Fragment implements JobAdapter.OnJobClickListe
     @Override
     public void onWhatsAppShareClick(Job job) {
         Log.d("JobsFragment", "WhatsApp share clicked for job: " + job.getTitle() + " (ID: " + job.getId() + ")");
-        shareJobOnWhatsApp(job);
-    }
-
-    private void shareJobOnWhatsApp(Job job) {
-        Log.d("JobsFragment", "📱 Starting WhatsApp share for job: " + job.getTitle() + " (ID: " + job.getId() + ")");
-        
         // Increment share count immediately when user clicks share
         incrementShareCount(job);
-        
-        try {
-            String shareText = "🔥 *Job Opportunity* 🔥\n\n" +
-                    "📋 *Position:* " + job.getTitle() + "\n" +
-                    "🏢 *Company:* " + job.getCompany() + "\n" +
-                    "📍 *Location:* " + job.getLocation() + "\n" +
-                    "💰 *Salary:* " + job.getSalary() + "\n\n" +
-                    "📝 *Description:* " + job.getDescription() + "\n\n" +
-                    "Apply now through our Job Portal app! 📱\n\n" +
-                    "📲 Download app from => https://emps.co.in/";
-
-            Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
-            whatsappIntent.setType("text/plain");
-            whatsappIntent.setPackage("com.whatsapp");
-            whatsappIntent.putExtra(Intent.EXTRA_TEXT, shareText);
-            
-            try {
-                startActivity(whatsappIntent);
-                Log.d("JobsFragment", "✅ WhatsApp intent started successfully");
-            } catch (android.content.ActivityNotFoundException ex) {
-                Log.d("JobsFragment", "⚠️ WhatsApp not found, trying general share");
-                // WhatsApp not installed, try with general share
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
-                shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
-                shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Job Opportunity: " + job.getTitle());
-                
-                startActivity(Intent.createChooser(shareIntent, "Share Job"));
-                Log.d("JobsFragment", "✅ General share intent started successfully");
-            }
-        } catch (Exception e) {
-            Toast.makeText(requireContext(), "Unable to share job", Toast.LENGTH_SHORT).show();
-            Log.e("JobsFragment", "❌ Error sharing job: " + e.getMessage(), e);
-        }
+        // Use the new ShareUtils to share with image and short description
+        com.emps.abroadjobs.utils.ShareUtils.shareJobOnWhatsApp(requireContext(), job);
     }
 
     private void incrementShareCount(Job job) {
