@@ -235,6 +235,12 @@ public class JobApplicationNewFragment extends Fragment {
 
     // Make accessible to child fragments
     public void loadStepFragment(int step) {
+        // CRITICAL: Check if fragment is attached and state is not saved
+        if (!isAdded() || isStateSaved()) {
+            Log.w(TAG, "Cannot load step fragment - fragment not attached or state saved");
+            return;
+        }
+        
         Fragment fragment;
         switch (step) {
             case 1:
@@ -265,7 +271,8 @@ public class JobApplicationNewFragment extends Fragment {
         FragmentManager fragmentManager = getChildFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.step_container, fragment);
-        transaction.commit();
+        // Use commitAllowingStateLoss to prevent "state already saved" crashes
+        transaction.commitAllowingStateLoss();
     }
 
     // Make accessible to child fragments
@@ -355,11 +362,21 @@ public class JobApplicationNewFragment extends Fragment {
     }
 
     private void navigateToApplicationsFragment() {
+        // CRITICAL: Check if fragment is attached and activity state is not saved
+        if (!isAdded() || getActivity() == null || isStateSaved()) {
+            Log.w(TAG, "Cannot navigate to applications - fragment not attached or state saved");
+            return;
+        }
+        
         // Navigate to the applications fragment
-        requireActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, new ApplicationsFragment())
-                .commit();
+        try {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new ApplicationsFragment())
+                    .commitAllowingStateLoss();  // Use commitAllowingStateLoss to prevent crashes
+        } catch (Exception e) {
+            Log.e(TAG, "Error navigating to applications fragment", e);
+        }
     }
 
     // Method to update resume information from employment fragment
@@ -558,29 +575,43 @@ public class JobApplicationNewFragment extends Fragment {
             apiClient.uploadResume(resumeFile, new ApiCallback<ApiResponse<User>>() {
                 @Override
                 public void onSuccess(ApiResponse<User> response) {
+                    // CRITICAL: Check if fragment is still attached before UI operations
+                    JobApplicationNewFragment parentFragment = (JobApplicationNewFragment) getParentFragment();
+                    if (parentFragment == null || !parentFragment.isAdded() || getContext() == null) {
+                        Log.w(TAG, "Fragment not attached, skipping resume upload success UI update");
+                        return;
+                    }
+                    
                     if (response.isSuccess() && response.getData() != null) {
                         // Update UI to show success with new upload indicator
                         updateResumeUI(selectedResumeFileName, true);
                         
                         // Pass the resume info to the parent fragment
-                        if (getParentFragment() instanceof JobApplicationNewFragment) {
-                            ((JobApplicationNewFragment) getParentFragment()).setResumeInfo(selectedResumeUri, selectedResumeFileName);
-                        }
+                        parentFragment.setResumeInfo(selectedResumeUri, selectedResumeFileName);
                         
                         Log.d(TAG, "Resume uploaded successfully to server");
                     } else {
                         // Show error and revert to upload state
                         updateResumeUI(null, false);
-                        Toast.makeText(requireContext(), 
-                            "Failed to upload resume: " + response.getMessage(), Toast.LENGTH_SHORT).show();
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), 
+                                "Failed to upload resume: " + response.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
                 
                 @Override
                 public void onError(String errorMessage) {
+                    // CRITICAL: Check if fragment is still attached before UI operations
+                    JobApplicationNewFragment parentFragment = (JobApplicationNewFragment) getParentFragment();
+                    if (parentFragment == null || !parentFragment.isAdded() || getContext() == null) {
+                        Log.w(TAG, "Fragment not attached, skipping resume upload error UI update");
+                        return;
+                    }
+                    
                     // Show error and revert to upload state
                     updateResumeUI(null, false);
-                    Toast.makeText(requireContext(), 
+                    Toast.makeText(getContext(), 
                         "Error uploading resume: " + errorMessage, Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "Resume upload failed: " + errorMessage);
                 }
@@ -593,6 +624,13 @@ public class JobApplicationNewFragment extends Fragment {
          * @param isNewUpload Whether this is a newly uploaded file (shows success message)
          */
         private void updateResumeUI(String fileName, boolean isNewUpload) {
+            // CRITICAL: Check if parent fragment is still attached before UI operations
+            JobApplicationNewFragment parentFragment = (JobApplicationNewFragment) getParentFragment();
+            if (parentFragment == null || !parentFragment.isAdded() || getContext() == null) {
+                Log.w("JobApplicationEmploymentFragment", "Parent fragment not attached, skipping updateResumeUI");
+                return;
+            }
+            
             // Hide loading state
             resumeLoadingUI.setVisibility(View.GONE);
             
@@ -623,6 +661,13 @@ public class JobApplicationNewFragment extends Fragment {
          * Shows the loading state during resume upload
          */
         private void showResumeLoading() {
+            // CRITICAL: Check if parent fragment is still attached
+            JobApplicationNewFragment parentFragment = (JobApplicationNewFragment) getParentFragment();
+            if (parentFragment == null || !parentFragment.isAdded() || getContext() == null) {
+                Log.w("JobApplicationEmploymentFragment", "Parent fragment not attached, skipping showResumeLoading");
+                return;
+            }
+            
             resumeUploadUI.setVisibility(View.GONE);
             resumeDisplayUI.setVisibility(View.GONE);
             resumeLoadingUI.setVisibility(View.VISIBLE);

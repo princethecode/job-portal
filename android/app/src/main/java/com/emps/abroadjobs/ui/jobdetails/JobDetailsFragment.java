@@ -172,6 +172,12 @@ public class JobDetailsFragment extends Fragment {
         ApiClient.getApiService().getFeaturedJobDetails(Integer.parseInt(jobId)).enqueue(new Callback<ApiResponse<FeaturedJob>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<FeaturedJob>> call, @NonNull Response<ApiResponse<FeaturedJob>> response) {
+                // CRITICAL: Check if fragment is still attached before UI operations
+                if (!isAdded() || getView() == null) {
+                    Log.w("JobDetailsFragment", "Fragment not attached, ignoring featured job response");
+                    return;
+                }
+                
                 progressBar.setVisibility(View.GONE);
                 
                 Log.d("JobDetailsFragment", "Featured job response received: " + response.code());
@@ -199,6 +205,13 @@ public class JobDetailsFragment extends Fragment {
             @Override
             public void onFailure(@NonNull Call<ApiResponse<FeaturedJob>> call, @NonNull Throwable t) {
                 Log.e("JobDetailsFragment", "Network error for featured job: " + t.getMessage(), t);
+                
+                // CRITICAL: Check if fragment is still attached
+                if (!isAdded() || getView() == null) {
+                    Log.w("JobDetailsFragment", "Fragment not attached, ignoring featured job failure");
+                    return;
+                }
+                
                 // Fall back to regular job loading
                 loadRegularJobDetails();
             }
@@ -212,6 +225,12 @@ public class JobDetailsFragment extends Fragment {
         ApiClient.getApiService().getJobDetails(Integer.parseInt(jobId)).enqueue(new Callback<ApiResponse<Job>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Job>> call, @NonNull Response<ApiResponse<Job>> response) {
+                // CRITICAL: Check if fragment is still attached before UI operations
+                if (!isAdded() || getView() == null) {
+                    Log.w("JobDetailsFragment", "Fragment not attached, ignoring job response");
+                    return;
+                }
+                
                 progressBar.setVisibility(View.GONE);
                 
                 Log.d("JobDetailsFragment", "Response received: " + response.code());
@@ -233,6 +252,12 @@ public class JobDetailsFragment extends Fragment {
 
             @Override
             public void onFailure(@NonNull Call<ApiResponse<Job>> call, @NonNull Throwable t) {
+                // CRITICAL: Check if fragment is still attached
+                if (!isAdded() || getView() == null) {
+                    Log.w("JobDetailsFragment", "Fragment not attached, ignoring job failure");
+                    return;
+                }
+                
                 progressBar.setVisibility(View.GONE);
                 Log.e("JobDetailsFragment", "Network error: " + t.getMessage(), t);
                 showError("Network error: " + t.getMessage());
@@ -242,6 +267,12 @@ public class JobDetailsFragment extends Fragment {
     
 
     private void displayJobDetails(Job job) {
+        // CRITICAL: Check if fragment is still attached before any UI operations
+        if (!isAdded() || getContext() == null) {
+            Log.w("JobDetailsFragment", "Fragment not attached, skipping displayJobDetails");
+            return;
+        }
+        
         contentLayout.setVisibility(View.VISIBLE);
         
         titleTextView.setText(job.getTitle());
@@ -273,8 +304,9 @@ public class JobDetailsFragment extends Fragment {
             }
         }
         
-        // Load company logo if available
-        if (companyLogoView != null && job.getCompanyLogo() != null && !job.getCompanyLogo().isEmpty()) {
+        // Load company logo if available - use safe context
+        Context context = getContext();
+        if (context != null && companyLogoView != null && job.getCompanyLogo() != null && !job.getCompanyLogo().isEmpty()) {
             String logoUrl = job.getCompanyLogo();
             // Ensure URL is absolute
             if (!logoUrl.startsWith("http")) {
@@ -289,7 +321,7 @@ public class JobDetailsFragment extends Fragment {
             
             Log.d("JobDetailsFragment", "Loading company logo from: " + logoUrl);
             
-            Glide.with(requireContext())
+            Glide.with(context)  // Use safe context instead of requireContext()
                 .load(logoUrl)
                 .placeholder(R.drawable.ic_company)
                 .error(R.drawable.ic_company)
@@ -300,8 +332,8 @@ public class JobDetailsFragment extends Fragment {
             companyLogoView.setImageResource(R.drawable.ic_company);
         }
 
-        // Load job image if available
-        if (jobImageView != null && job.getImage() != null && !job.getImage().isEmpty()) {
+        // Load job image if available - use safe context
+        if (context != null && jobImageView != null && job.getImage() != null && !job.getImage().isEmpty()) {
             jobImageView.setVisibility(View.VISIBLE);
             String imageUrl = job.getImage();
             if (!imageUrl.startsWith("http")) {
@@ -313,7 +345,7 @@ public class JobDetailsFragment extends Fragment {
                 }
             }
             Log.d("JobDetailsFragment", "Loading job image from: " + imageUrl);
-            Glide.with(requireContext())
+            Glide.with(context)  // Use safe context instead of requireContext()
                 .load(imageUrl)
                 .placeholder(R.drawable.ic_jobs)
                 .error(R.drawable.ic_jobs)
@@ -351,8 +383,8 @@ public class JobDetailsFragment extends Fragment {
             }
         }
         
-        // Display Required Skills if available
-        if (skillsChipGroup != null && skillsContainer != null) {
+        // Display Required Skills if available - check context again
+        if (context != null && skillsChipGroup != null && skillsContainer != null) {
             String skillsRequired = job.getSkillsRequired();
             if (skillsRequired != null && !skillsRequired.isEmpty() && !skillsRequired.trim().isEmpty()) {
                 skillsContainer.setVisibility(View.VISIBLE);
@@ -364,7 +396,7 @@ public class JobDetailsFragment extends Fragment {
                 if (skills != null && skills.length > 0) {
                     for (String skill : skills) {
                         if (skill != null && !skill.trim().isEmpty()) {
-                            com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(requireContext());
+                            com.google.android.material.chip.Chip chip = new com.google.android.material.chip.Chip(context);
                             chip.setText(skill.trim());
                             chip.setChipBackgroundColorResource(R.color.primary);
                             chip.setTextColor(getResources().getColor(android.R.color.white, null));
@@ -542,7 +574,12 @@ public class JobDetailsFragment extends Fragment {
     }
     
     private void showError(String message) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+        // CRITICAL: Check if fragment is still attached before showing Toast
+        if (isAdded() && getContext() != null) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        } else {
+            Log.w("JobDetailsFragment", "Cannot show error, fragment not attached: " + message);
+        }
     }
     
     /**

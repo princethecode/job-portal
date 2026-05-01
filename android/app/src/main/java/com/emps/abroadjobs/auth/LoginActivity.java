@@ -121,21 +121,20 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Prevent activity recreation on configuration changes
+        // CRITICAL: Always initialize essential objects FIRST before any early returns
+        // This prevents NullPointerException in onResume() after process death
+        apiClient = new ApiClient(this);
+        sessionManager = SessionManager.getInstance(getApplicationContext());
+        firebaseAuthHelper = new FirebaseAuthHelper(this);
+        
+        // Check if activity is being recreated
         if (savedInstanceState != null) {
             Log.d(TAG, "Activity recreated with saved state");
-            return;
+            // Don't return early - we still need to set up the UI
         }
         
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        // Initialize API client and SessionManager
-        apiClient = new ApiClient(this);
-        sessionManager = SessionManager.getInstance(getApplicationContext());
-        
-        // Initialize Firebase Auth Helper
-        firebaseAuthHelper = new FirebaseAuthHelper(this);
         
         // Check if user is already logged in
         if (!isCheckingSession) {
@@ -170,17 +169,28 @@ public class LoginActivity extends AppCompatActivity {
         super.onResume();
         Log.d(TAG, "onResume called - isCheckingSession: " + isCheckingSession);
         
-        // Only check session if we haven't already
-        if (!isCheckingSession) {
+        // Safety check: Ensure sessionManager is initialized (handles edge cases)
+        if (sessionManager == null) {
+            Log.w(TAG, "SessionManager was null in onResume, reinitializing");
+            sessionManager = SessionManager.getInstance(getApplicationContext());
+        }
+        
+        // Only check session if we haven't already and sessionManager is valid
+        if (!isCheckingSession && sessionManager != null) {
             isCheckingSession = true;
-            if (sessionManager.isSessionValid()) {
-                Log.d(TAG, "Valid session found in onResume, redirecting to MainActivity");
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
+            try {
+                if (sessionManager.isSessionValid()) {
+                    Log.d(TAG, "Valid session found in onResume, redirecting to MainActivity");
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error checking session validity", e);
+            } finally {
+                isCheckingSession = false;
             }
-            isCheckingSession = false;
         }
     }
 
