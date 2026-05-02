@@ -2,6 +2,7 @@
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Cache directory for temporary files -->
     <cache-path name="shared_images" path="images/" />
+    <cache-path name="resume_cache" path="." />
     
     <!-- External storage for shared files -->
     <external-path name="external_files" path="." />

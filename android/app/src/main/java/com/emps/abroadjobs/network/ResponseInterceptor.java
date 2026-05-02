@@ -28,6 +28,20 @@ public class ResponseInterceptor implements Interceptor {
             return response;
         }
         
+        // Skip binary content types (PDFs, images, etc.)
+        MediaType contentType = responseBody.contentType();
+        if (contentType != null) {
+            String mimeType = contentType.toString().toLowerCase();
+            if (mimeType.contains("pdf") || 
+                mimeType.contains("image") || 
+                mimeType.contains("octet-stream") ||
+                mimeType.contains("application/vnd") ||
+                mimeType.contains("application/msword")) {
+                Log.d(TAG, "Skipping interceptor for binary content: " + mimeType);
+                return response;
+            }
+        }
+        
         // Read the response body
         BufferedSource source = responseBody.source();
         source.request(Long.MAX_VALUE);

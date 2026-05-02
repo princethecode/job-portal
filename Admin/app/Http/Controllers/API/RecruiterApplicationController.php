@@ -187,23 +187,35 @@ class RecruiterApplicationController extends Controller
             $recruiter = $request->user();
             $application = $recruiter->applications()->with('user')->findOrFail($id);
 
-            if (!$application->user->resume) {
+            // Check for resume in application first, then in user profile
+            $resumePath = null;
+            
+            if ($application->resume_path) {
+                $resumePath = $application->resume_path;
+            } elseif ($application->user && $application->user->resume_path) {
+                $resumePath = $application->user->resume_path;
+            } elseif ($application->user && $application->user->resume) {
+                $resumePath = $application->user->resume;
+            }
+
+            if (!$resumePath) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No resume found'
                 ], 404);
             }
 
-            $path = storage_path('app/public/resumes/' . $application->user->resume);
+            // Build the full path
+            $fullPath = storage_path('app/public/' . $resumePath);
             
-            if (!file_exists($path)) {
+            if (!file_exists($fullPath)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Resume file not found'
                 ], 404);
             }
 
-            return response()->download($path);
+            return response()->download($fullPath);
 
         } catch (\Exception $e) {
             return response()->json([

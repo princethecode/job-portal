@@ -190,7 +190,7 @@
 
 @section('scripts')
 <script>
-let skills = @json(json_decode($job->skills_required, true) ?? []);
+let skills = @json(is_array($job->skills_required) ? $job->skills_required : (json_decode($job->skills_required, true) ?? []));
 
 document.addEventListener('DOMContentLoaded', function() {
     updateSkillsDisplay();

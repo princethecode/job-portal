@@ -129,6 +129,9 @@ public interface RecruiterApiService {
     @GET("recruiter/applications/{id}")
     Call<ApiResponse<Application>> getApplicationDetails(@Path("id") int applicationId);
     
+    @GET("recruiter/applications/{id}/download-resume")
+    Call<ResponseBody> downloadApplicationResume(@Path("id") int applicationId);
+    
     // Candidates
     @GET("recruiter/candidates")
     Call<ApiResponse<List<User>>> getCandidates(@Query("search") String search,

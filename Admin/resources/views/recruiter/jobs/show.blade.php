@@ -100,7 +100,10 @@
                 @if($job->skills_required)
                 <h6>Required Skills</h6>
                 <div class="mb-3">
-                    @foreach(json_decode($job->skills_required, true) ?? [] as $skill)
+                    @php
+                        $skills = is_array($job->skills_required) ? $job->skills_required : (json_decode($job->skills_required, true) ?? []);
+                    @endphp
+                    @foreach($skills as $skill)
                         <span class="badge bg-primary me-2">{{ $skill }}</span>
                     @endforeach
                 </div>

@@ -3,6 +3,7 @@ package com.emps.abroadjobs.recruiter;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -23,12 +25,16 @@ import com.emps.abroadjobs.network.ApiResponse;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -336,24 +342,108 @@ public class RecruiterApplicationDetailsActivity extends AppCompatActivity {
     private void viewResume() {
         if (currentApplication == null) return;
         
-        String resumeUrl = currentApplication.getResumePath();
-        if (resumeUrl == null || resumeUrl.isEmpty()) {
+        // Check if resume exists
+        String resumePath = currentApplication.getResumePath();
+        if (resumePath == null || resumePath.isEmpty()) {
             User user = currentApplication.getUser();
-            if (user != null) {
-                resumeUrl = user.getResume();
+            if (user != null && user.getResume() != null && !user.getResume().isEmpty()) {
+                resumePath = user.getResume();
             }
         }
         
-        if (resumeUrl != null && !resumeUrl.isEmpty()) {
-            if (!resumeUrl.startsWith("http")) {
-                resumeUrl = "https://emps.co.in/" + resumeUrl;
+        if (resumePath == null || resumePath.isEmpty()) {
+            Toast.makeText(this, "Resume not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Show loading state
+        btnViewResume.setEnabled(false);
+        btnViewResume.setText("Loading...");
+        
+        // Download resume using authenticated endpoint
+        ApiClient.getRecruiterApiService().downloadApplicationResume(applicationId)
+            .enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    btnViewResume.setEnabled(true);
+                    btnViewResume.setText("View Resume");
+                    
+                    if (response.isSuccessful() && response.body() != null) {
+                        try {
+                            // Save the file to cache directory
+                            File cacheDir = getCacheDir();
+                            String fileName = "resume_" + applicationId + ".pdf";
+                            File resumeFile = new File(cacheDir, fileName);
+                            
+                            // Write response body to file
+                            InputStream inputStream = response.body().byteStream();
+                            FileOutputStream outputStream = new FileOutputStream(resumeFile);
+                            
+                            byte[] buffer = new byte[4096];
+                            int bytesRead;
+                            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                outputStream.write(buffer, 0, bytesRead);
+                            }
+                            
+                            outputStream.flush();
+                            outputStream.close();
+                            inputStream.close();
+                            
+                            // Open the file with appropriate app
+                            openResumeFile(resumeFile);
+                            
+                        } catch (Exception e) {
+                            Log.e("RecruiterAppDetails", "Error saving resume: " + e.getMessage());
+                            Toast.makeText(RecruiterApplicationDetailsActivity.this, 
+                                "Failed to open resume: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(RecruiterApplicationDetailsActivity.this, 
+                            "Failed to download resume", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    btnViewResume.setEnabled(true);
+                    btnViewResume.setText("View Resume");
+                    Log.e("RecruiterAppDetails", "Resume download failed: " + t.getMessage());
+                    Toast.makeText(RecruiterApplicationDetailsActivity.this, 
+                        "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+    }
+    
+    private void openResumeFile(File file) {
+        try {
+            Uri fileUri = FileProvider.getUriForFile(
+                this,
+                getApplicationContext().getPackageName() + ".fileprovider",
+                file
+            );
+            
+            String mimeType = "application/pdf";
+            // Detect file type from extension
+            String fileName = file.getName().toLowerCase();
+            if (fileName.endsWith(".doc") || fileName.endsWith(".docx")) {
+                mimeType = "application/msword";
+            } else if (fileName.endsWith(".pdf")) {
+                mimeType = "application/pdf";
             }
             
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(resumeUrl));
-            startActivity(intent);
-        } else {
-            Toast.makeText(this, "Resume not available", Toast.LENGTH_SHORT).show();
+            intent.setDataAndType(fileUri, mimeType);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            
+            try {
+                startActivity(intent);
+            } catch (android.content.ActivityNotFoundException e) {
+                Toast.makeText(this, "No app found to open resume. Please install a PDF viewer.", Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception e) {
+            Log.e("RecruiterAppDetails", "Error opening resume: " + e.getMessage());
+            Toast.makeText(this, "Failed to open resume: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
     
